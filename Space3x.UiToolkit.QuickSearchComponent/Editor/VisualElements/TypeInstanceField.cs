@@ -232,6 +232,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             var enumerable = newValues.ToList();
             Type newValue = enumerable.Any() ? enumerable.First() : null;
 
+            UngroupedMarkerDecorators.ClearCache();
             UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);
             Property.serializedObject.Update();
             TypeUndoRedoController.RecordObject(Property.serializedObject.targetObject, UndoGroupName);
@@ -273,9 +274,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             Undo.FlushUndoRecordObjects();
             Undo.IncrementCurrentGroup();
             SetPropertyContent();
-            UngroupedMarkerDecorators.TryRebuildAll();
-            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+            UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
             UngroupedMarkerDecorators.TryRebuildAndLinkAll();
+            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
         }
         
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)

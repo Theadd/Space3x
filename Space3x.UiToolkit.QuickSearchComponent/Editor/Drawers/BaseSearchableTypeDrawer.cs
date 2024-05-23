@@ -270,9 +270,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             if (selectorField is TypeInstanceField instanceField)
             {
                 instanceField.BindProperty(Property, -1);
-                UngroupedMarkerDecorators.TryRebuildAll();
-                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+                UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
                 UngroupedMarkerDecorators.TryRebuildAndLinkAll();
+                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
                 Debug.Log($"  ... AFTER @BaseSearchableTypeDrawer.BindPropertyToTypeField: {selectorField.AsString()}");
             } 
             else if (selectorField is TypeField typeField)

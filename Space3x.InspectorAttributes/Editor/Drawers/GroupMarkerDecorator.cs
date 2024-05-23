@@ -29,6 +29,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         bool IsResetting { get; set; }
         
+        // TODO: remove
+        string DebugId { get; }
+
         void RemoveGroupMarker();
 
         bool HasValidMarker();
@@ -56,6 +59,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override TGroupAttribute Target => (TGroupAttribute) attribute;
 
         protected override bool KeepExistingOnCreatePropertyGUI => false;   // Marker?.IsUsed == true;
+        
+        // TODO: remove
+        public string DebugId => this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this);
         
         public bool IsResetting { get; set; } = false;
         
@@ -88,17 +94,48 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnUpdate()
         {
+            var isPending = true;
+            Debug.Log($"<color=#71ff70ff><b>#> OnUpdate: {DebugId}</b></color> (AutoGrouping: {(UngroupedMarkerDecorators.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
             if (!m_HasUpdated)
             {
                 if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
                 {
-                    m_HasUpdated = true;
+                    // m_HasUpdated = true; // TODO: uncomment
                     this.RebuildGroupMarkerIfRequired();
                     if (this.TryLinkToMatchingGroupMarkerDecorator())
-                        if (!this.IsGroupMarkerUsed())
+                    {
+                        if (Target.IsOpen)
+                            Debug.LogWarning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
+                        
+                        if (!Target.IsOpen && !this.IsGroupMarkerUsed())
+                        {
+                            Debug.Log($"<color=#71ff70ff>#>   :- Populate (@OnUpdate): {DebugId}</color>");
                             Marker.PopulateGroupMarker();
+                            isPending = false;
+                            UngroupedMarkerDecorators.Remove(this);
+                            UngroupedMarkerDecorators.Remove(LinkedMarkerDecorator);
+                        }
+                    }
+                }
+                if (isPending)
+                    UngroupedMarkerDecorators.MarkPending(this);
+            }
+            UngroupedMarkerDecorators.PrintCachedInstances();
+
+            if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled() && UngroupedMarkerDecorators.HasOnlyPending())
+            {
+                IGroupMarkerDecorator pendingDecorator = null;
+                if (UngroupedMarkerDecorators.TryGet(decorator =>
+                    {
+                        pendingDecorator = decorator;
+                        return true;
+                    }))
+                {
+                    Debug.Log("Calling pending decorator: " + pendingDecorator.DebugId);
+                    pendingDecorator.OnUpdate();
                 }
             }
+            
             return;
 //            if (!m_HasUpdated)
 //            {
@@ -203,6 +240,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public override void OnAttachedAndReady(VisualElement element)
         {
+            Debug.Log($"<color=#5dd1ffff><b>#> OnAttachedAndReady: {DebugId}</b></color> (AutoGrouping: {(UngroupedMarkerDecorators.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
+            // #5dd1ff
             Container.LogThis($"<color=#486979EE><b>READY & ATTACHING PROPERLY...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
             EnsureContainerIsProperlyAttached();
             if (!HasValidMarker())
@@ -210,22 +249,23 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (Target.IsOpen)
                 Marker.GetOrCreatePropertyGroupFieldForMarker();
             
-            if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
-            {
-                UngroupedMarkerDecorators.TryRebuildAll(); // MOD_ME
-                if (this.TryLinkToMatchingGroupMarkerDecorator())
-                {
-                    Container.LogThis($"  <color=#486979FF><b>READY, ¡LINKED! & PROPERLY ATTACHED WITH MARKER</b></color>");
-                    UngroupedMarkerDecorators.Remove(this);
-                    UngroupedMarkerDecorators.Remove(LinkedMarkerDecorator);
-                }
-                else
-                {
-                    Container.LogThis($"  <color=#486979CC><b>READY & PROPERLY ATTACHED WITH MARKER (NOT LINKED)</b></color>");
-                    UngroupedMarkerDecorators.Add(this);
-                }
-            }
-            else
+            // TODO: uncomment?
+//            if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
+//            {
+//                UngroupedMarkerDecorators.TryRebuildAll(); // MOD_ME
+//                if (this.TryLinkToMatchingGroupMarkerDecorator())
+//                {
+//                    Container.LogThis($"  <color=#486979FF><b>READY, ¡LINKED! & PROPERLY ATTACHED WITH MARKER</b></color>");
+//                    UngroupedMarkerDecorators.Remove(this);
+//                    UngroupedMarkerDecorators.Remove(LinkedMarkerDecorator);
+//                }
+//                else
+//                {
+//                    Container.LogThis($"  <color=#486979CC><b>READY & PROPERLY ATTACHED WITH MARKER (NOT LINKED)</b></color>");
+//                    UngroupedMarkerDecorators.Add(this);
+//                }
+//            }
+//            else
             {
                 UngroupedMarkerDecorators.Add(this);
             }
@@ -439,6 +479,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 else
                 {
                     Container.LogThis($"<color=#FF6979FF><b>SOFT RESET...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
+                    UngroupedMarkerDecorators.Remove(this);
                     if (Target.IsOpen && GroupContainer != null)
                     {
                         GroupContainer.RemoveFromHierarchy();
@@ -450,7 +491,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     if (LinkedMarkerDecorator != null)
                     {
                         LinkedMarkerDecorator.IsResetting = true;
-                        LinkedMarkerDecorator.RemoveGroupMarker();
+                        LinkedMarkerDecorator.RemoveGroupMarker(); // TODO: is this needed?
                     }
                 }
 //                if (LinkedMarkerDecorator != null)
@@ -474,6 +515,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             else
             {
+                UngroupedMarkerDecorators.Remove(this);
                 if (Target.IsOpen && GroupContainer != null)
                     GroupContainer.RemoveFromHierarchy();
 //                if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)

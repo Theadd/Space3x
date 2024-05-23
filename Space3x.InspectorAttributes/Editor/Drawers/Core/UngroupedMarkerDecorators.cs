@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
@@ -12,6 +13,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     public static class UngroupedMarkerDecorators
     {
         private static List<IGroupMarkerDecorator> s_CachedInstances;
+        private static List<IGroupMarkerDecorator> s_PendingInstances;
 
         private static int s_ActiveSelectedObjectHash = 0;
         
@@ -46,9 +48,32 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             if (s_CachedInstances.Contains(decorator))
                 s_CachedInstances.Remove(decorator);
+            if (s_PendingInstances.Contains(decorator))
+                s_PendingInstances.Remove(decorator);
+        }
+
+        public static void MarkPending(IGroupMarkerDecorator decorator)
+        {
+            if (!s_PendingInstances.Contains(decorator))
+                s_PendingInstances.Add(decorator);
         }
 
         public static int Count() => s_CachedInstances.Count;
+        
+        public static bool HasOnlyPending()
+        {
+            if (s_PendingInstances.Count > 0 && s_PendingInstances.Count == s_CachedInstances.Count)
+            {
+                foreach (var groupMarkerDecorator in s_PendingInstances)
+                {
+                    if (!s_CachedInstances.Contains(groupMarkerDecorator))
+                        return false;
+                }
+                return true;
+            }
+
+            return false;
+        }
 
         public static bool TryGet(Func<IGroupMarkerDecorator, bool> predicate)
         {
@@ -66,7 +91,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             
             if (isValid)
+            {
+                if (s_PendingInstances.Contains(s_CachedInstances.ElementAt(index)))
+                    s_PendingInstances.Remove(s_CachedInstances.ElementAt(index));
                 s_CachedInstances.RemoveAt(index);
+            }
 
             return isValid;
         }
@@ -75,10 +104,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             foreach (var groupMarkerDecorator in s_CachedInstances)
             {
-                if (groupMarkerDecorator.RebuildGroupMarkerIfRequired() && groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
-                {
+                groupMarkerDecorator.RebuildGroupMarkerIfRequired();
+                if (groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
                     groupMarkerDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
-                }
             }
 
             return true;
@@ -93,18 +121,32 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             var allInstances = s_CachedInstances.GetRange(0, s_CachedInstances.Count);
             foreach (var groupMarkerDecorator in allInstances)
             {
+                Debug.Log($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b></color> (AutoGrouping: {(IsAutoGroupingDisabled() ? "OFF" : "ON")})");
                 if (!s_CachedInstances.Contains(groupMarkerDecorator))
-                    continue;
-                groupMarkerDecorator.RebuildGroupMarkerIfRequired();
-                if (groupMarkerDecorator.TryLinkToMatchingGroupMarkerDecorator())
                 {
-                    if (groupMarkerDecorator.GetGroupBeginMarkerDecorator() is IGroupMarkerDecorator beginDecorator)
+                    Debug.Log($"<color=#f2ff47ff>#>     > Skipped: {groupMarkerDecorator.DebugId}</color>");
+                    continue;
+                }
+                groupMarkerDecorator.RebuildGroupMarkerIfRequired();
+                if (IsAutoGroupingDisabled())
+                {
+                    if (groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
                     {
-                        beginDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
+                        groupMarkerDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
                     }
-                    
-                    Remove(decorator: groupMarkerDecorator);
-                    Remove(decorator: groupMarkerDecorator.LinkedMarkerDecorator);
+                }
+                else
+                {
+                    if (groupMarkerDecorator.TryLinkToMatchingGroupMarkerDecorator())
+                    {
+                        if (groupMarkerDecorator.GetGroupBeginMarkerDecorator() is IGroupMarkerDecorator beginDecorator)
+                        {
+                            beginDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
+                        }
+
+                        Remove(decorator: groupMarkerDecorator);
+                        Remove(decorator: groupMarkerDecorator.LinkedMarkerDecorator);
+                    }
                 }
             }
 
@@ -133,6 +175,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             Debug.Log("<color=#000000FF><b>@UngroupedMarkerDecorators.RegisterCallbacks</b></color>");
             s_CachedInstances = new List<IGroupMarkerDecorator>();
+            s_PendingInstances = new List<IGroupMarkerDecorator>();
             Selection.selectionChanged -= OnSelectionChanged;
             if (register)
                 Selection.selectionChanged += OnSelectionChanged;
@@ -140,7 +183,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private static void OnSelectionChanged() => SetupActiveSelection();
 
-        private static void ClearCache()
+        public static void ClearCache()
         {
             Debug.Log("<color=#000000FF><b>@UngroupedMarkerDecorators.ClearCache</b></color>");
             try
@@ -151,6 +194,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             finally
             {
                 s_CachedInstances.Clear();
+                s_PendingInstances.Clear();
+            }
+        }
+
+        public static void PrintCachedInstances()
+        {
+            Debug.Log("_____ PrintCachedInstances _____");
+            foreach (var groupMarkerDecorator in s_CachedInstances)
+            {
+                var isPending = s_PendingInstances.Contains(groupMarkerDecorator);
+                Debug.Log($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")}</color>");
             }
         }
     }

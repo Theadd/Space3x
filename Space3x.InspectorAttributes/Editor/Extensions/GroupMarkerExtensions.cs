@@ -48,6 +48,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         {
             var beginDecorator = self.MarkerDecorator.GetGroupBeginMarkerDecorator();
             var endDecorator = self.MarkerDecorator.GetGroupEndMarkerDecorator();
+            Debug.Log($"  ~> [POPULATING] {beginDecorator.DebugId} => {endDecorator.DebugId}");
             if (beginDecorator.Marker == null)
                 beginDecorator.RebuildGroupMarkerIfRequired();
             if (endDecorator.Marker == null)
@@ -63,7 +64,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             var beginIndex = parent.IndexOf(beginMarker);
             var endIndex = parent.IndexOf(endMarker);
             group.IsUsed = true;
-            Debug.Log($"$$$$$$$$$$ SHOULD BE TRUE: {((PropertyGroupField) self.MarkerDecorator.GetGroupBeginMarkerDecorator().GroupContainer).IsUsed}");
+            // Debug.Log($"$$$$$$$$$$ SHOULD BE TRUE: {((PropertyGroupField) self.MarkerDecorator.GetGroupBeginMarkerDecorator().GroupContainer).IsUsed}");
             var rawNodes = parent.Children()
                 .Skip(beginIndex)
                 .Take(endIndex - beginIndex + 1).ToList();
