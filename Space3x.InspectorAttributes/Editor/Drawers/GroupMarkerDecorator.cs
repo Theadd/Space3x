@@ -57,8 +57,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         protected override bool KeepExistingOnCreatePropertyGUI => false;   // Marker?.IsUsed == true;
         
-        // TODO: remove
-        public string DebugId => this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this);
         public bool IsResetting { get; set; } = false;
         
         private bool m_HasUpdated = false;
@@ -90,28 +88,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnUpdate()
         {
-            Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #0:</color> {DebugId}");
             if (!m_HasUpdated)
             {
-                Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #1:</color> {DebugId}");
                 if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
                 {
-                    Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #2:</color> {DebugId}");
                     m_HasUpdated = true;
                     this.RebuildGroupMarkerIfRequired();
-                    Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #3:</color> {DebugId}");
                     if (this.TryLinkToMatchingGroupMarkerDecorator())
-                    {
-                        Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #4:</color> {DebugId}");
                         if (!this.IsGroupMarkerUsed())
-                        {
-                            Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #5:</color> {DebugId}");
                             Marker.PopulateGroupMarker();
-                        }
-                    }
                 }
             }
-            Debug.Log($"  |&gt; <color=#33c233cc>[OnUpdate] #6:</color> {DebugId}");
             return;
 //            if (!m_HasUpdated)
 //            {

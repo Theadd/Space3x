@@ -106,15 +106,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             {
                 var (contentFoldout, _) = Content.AsChildren();
                 ContentFoldout = contentFoldout as Foldout;
-                if (ContentFoldout != null && ContentFoldout.hierarchy.childCount > 0)
-                {
-                    ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
-                    if (ContentFoldoutToggle != null)
-                    {
-                        ContentFoldoutToggle.SetVisible(false);
-                        if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
-                    }
-                }
+                ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
+                ContentFoldoutToggle.SetVisible(false);
+                if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
             }
             catch (Exception e)
             {
@@ -238,7 +232,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             var enumerable = newValues.ToList();
             Type newValue = enumerable.Any() ? enumerable.First() : null;
 
-            UngroupedMarkerDecorators.ClearCache();
             UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);
             Property.serializedObject.Update();
             TypeUndoRedoController.RecordObject(Property.serializedObject.targetObject, UndoGroupName);
@@ -281,8 +274,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             Undo.IncrementCurrentGroup();
             SetPropertyContent();
             UngroupedMarkerDecorators.TryRebuildAll();
-            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
             UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
         }
         
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)

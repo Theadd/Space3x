@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
-using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEngine;
 
@@ -92,44 +91,22 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             Debug.Log($"_______________________ <b>@UngroupedMarkerDecorators.TryRebuildAndLinkAll</b> ({cachedCount}/{s_CachedInstances.Count}) _______________________");
             
             var allInstances = s_CachedInstances.GetRange(0, s_CachedInstances.Count);
-            Debug.Log("  :: FOREACH #-1");
             foreach (var groupMarkerDecorator in allInstances)
             {
-                Debug.Log("  :: FOREACH #0");
                 if (!s_CachedInstances.Contains(groupMarkerDecorator))
                     continue;
-                Debug.Log("  :: FOREACH #1");
                 groupMarkerDecorator.RebuildGroupMarkerIfRequired();
-                Debug.Log("  :: FOREACH #2 --> " + groupMarkerDecorator.Container.AsString());
-                // MOD
-                if (IsAutoGroupingDisabled())
+                if (groupMarkerDecorator.TryLinkToMatchingGroupMarkerDecorator())
                 {
-                    if (groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
+                    if (groupMarkerDecorator.GetGroupBeginMarkerDecorator() is IGroupMarkerDecorator beginDecorator)
                     {
-                        Debug.Log("  :: FOREACH #X.1");
-                        groupMarkerDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
+                        beginDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
                     }
+                    
+                    Remove(decorator: groupMarkerDecorator);
+                    Remove(decorator: groupMarkerDecorator.LinkedMarkerDecorator);
                 }
-                else
-                {
-                    if (groupMarkerDecorator.TryLinkToMatchingGroupMarkerDecorator())
-                    {
-                        Debug.Log("  :: FOREACH #2A");
-                        if (groupMarkerDecorator.GetGroupBeginMarkerDecorator() is IGroupMarkerDecorator beginDecorator)
-                        {
-                            Debug.Log("  :: FOREACH #2AB");
-                            beginDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
-                        }
-                        Debug.Log("  :: FOREACH #2B");
-                        Remove(decorator: groupMarkerDecorator);
-                        Remove(decorator: groupMarkerDecorator.LinkedMarkerDecorator);
-                        Debug.Log("  :: FOREACH #2C");
-                    }
-                }
-
-                Debug.Log("  :: FOREACH #3");
             }
-            Debug.Log("  :: FOREACH #4");
 
             Debug.Log($"________F I N A L______ <b>@UngroupedMarkerDecorators.TryRebuildAndLinkAll</b> ({s_CachedInstances.Count}) _______________________");
             
@@ -163,7 +140,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private static void OnSelectionChanged() => SetupActiveSelection();
 
-        public static void ClearCache()
+        private static void ClearCache()
         {
             Debug.Log("<color=#000000FF><b>@UngroupedMarkerDecorators.ClearCache</b></color>");
             try
