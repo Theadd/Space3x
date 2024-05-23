@@ -1,0 +1,17 @@
+{
+    "name": "Space3x.InspectorAttributes",
+    "rootNamespace": "Space3x.InspectorAttributes",
+    "references": [
+        "Unity.VisualScripting.Core",
+        "Space3x.Attributes.Types"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

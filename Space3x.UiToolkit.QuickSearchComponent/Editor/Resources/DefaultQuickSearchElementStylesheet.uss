@@ -1,0 +1,200 @@
+.ui3x-tab-view .unity-tab__header {
+    -unity-font-style: bold-and-italic;
+}
+
+.ui3x-tab-view .unity-tab__header:checked > .unity-tab__header-underline {
+    background-color: rgb(58, 121, 187);
+}
+
+.ui3x-tab-view .unity-tab__content-container {
+    padding: 16px;
+}
+
+#ui3x-tab-view > #unity-tab-view__content-container {
+    flex-grow: 1;
+}
+
+#ui3x-tab-view > #unity-tab-view__header-container {
+    justify-content: space-evenly;
+    align-self: stretch;
+    align-content: stretch;
+    background-color: rgb(60, 60, 60);
+    flex-direction: row;
+}
+
+#ui3x-tab-view #unity-tab__header {
+    justify-content: space-evenly;
+    align-self: stretch;
+    align-content: stretch;
+    align-items: stretch;
+    flex-grow: 1;
+    padding: 2px;
+}
+
+.ui3x-tab-view #unity-tab__header-label {
+    -unity-text-outline-color: rgb(229, 229, 229);
+    -unity-font-style: italic;
+    margin-bottom: 3px;
+    margin-top: 4px;
+    color: rgb(233, 221, 221);
+    -unity-text-outline-width: 0;
+    opacity: 0.4;
+}
+
+.ui3x-tab-view .unity-tab__header:checked > #unity-tab__header-label {
+    -unity-text-outline-width: 0.15px;
+    opacity: 1;
+}
+
+#ui3x-splitter #unity-dragline-anchor {
+    background-color: rgb(35, 35, 35);
+    border-left-width: 0;
+    border-right-width: 1px;
+    border-left-color: rgb(35, 35, 35);
+    border-right-color: rgb(35, 35, 35);
+    border-top-color: rgb(35, 35, 35);
+    border-bottom-color: rgb(35, 35, 35);
+}
+
+#ui3x-modal #unity-tab__content-container {
+    padding: 0;
+    flex-grow: 1;
+}
+
+#ui3x-modal #unity-content-container {
+    flex-grow: 1;
+}
+
+:root {
+    flex-grow: 1;
+}
+
+.ui3x-modal {
+    flex-grow: 1;
+    border-left-color: rgba(0, 116, 255, 0.53);
+    border-right-color: rgba(0, 116, 255, 0.53);
+    border-top-color: rgba(0, 116, 255, 0.53);
+    border-bottom-color: rgba(0, 116, 255, 0.53);
+    border-top-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-radius: 2px;
+}
+
+.ui3x-content-panel {
+    flex-grow: 1;
+}
+
+.ui3x-panel-header {
+    flex-shrink: 0;
+}
+
+.ui3x-toolbar {
+    justify-content: space-evenly;
+    align-self: stretch;
+    align-content: stretch;
+    flex-shrink: 1;
+    flex-wrap: nowrap;
+    flex-direction: row;
+    height: 26px;
+    flex-grow: 1;
+}
+
+.ui3x-search-field {
+    flex-shrink: 1;
+    border-left-color: rgba(58, 121, 187, 0.79);
+    border-right-color: rgba(58, 121, 187, 0.79);
+    border-top-color: rgba(58, 121, 187, 0.79);
+    border-bottom-color: rgba(58, 121, 187, 0.79);
+    border-radius: 2px;
+    margin-right: 4px;
+    padding-left: 4px;
+    flex-grow: 1;
+}
+
+.ui3x-toolbar-spacer {
+    width: 1px;
+    background-color: rgb(35, 35, 35);
+    flex-shrink: 0;
+}
+
+.ui3x-toolbar-button {
+    flex-shrink: 0;
+    flex-grow: 0;
+    border-right-width: 0;
+    border-left-width: 0;
+    padding-left: 4px;
+    padding-right: 4px;
+    margin-left: 0;
+    font-size: 19px;
+    -unity-text-outline-color: rgb(255, 255, 255);
+    -unity-text-outline-width: 0.15px;
+}
+
+.ui3x-side-panel {
+    flex-grow: 1;
+    background-color: rgb(40, 40, 40);
+}
+
+.ui3x-tab-view {
+    flex-grow: 1;
+    align-content: stretch;
+    justify-content: flex-start;
+}
+
+.ui3x-tab {
+    flex-grow: 1;
+}
+
+.ui3x-list-view {
+    flex-grow: 1;
+}
+
+
+.ui3x-splitter.ui3x-full-width.ui3x-splitter-setup #ui3x-side-panel {
+    display: none;
+}
+
+.ui3x-splitter.ui3x-full-width.ui3x-splitter-setup > #unity-dragline-anchor {
+    display: none;
+}
+
+
+.ui3x-modal .ui3x-list-view TextLine {
+    padding: 2px 4px 2px 2px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.ui3x-tab > #unity-tab__content-container {
+    flex-grow: 0;
+    align-self: stretch;
+}
+
+.ui3x-list-view > .unity-list-view > .unity-foldout > #unity-content {
+    padding-left: 15px;
+    padding-bottom: 8px;
+}
+
+.ui3x-list-view > .unity-list-view > .unity-foldout > .unity-toggle {
+    padding-left: 6px;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    color: #FFFFFF;
+}
+
+.ui3x-list-view .unity-list-view__item {
+    padding-left: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-right: 4px;
+}
+
+.ui3x-list-view .unity-list-view__item #unity-checkmark {
+    margin-right: 4px;
+}
+
+.ui3x-modal ToggleableListView {
+    flex-grow: 0;
+}

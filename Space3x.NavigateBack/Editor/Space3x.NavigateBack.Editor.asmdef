@@ -1,0 +1,16 @@
+{
+    "name": "Space3x.NavigateBack.Editor",
+    "rootNamespace": "Space3x.NavigateBack.Editor",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

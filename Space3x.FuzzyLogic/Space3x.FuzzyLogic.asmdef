@@ -1,0 +1,16 @@
+{
+    "name": "Space3x.FuzzyLogic",
+    "rootNamespace": "Space3x.FuzzyLogic",
+    "references": [
+        "Space3x.Attributes.Types"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

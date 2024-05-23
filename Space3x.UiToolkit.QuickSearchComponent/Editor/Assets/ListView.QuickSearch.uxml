@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="True">
+    <Style src="project://database/Assets/Plugins/Space3x/Space3x.UiToolkit.ListView.QuickSearch/Editor/Assets/QuickSearchStyles.uss?fileID=7433441132597879392&amp;guid=89592e78d1b544f419b4d3c8b04e1fb8&amp;type=3#QuickSearchStyles" />
+    <ui:VisualElement name="ui3x-modal" style="flex-grow: 1; border-left-color: rgba(0, 116, 255, 0.53); border-right-color: rgba(0, 116, 255, 0.53); border-top-color: rgba(0, 116, 255, 0.53); border-bottom-color: rgba(0, 116, 255, 0.53); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; border-top-left-radius: 2px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; border-bottom-left-radius: 2px;">
+        <Space3x.Attributes.Types.VisualElements.SplitterContainer focusable="true" fixed-pane-initial-dimension="175" fixed-pane-index="1" orientation="Horizontal" is-fixed-panel-active="true" name="ui3x-splitter">
+            <ui:VisualElement name="ui3x-content-panel" style="flex-grow: 1;">
+                <ui:VisualElement name="ui3x-panel-header">
+                    <uie:Toolbar style="justify-content: space-evenly; align-self: stretch; align-content: stretch; flex-shrink: 1; flex-wrap: nowrap; flex-direction: row; height: 26px; flex-grow: 1;">
+                        <uie:ToolbarSearchField name="ui3x-search-field" style="flex-shrink: 1; border-left-color: rgba(58, 121, 187, 0.79); border-right-color: rgba(58, 121, 187, 0.79); border-top-color: rgba(58, 121, 187, 0.79); border-bottom-color: rgba(58, 121, 187, 0.79); border-top-left-radius: 2px; border-top-right-radius: 2px; border-bottom-right-radius: 2px; border-bottom-left-radius: 2px; margin-right: 4px; padding-left: 4px; flex-grow: 1;" />
+                        <uie:ToolbarSpacer style="width: 1px; background-color: rgb(35, 35, 35); flex-shrink: 0;" />
+                        <uie:ToolbarButton text="≡" tabindex="1" tooltip="Side Panel" name="ui3x-toggle-side-panel" style="flex-shrink: 0; flex-grow: 0; border-right-width: 0; border-left-width: 0; padding-left: 4px; padding-right: 4px; margin-left: 0; font-size: 19px; -unity-text-outline-color: rgb(255, 255, 255); -unity-text-outline-width: 0.15px;" />
+                    </uie:Toolbar>
+                </ui:VisualElement>
+                <ui:ListView virtualization-method="DynamicHeight" show-alternating-row-backgrounds="ContentOnly" show-foldout-header="false" name="ui3x-list-view" fixed-item-height="26" show-border="false" selection-type="Multiple" tabindex="2" style="flex-grow: 1;" />
+            </ui:VisualElement>
+            <ui:VisualElement name="ui3x-side-panel" style="flex-grow: 1; background-color: rgb(40, 40, 40);">
+                <ui:TabView name="ui3x-tab-view" class="ui3x-tab-view" style="flex-grow: 1; align-content: stretch; justify-content: flex-start;">
+                    <ui:Tab label="Assemblies" name="ui3x-tab-assemblies" style="flex-grow: 1;">
+                        <ui:ListView name="ui3x-assemblies-list" style="flex-grow: 1;" />
+                    </ui:Tab>
+                    <ui:Tab label="Filters" name="ui3x-tab-filters" style="flex-grow: 1;">
+                        <Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements.ToggleableListView name="GridView" style="flex-grow: 1;" />
+                    </ui:Tab>
+                </ui:TabView>
+            </ui:VisualElement>
+        </Space3x.Attributes.Types.VisualElements.SplitterContainer>
+    </ui:VisualElement>
+</ui:UXML>

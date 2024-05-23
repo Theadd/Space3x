@@ -1,0 +1,25 @@
+{
+    "name": "Space3x.UiToolkit.QuickSearchComponent.Editor",
+    "rootNamespace": "Space3x.UiToolkit",
+    "references": [
+        "Unity.VisualScripting.Core",
+        "Unity.VisualScripting.Core.Editor",
+        "Space3x.Attributes.Types",
+        "Space3x.InspectorAttributes",
+        "Space3x.InspectorAttributes.Editor",
+        "Space3x.UiToolkit.Types",
+        "Space3x.UiToolkit.SlicedText",
+        "Space3x.Unstable"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

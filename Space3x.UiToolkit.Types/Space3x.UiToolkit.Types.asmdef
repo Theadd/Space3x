@@ -1,0 +1,14 @@
+{
+    "name": "Space3x.UiToolkit.Types",
+    "rootNamespace": "Space3x.UiToolkit.Types",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

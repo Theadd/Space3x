@@ -1,0 +1,10 @@
+fileFormatVersion: 2
+guid: 4ca2772356af4a02ac245d02f49d4817
+timeCreated: 1711500948
+AssetOrigin:
+  serializedVersion: 1
+  productId: 280886
+  packageName: Navigate Back
+  packageVersion: 0.1.2
+  assetPath: Assets/Plugins/Space3x/Space3x.NavigateBack/Editor/GenericNavigator.cs
+  uploadId: 656564

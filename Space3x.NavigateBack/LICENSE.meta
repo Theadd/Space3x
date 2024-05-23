@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e45dc7a1b1217ca44afacfa6b2c7aca2
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 280886
+  packageName: Navigate Back
+  packageVersion: 0.1.2
+  assetPath: Assets/Plugins/Space3x/Space3x.NavigateBack/LICENSE
+  uploadId: 656564

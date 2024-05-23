@@ -1,0 +1,92 @@
+
+.ui3x-property-group-field {
+    overflow: visible;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin: 0;
+}
+
+.ui3x-property-group {
+    overflow: visible;
+}
+
+.ui3x-property-group-field > .unity-label {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 3px;
+    margin-right: -2px;
+}
+
+.ui3x-property-group-field--with-label.ui3x-group-type--row > .ui3x-property-group {
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
+
+.ui3x-block-decorator {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--row {
+    flex-grow: 1;
+    flex-shrink: 1;
+    margin-right: 4px;
+}
+
+.ui3x-group--row.ui3x-group-item--last {
+    margin-right: 0;
+}
+
+.ui3x-group--row > .unity-base-field {
+    flex-direction: row;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--row > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--column {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--column > .unity-base-field {
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--column > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--none {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--none > .unity-base-field {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--none > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
