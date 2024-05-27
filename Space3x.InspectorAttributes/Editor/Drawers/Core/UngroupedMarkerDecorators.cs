@@ -186,16 +186,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public static void ClearCache()
         {
             Debug.Log("<color=#000000FF><b>@UngroupedMarkerDecorators.ClearCache</b></color>");
-            try
-            {
-                foreach (var cachedInstance in s_CachedInstances)
-                    cachedInstance.Dispose();
-            }
-            finally
-            {
+//            try
+//            {
+//                foreach (var cachedInstance in s_CachedInstances)
+//                    cachedInstance.Dispose();
+//            }
+//            finally
+//            {
                 s_CachedInstances.Clear();
                 s_PendingInstances.Clear();
-            }
+//            }
         }
 
         public static void PrintCachedInstances()

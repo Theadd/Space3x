@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
@@ -137,6 +138,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return self;
         }
 
+        [Obsolete("Use VisualElement.RemoveFromHierarchy instead.")]
         public static VisualElement RemoveFromHierarchy(this VisualElement self)
         {
             self.hierarchy.parent?.hierarchy.Remove(self);

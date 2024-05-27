@@ -16,7 +16,10 @@ using Unity.VisualScripting;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 {
-    public abstract class BaseSearchableTypeDrawer<TAttribute> : Drawer<TAttribute>, IAttributeExtensionContext<TAttribute>
+    public abstract class BaseSearchableTypeDrawer<TAttribute> : 
+            Drawer<TAttribute>, 
+            IAttributeExtensionContext<TAttribute>,
+            IExpandablePropertyContent
         where TAttribute : BaseSearchableTypeAttribute
     {
 //        // Flag: Has Dispose already been called?
@@ -32,8 +35,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected QuickSearchElement PopupContent { get; set; }
         protected VisualElement SelectorField { get; private set; }
         // protected VisualElement Container { get; private set; }
-        protected VisualElement Content { get; set; }
-        protected VisualElement ContentContainer { get; set; }
+        public VisualElement Content { get; set; }
+        public VisualElement ContentContainer { get; set; }
         protected ListView ListViewElement { get; set; }
         protected virtual List<Type> GetAllTypes() => Target.GetAllTypes();
         protected virtual void OnReload() => Target.ReloadCache();
@@ -133,12 +136,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             Debug.Log($"<color=#FF00FFCC>IN REPAINT: Container.childCount: {Container.hierarchy.childCount}</color>");
             Container.Clear();
-            Content = m_IsTypeValue ? CreateContentGUI() : CreateExpandedContentGUI();
-            ContentContainer = new VisualElement() { name = "ContentContainer" };
-            /* TODO: FIXME: Uncomment
-            ContentContainer.SetVisible(false);
-            */
-            ContentContainer.Add(Content);
+            
+            ((IExpandablePropertyContent) this).RebuildExpandablePropertyContentGUI();
+            
             SelectorField = AddSelectorFieldEventListeners(
                 ApplySelectorFieldVisuals(
                     CreateSelectorFieldGUI()));
@@ -207,14 +207,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             return Container;
         }
 
-        protected virtual VisualElement CreateContentGUI() => new();
-        
-        protected virtual VisualElement CreateExpandedContentGUI() => new PropertyField(Property);
+        public virtual VisualElement CreateContentGUI() => m_IsTypeValue ? new VisualElement() : new PropertyField(Property);
 
         protected virtual VisualElement CreateSelectorFieldGUI() =>
             m_IsTypeValue 
                 ? new TypeField(showLabel: true, initialLabel: Property.displayName) { OnShowPopup = OnShowPopup }
-                : new TypeInstanceField() { OnShowPopup = OnShowPopup, Container = ContentContainer, Content = (PropertyField) Content };
+                : new TypeInstanceField() { OnShowPopup = OnShowPopup, ExpandablePropertyContent = this };
 
         protected virtual void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
         {
@@ -281,8 +279,22 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             }
             else
                 throw new NotImplementedException("Missing code path");
-            
-            
+        }
+
+        private IVisualElementScheduledItem m_DelayedUpdateTask;
+        
+        public void ExecuteDelayedUpdate()
+        {
+//            Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate");
+            m_DelayedUpdateTask = Container.schedule.Execute(() =>
+            {
+                m_DelayedUpdateTask?.Pause();
+                Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate INNER");
+                OnUpdate();
+                m_DelayedUpdateTask = null;
+                Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate DONE");
+            });
+            m_DelayedUpdateTask.ExecuteLater(1);
         }
 
 //        private void OnValueChangeCallback(ChangeEvent<IEnumerable<Type>> e) => OnValueChange(e.newValue);

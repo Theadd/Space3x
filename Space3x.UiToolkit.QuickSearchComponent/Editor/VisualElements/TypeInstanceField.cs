@@ -58,62 +58,109 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         protected virtual void SetPropertyContent(bool unbind = false)
         {
+            BindContentFoldout();
             try
             {
-                Debug.LogWarning($"[TypeInstanceField] PropertyField (Content) Children: {Content.hierarchy.childCount}; " 
-                                 + $"{(Content.hierarchy.childCount == 1 ? Content.hierarchy[0].ToString() : "None")}");
+                Content.BindProperty(Property);
             }
             catch (Exception e)
             {
-                Debug.LogError(e.ToString());
+                Debug.LogError("<color=#FF7F00FF>" + e.ToString() + "</color>");
             }
-            try
-            {
-                if (Content.hierarchy.ElementAt(0)?.hierarchy.ElementAt(0) is Toggle toggleElement)
-                    toggleElement.SetVisible(false);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.ToString());
-            }
-
-            var allBindingInfos = Content.GetBindingInfos().ToList();
-            try
-            {
-                Debug.Log("HERE !! =================> " + allBindingInfos.Count);
-//                if (unbind)
+//            BindContentFoldout();   // TODO: remove
+            /* HI THERE */
+            
+//            try
+//            {
+//                Debug.LogWarning($"[TypeInstanceField] PropertyField (Content) Children: {Content.hierarchy.childCount}; " 
+//                                 + $"{(Content.hierarchy.childCount == 1 ? Content.hierarchy[0].ToString() : "None")}");
+//            }
+//            catch (Exception e)
+//            {
+//                Debug.LogError(e.ToString());
+//            }
+//            try
+//            {
+//                if (Content.hierarchy.ElementAt(0)?.hierarchy.ElementAt(0) is Toggle toggleElement)
+//                    toggleElement.SetVisible(false);
+//            }
+//            catch (Exception e)
+//            {
+//                Debug.LogError(e.ToString());
+//            }
+//
+//            var allBindingInfos = Content.GetBindingInfos().ToList();
+//            try
+//            {
+//                Debug.Log("HERE !! =================> " + allBindingInfos.Count);
+////                if (unbind)
+////                {
+////                    Content.Unbind();
+////                    Content.BindProperty(Property);
+////                }
+////                else
 //                {
-//                    Content.Unbind();
 //                    Content.BindProperty(Property);
 //                }
-//                else
-                {
-                    Content.BindProperty(Property);
-                }
-//                if (Content?.hierarchy.childCount != 0) // MOD
-//                    Content.Unbind();   // MOD
-//                
-//                if (Content?.hierarchy.childCount == 0) // MOD
-//                    Content.BindProperty(Property);
-                // TODO: FIXME: REMOVE: ActiveEditorTracker.sharedTracker.ForceRebuild();
-            }
-            catch (Exception e)
-            {
-                Debug.LogError(e.ToString());
-            }
+////                if (Content?.hierarchy.childCount != 0) // MOD
+////                    Content.Unbind();   // MOD
+////                
+////                if (Content?.hierarchy.childCount == 0) // MOD
+////                    Content.BindProperty(Property);
+//                // TODO: FIXME: REMOVE: ActiveEditorTracker.sharedTracker.ForceRebuild();
+//            }
+//            catch (Exception e)
+//            {
+//                Debug.LogError(e.ToString());
+//            }
+//
+//            try
+//            {
+//                var (contentFoldout, _) = Content.AsChildren();
+//                ContentFoldout = contentFoldout as Foldout;
+//                if (ContentFoldout == null) 
+//                    Debug.LogError("<color=#ff0000ff>[TypeInstanceField] ContentFoldout IS NULL!!</color>");
+//                ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
+//                ContentFoldoutToggle.SetVisible(false);
+//                if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
+//            }
+//            catch (Exception e)
+//            {
+//                Debug.LogError(e.ToString());
+//            }
+        }
 
-            try
+        private void BindContentFoldout()
+        {
+            Debug.Log(" . . . . . BindContentFoldout . . . . . 0");
+            ContentFoldout = null;
+            ContentFoldoutToggle = null;
+            Content.UnregisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
+            if (Content.hierarchy.childCount > 0)
             {
+                Debug.Log(" . . . . . BindContentFoldout . . . . . 1");
                 var (contentFoldout, _) = Content.AsChildren();
                 ContentFoldout = contentFoldout as Foldout;
-                ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
-                ContentFoldoutToggle.SetVisible(false);
-                if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
+                if (ContentFoldout != null)
+                {
+                    Debug.Log(" . . . . . BindContentFoldout . . . . . 2");
+                    if (ContentFoldout.hierarchy.childCount > 0)
+                        ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
+                    ContentFoldoutToggle?.SetVisible(false);
+                    if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
+                }
             }
-            catch (Exception e)
+            if (ContentFoldout == null)
             {
-                Debug.LogError(e.ToString());
+                Debug.Log(" . . . . . BindContentFoldout . . . . . 3");
+                Content.RegisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
             }
+        }
+
+        private void OnContentGeometryChanged(GeometryChangedEvent evt)
+        {
+            Debug.Log(" . . . . . BindContentFoldout . . . . . CALLBACK");
+            BindContentFoldout();
         }
     }
     
@@ -124,8 +171,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
     public partial class TypeInstanceField : TypeField
     {
         public Foldout Foldout;
-        public VisualElement Container;
-        public PropertyField Content;
+        public VisualElement Container => ExpandablePropertyContent.ContentContainer;
+        public PropertyField Content => (PropertyField) ExpandablePropertyContent.Content;
+        public IExpandablePropertyContent ExpandablePropertyContent;
         private const string UndoGroupName = "Selected Object Type Change";
 
         private bool m_ShowLabel;
@@ -232,9 +280,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             var enumerable = newValues.ToList();
             Type newValue = enumerable.Any() ? enumerable.First() : null;
 
+            Debug.Log(".. .. .. REBUILD on CHANGE #0");
             UngroupedMarkerDecorators.ClearCache();
             UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);
             Property.serializedObject.Update();
+
+//            Debug.Log(".. .. .. BEGIN REBUILD");
+//            ExpandablePropertyContent.RebuildExpandablePropertyContentGUI();
+//            Debug.Log(".. .. .. END REBUILD");
+            
             TypeUndoRedoController.RecordObject(Property.serializedObject.targetObject, UndoGroupName);
 
             if (PropertyIndex == -1)
@@ -273,10 +327,107 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             TypeUndoRedoController.AddValue(Undo.GetCurrentGroup(), Property);
             Undo.FlushUndoRecordObjects();
             Undo.IncrementCurrentGroup();
+
+            // BEGIN EDIT
+            Debug.Log(".. .. .. REBUILD on CHANGE #A");
+            Property.isExpanded = false;
+            Debug.Log(".. .. .. REBUILD on CHANGE #A1");
             SetPropertyContent();
-            UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
-            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
-            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+            Content.Unbind();
+            Content.MarkDirtyRepaint();
+            Debug.Log(".. .. .. REBUILD on CHANGE #A2");
+
+            if (newValue != null)
+                Property.isExpanded = true;
+            
+            Debug.Log(".. .. .. REBUILD on CHANGE #A3");
+            
+            EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+            {
+                Debug.Log(".. .. .. REBUILD on CHANGE #B");
+                Content.Unbind();
+                SetPropertyContent();   // Content.BindProperty(Property);
+                Content.MarkDirtyRepaint();
+                Debug.Log(".. .. .. REBUILD on CHANGE #B2");
+                
+                UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
+//                UngroupedMarkerDecorators.TryRebuildAndLinkAll();
+                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+                Debug.Log(".. .. .. REBUILD on CHANGE #B3");
+                
+//                EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+//                {
+//                    Debug.Log(".. .. .. REBUILD on CHANGE #C");
+//                    Content.Unbind();
+//                    SetPropertyContent();   // Content.BindProperty(Property);
+//                    Content.MarkDirtyRepaint();
+//                    Debug.Log(".. .. .. REBUILD on CHANGE #C2");
+//                    
+//                });
+            });
+
+            // END EDIT
+
+
+            /*
+            Debug.Log(".. .. .. REBUILD on CHANGE #1");
+            SetPropertyContent();
+            Debug.Log(".. .. .. REBUILD on CHANGE #2");
+//            ExpandablePropertyContent.CallResetForContentAsPropertyField((SerializedProperty) null);
+//            ExpandablePropertyContent.CallResetForContentAsPropertyField(Property.Copy());
+            Content.Unbind();
+            Debug.Log(".. .. .. REBUILD on CHANGE 3");
+            Content.MarkDirtyRepaint();
+            Debug.Log(".. .. .. REBUILD on CHANGE 4");
+//            EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+//            {
+                Debug.Log(".. .. .. REBUILD on CHANGE #5");
+//                UngroupedMarkerDecorators.ClearCache();
+                ExpandablePropertyContent.CallResetForContentAsPropertyField(Property);
+                Debug.Log(".. .. .. REBUILD on CHANGE #6");
+                Content.MarkDirtyRepaint();
+                Debug.Log(".. .. .. REBUILD on CHANGE #7");
+//            });
+            Debug.Log(".. .. .. REBUILD on CHANGE #8");
+
+            if (newValue != null)
+                Property.isExpanded = true;
+
+//            Debug.Log(".. .. .. Delayed REBUILD CALLED");
+            EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+            {
+                Debug.Log(".. .. .. Delayed REBUILD #0");
+//                UngroupedMarkerDecorators.ClearCache();
+                Content.Unbind();
+                Debug.Log(".. .. .. Delayed REBUILD #1");
+                Content.BindProperty(Property);
+                Debug.Log(".. .. .. Delayed REBUILD #1.2???");
+                ExpandablePropertyContent.CallResetForContentAsPropertyField(Property);
+//                SetPropertyContent();
+                Debug.Log(".. .. .. Delayed REBUILD #2");
+                Content.MarkDirtyRepaint();
+            });
+            Debug.Log(".. .. .. Delayed REBUILD CALLED");
+            */
+
+//            Debug.Log(".. .. .. BEGIN REBUILD");
+////            ExpandablePropertyContent.RebuildExpandablePropertyContentGUI(() => SetPropertyContent());
+//            ExpandablePropertyContent.ReloadPropertyContentGUI(() =>
+//            {
+//                SetPropertyContent();
+//                Content.MarkDirtyRepaint();
+//                Debug.Log(".. .. .. END REBUILD --- INNER");
+//            });
+//            Debug.Log(".. .. .. END REBUILD");
+
+//            ((IDrawer) ExpandablePropertyContent).ForceRebuild();
+//            ExpandablePropertyContent.CallResetForContentAsPropertyField(Property);
+
+//            ExpandablePropertyContent.ExecuteDelayedUpdate();
+//            SetPropertyContent();
+//            UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
+//            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
+//            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
         }
         
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)

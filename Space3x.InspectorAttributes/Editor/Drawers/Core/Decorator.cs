@@ -255,9 +255,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
             m_GeometryChangeCompleted = true;
             Debug.Log($"In GeometryChangedEvent: {attribute.GetType().Name}");
-            ((IDrawer) this).InspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-            Container.LogThis("CALL ONUPDATE FROM GEOMETRYCHANGED");
-            OnUpdate();
+            if (((IDrawer) this).InspectorElement is InspectorElement inspectorElement)
+            {
+                inspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+                Container.LogThis("CALL ONUPDATE FROM GEOMETRYCHANGED");
+                OnUpdate();
+            }
+            else
+                Debug.LogError($"<color=#FF0000FF><b>Could not find InspectorElement for {attribute.GetType().Name}</b> {((VisualElement)ev.target)?.AsString()}</color>");
         }
 
         public virtual void OnAttachedAndReady(VisualElement element) { }

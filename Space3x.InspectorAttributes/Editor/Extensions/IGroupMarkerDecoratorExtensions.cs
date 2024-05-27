@@ -1,5 +1,7 @@
 ﻿using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.UiToolkit.Types;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
@@ -80,6 +82,9 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                     isValid = false;
                     decorator.RebuildGroupMarker();
                 }
+
+            if (!isValid)
+                Debug.Log("<color=#000000CC>  Marker REBUILT for: </color>" + decorator.Container.AsString());
             
             return !isValid;
         }

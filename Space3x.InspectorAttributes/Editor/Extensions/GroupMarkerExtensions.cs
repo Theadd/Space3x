@@ -19,14 +19,18 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             var parent = group.hierarchy.parent;
             var indexInParent = parent.hierarchy.IndexOf(group);
             var parentGroupTypeClass = "";
+            var exceptionTarget = "";
+            var iMax = group.contentContainer.hierarchy.childCount - 1;
             if (parent is PropertyGroup pg && pg.hierarchy.parent is PropertyGroupField pgf)
                 parentGroupTypeClass = $"ui3x-group--{pgf.Type.ToString().ToLower()}";
             
-            for (var i = group.contentContainer.hierarchy.childCount - 1; i >= 0; i--)
+            for (var i = iMax; i >= 0; i--)
             {
+                exceptionTarget = $"#i = {i}/{iMax}; ";
                 try
                 {
                     var element = group.contentContainer.hierarchy.ElementAt(i);
+                    exceptionTarget += element.AsString(); /* TODO: remove */
                     if (element is PropertyField /*or BlockDecorator or PropertyGroupField*/)
                     {
                         element.WithClasses(false, "ui3x-group--none", "ui3x-group--column", "ui3x-group--row", "ui3x-group-item--last");
@@ -37,7 +41,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(e.ToString());
+                    Debug.LogWarning(e.ToString() + "\n\n" + exceptionTarget + "\n");
                 }
             }
 
