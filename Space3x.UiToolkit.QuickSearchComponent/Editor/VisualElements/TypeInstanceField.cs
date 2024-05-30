@@ -281,8 +281,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             Type newValue = enumerable.Any() ? enumerable.First() : null;
 
             Debug.Log(".. .. .. REBUILD on CHANGE #0");
-            UngroupedMarkerDecorators.ClearCache();
-            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);
+            ExpandablePropertyContent.DecoratorsCache.ClearCache();
+            ExpandablePropertyContent.DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
             Property.serializedObject.Update();
 
 //            Debug.Log(".. .. .. BEGIN REBUILD");
@@ -350,9 +350,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 Content.MarkDirtyRepaint();
                 Debug.Log(".. .. .. REBUILD on CHANGE #B2");
                 
-                UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
+                RebuildChildDecoratorDrawersIfNecessary(Content, Property);
+                
+                ExpandablePropertyContent.DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
 //                UngroupedMarkerDecorators.TryRebuildAndLinkAll();
-                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+                ExpandablePropertyContent.DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                 Debug.Log(".. .. .. REBUILD on CHANGE #B3");
                 
 //                EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -429,7 +431,68 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 //            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
 //            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
         }
-        
+
+        private void RebuildChildDecoratorDrawersIfNecessary(PropertyField parentField, SerializedProperty parentProperty)
+        {
+            var property = parentProperty.Copy();
+            var parentDepth = property.depth;
+            var visitedNodes = new HashSet<long>();
+            Debug.Log($"!! Rebuilding decorators !! hasChildren: {property.hasChildren}, " +
+                      $"isExpanded: {property.isExpanded}, hasVisibleChildren: {property.hasVisibleChildren}, " +
+                      $"depth: {property.depth}");
+            
+            SerializedProperty endProperty = property.GetEndProperty();
+            var allChildFields = parentField.GetChildren<PropertyField>();
+            var childFieldsByPath = new Dictionary<string, PropertyField>();
+            foreach (var childField in allChildFields)
+            {
+                var childProperty = childField.GetSerializedProperty();
+                if (childProperty != null)
+                    childFieldsByPath.Add(childProperty.propertyPath, childField);
+            }
+            bool visitChild;
+            do
+            {
+                // default is false so we don't enumerate each character of each string,
+                visitChild = false;
+                
+                if (property.propertyType == SerializedPropertyType.ManagedReference)
+                {
+                    long refId = property.managedReferenceId;
+                    if (visitedNodes.Add(refId))
+                        visitChild = true; // First time seeing node, so visit it
+                }
+                
+                var childProperty = property.Copy();
+                if (childFieldsByPath.TryGetValue(childProperty.propertyPath, out var childField))
+                {
+                    Debug.Log($"Found child: {childProperty.propertyPath}");
+                    var prevNestingLevel = childField.GetDrawNestingLevel();
+                    childField.SetDrawNestingLevel(0);
+                    childProperty.AssignToPropertyField(childField);
+                    childField.SetDrawNestingLevel(prevNestingLevel);
+                }
+                else
+                {
+                    Debug.Log($"Not found: {childProperty.propertyPath}");
+                }
+                
+
+                // TODO: NextVisible => Next
+            } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
+
+
+            endProperty = (SerializedProperty) null;
+            
+//            foreach (SerializedProperty property in parentProperty)
+//            {
+//                if (property.depth == parentDepth + 1)
+//                {
+//                    
+//                }
+//            }
+        }
+
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)
         {
             if (PropertyIndex == -1)

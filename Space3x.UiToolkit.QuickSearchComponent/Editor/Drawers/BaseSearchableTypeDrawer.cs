@@ -44,6 +44,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected override VisualElement OnCreatePropertyGUI(SerializedProperty property)
         {
             Property = property;
+            Debug.Log($"<color=#FF0099FF>IN OnCreatePropertyGUI, propertyPath: {property.propertyPath}, property.name: {property.name}, " +
+                      $"property.hash: {property.GetHashCode()}, serializedObject.hash: {property.serializedObject.GetHashCode()}</color>");
             m_ElementType = GetUnderlyingElementType(property);
             m_IsTypeValue = IsTypeValue(m_ElementType);
             // Debug.Log($"IsTypeValue: {m_IsTypeValue}, name: {property.name}, propertyType: {property.propertyType}, isArray: {property.isArray}, property.GetUnderlyingType(): {property.GetUnderlyingType()}");
@@ -136,8 +138,14 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             Debug.Log($"<color=#FF00FFCC>IN REPAINT: Container.childCount: {Container.hierarchy.childCount}</color>");
             Container.Clear();
+            m_SelectorFieldAttached = false;
+            m_ContentAttached = false;
             
-            ((IExpandablePropertyContent) this).RebuildExpandablePropertyContentGUI();
+            ((IExpandablePropertyContent) this).RebuildExpandablePropertyContentGUI(OnAttachContentToPanel);
+
+            m_InitialContentHashCode = m_IsTypeValue 
+                ? Property.GetHashCode() 
+                : ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
             
             SelectorField = AddSelectorFieldEventListeners(
                 ApplySelectorFieldVisuals(
@@ -217,11 +225,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
         {
             PopupContent ??= new QuickSearchElement() { };
-            var swatch = new System.Diagnostics.Stopwatch();
-            swatch.Start();
+//            var swatch = new System.Diagnostics.Stopwatch();
+//            swatch.Start();
             PopupContent.DataSource = GetAllTypes().ToArray();
-            swatch.Stop();
-            Debug.Log($"OnShowPopup (PopupContent.DataSource = GetAllTypes().ToArray()): {swatch.ElapsedMilliseconds}ms");
+//            swatch.Stop();
+//            Debug.Log($"OnShowPopup (PopupContent.DataSource = GetAllTypes().ToArray()): {swatch.ElapsedMilliseconds}ms");
 //            var sType = GetSelectedType();
 //            if (sType == null)
 //                PopupContent.SetValueWithoutNotify(new List<Type>() {});
@@ -240,7 +248,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual VisualElement AddSelectorFieldEventListeners(VisualElement selectorField)
         {
-            selectorField.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachContentToPanel);
+            selectorField.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachSelectorFieldToPanel);
 //            if (selectorField is BindableElement bindableField)
 //            {
 //                bindableField.RegisterCallback<ChangeEvent<Type[]>>(OnValueChangeCallback);
@@ -250,13 +258,41 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         }
 
         private IVisualElementScheduledItem m_BindTask;
+        private bool m_SelectorFieldAttached = false;
+        private bool m_ContentAttached = false;
         
-        private void OnAttachContentToPanel(AttachToPanelEvent evt)
+        private void OnAttachSelectorFieldToPanel(AttachToPanelEvent evt)
+        {
+            m_SelectorFieldAttached = true;
+            if (m_SelectorFieldAttached && m_ContentAttached)
+                OnContainerFullyAttached();
+        }
+
+        private void OnAttachContentToPanel()
+        {
+            m_ContentAttached = true;
+            if (m_SelectorFieldAttached && m_ContentAttached)
+                OnContainerFullyAttached();
+        }
+
+        private int m_InitialContentHashCode;
+        private int m_AttachedContentHashCode;
+        private int m_DelayedContentHashCode;
+
+        private void OnContainerFullyAttached()
         {
             if (SelectorField is TypeInstanceField)
             {
-                Debug.Log($"... @BaseSearchableTypeDrawer.OnAttachContentToPanel: {SelectorField.AsString()}");
-                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);  // MOD_ME
+                Debug.Log($"... @BaseSearchableTypeDrawer.OnContainerFullyAttached: {Content.AsString()}");
+                m_AttachedContentHashCode = ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
+                Debug.Log($"    ///////////////////// ContentHashCodes: Initial = {m_InitialContentHashCode}, Attached = {m_AttachedContentHashCode}, Property = {Property.GetHashCode()}");
+                if (m_AttachedContentHashCode != 0)
+                {
+                    var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_AttachedContentHashCode);
+                    altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
+                    Debug.Log("                     ///////////////////// AutoGrouping DISABLED");
+                }
+                DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);  // MOD_ME
             }
             m_BindTask = Container.schedule.Execute(() => BindPropertyToTypeField(SelectorField));
             m_BindTask.ExecuteLater(1);
@@ -264,14 +300,40 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         private void BindPropertyToTypeField(VisualElement selectorField)
         {
+            Debug.Log("                                       #2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             m_BindTask?.Pause();
+            Debug.Log("                                       #3 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             if (selectorField is TypeInstanceField instanceField)
             {
+//                var altInstanceIdA = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
+                m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
+                Debug.Log(Container.CreateRichTextReport("RichTextReport A"));
+                Debug.Log($"    ///////////////////// ContentHashCodes: Initial = {m_InitialContentHashCode}, " +
+                          $"Attached = {m_AttachedContentHashCode}, Delayed = {m_DelayedContentHashCode}, " +
+                          $"Property = {Property.GetHashCode()}");
+                var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
+                altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
+                Debug.Log("                                       #4 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
                 instanceField.BindProperty(Property, -1);
-                UngroupedMarkerDecorators.TryRebuildAll();  // TODO: remove redundant call
-                UngroupedMarkerDecorators.TryRebuildAndLinkAll();
-                UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
+                Debug.Log(Container.CreateRichTextReport("RichTextReport B"));
+                Debug.Log("                                       #5 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+                altDecoratorsCache.TryRebuildAll();
+                Debug.Log(Container.CreateRichTextReport("RichTextReport C"));
+                DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
+                Debug.Log(Container.CreateRichTextReport("RichTextReport D"));
+                Debug.Log("                                       #6 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+//                DecoratorsCache.TryRebuildAndLinkAll();
+                altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                Debug.Log(Container.CreateRichTextReport("RichTextReport E"));
                 Debug.Log($"  ... AFTER @BaseSearchableTypeDrawer.BindPropertyToTypeField: {selectorField.AsString()}");
+                DecoratorsCache.HandlePendingDecorators();
+                Debug.Log(Container.CreateRichTextReport("RichTextReport F"));
+                altDecoratorsCache.HandlePendingDecorators();
+                Debug.Log(Container.CreateRichTextReport("RichTextReport G"));
+//                var altInstanceIdB = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
+//                Debug.Log($"<color=#ffffffff><b>  .. ALTERNATIVE DECORATORS CACHE INSTANCE ID A: {altInstanceIdA} .. </b></color>");
+//                Debug.Log($"<color=#ffffffff><b>  .. ALTERNATIVE DECORATORS CACHE INSTANCE ID B: {altInstanceIdB} .. </b></color>");
             } 
             else if (selectorField is TypeField typeField)
             {

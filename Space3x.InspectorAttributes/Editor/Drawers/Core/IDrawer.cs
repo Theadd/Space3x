@@ -27,6 +27,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// The closest parent InspectorElement related to this decorator or property drawer.
         /// </summary>
         public InspectorElement InspectorElement => Field?.GetClosestParentOfType<InspectorElement>();
+        
+        public MarkerDecoratorsCache DecoratorsCache { get; }
 
         /// <summary>
         /// Override this method to perform any custom logic when the decorator or property drawer needs to be updated.

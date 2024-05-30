@@ -73,6 +73,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         /// <returns>Whether the group marker and/or it's related decorator container was rebuilt or not.</returns>
         public static bool RebuildGroupMarkerIfRequired(this IGroupMarkerDecorator decorator)
         {
+            var prevContainerName = decorator.Container?.name ?? "???";
             var isValid = decorator.EnsureContainerIsProperlyAttached();
             if (!isValid)
                 decorator.RebuildGroupMarker();
@@ -84,7 +85,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 }
 
             if (!isValid)
-                Debug.Log("<color=#000000CC>  Marker REBUILT for: </color>" + decorator.Container.AsString());
+                Debug.Log("<color=#000000CC>  Marker REBUILT from <b>#" + prevContainerName + "</b> as: </color>" + decorator.Container.AsString());
             
             return !isValid;
         }

@@ -29,7 +29,7 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--row {
+.ui3x-property-group > .ui3x-group--row {
     flex-grow: 1;
     flex-shrink: 1;
     margin-right: 4px;
@@ -49,12 +49,12 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--row > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--row > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.ui3x-group--column {
+.ui3x-property-group > .ui3x-group--column {
     flex-grow: 1;
     flex-shrink: 1;
 }
@@ -68,12 +68,12 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--column > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--column > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.ui3x-group--none {
+.ui3x-property-group > .ui3x-group--none {
     flex-grow: 1;
     flex-shrink: 1;
 }
@@ -86,7 +86,7 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--none > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--none > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
 }

@@ -50,6 +50,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public T Container { get; private set; }
         
+        public MarkerDecoratorsCache DecoratorsCache => 
+            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
+                ?? Property.serializedObject.GetHashCode());
+
+        private MarkerDecoratorsCache m_DecoratorsCache;
+        
         private bool m_Detached;
         private bool m_Ready;
         private bool m_Invalid;
@@ -297,10 +304,34 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
 
             DebugMe();
+            // TODO
             Property = typeof(PropertyField).GetField(
                     "m_SerializedProperty", 
                     System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
                 ?.GetValue(Field) as SerializedProperty;
+            
+            // TODO
+            if (Property != null)
+            {
+                Debug.Log("Getting parent property field... " + this.GetType().Name + " " + this.GetHashCode());
+                var parentField = Field.GetParentPropertyField();
+                if (parentField != null)
+                {
+                    var parentProperty = parentField.GetSerializedProperty();
+                    Debug.Log($"<color=#FF0099FF>  ..IN OnCreatePropertyGUI, propertyPath: {Property.propertyPath}, parentPropertyPath: {parentProperty.propertyPath}, " +
+                              $"property.hash: {Property.GetHashCode()}, parentProperty.hash: {parentProperty.GetHashCode()}, " +
+                              $"serializedObject.hash: {Property.serializedObject.GetHashCode()}, " +
+                              $"parentSerializedObject.hash: {parentProperty.serializedObject.GetHashCode()}" +
+                              $"</color>\n{parentField.AsString()}");
+                }
+                else
+                {
+                    Debug.Log($"<color=#FF0099FF>  ..IN !!OnCreatePropertyGUI, propertyPath: {Property.propertyPath}, " +
+                              $"property.hash: {Property.GetHashCode()}, " +
+                              $"serializedObject.hash: {Property.serializedObject.GetHashCode()}</color>");
+                }
+            }
+            
             if (RedrawOnAnyValueChange && !m_Invalid)
                 TrackAllChangesOnInspectorElement();
 

@@ -18,6 +18,15 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public PropertyField Field => m_Field ??= Container.GetClosestParentOfType<PropertyField, InspectorElement>();
 
         private PropertyField m_Field;
+
+        public MarkerDecoratorsCache DecoratorsCache => 
+            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
+                ?? Property.serializedObject.GetHashCode());
+        
+        // public MarkerDecoratorsCache DecoratorsCache => m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(Property.serializedObject.GetHashCode());
+
+        private MarkerDecoratorsCache m_DecoratorsCache;
         
         private bool m_Disposed;
         

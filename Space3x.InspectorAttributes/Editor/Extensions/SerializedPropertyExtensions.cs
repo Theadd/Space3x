@@ -1,4 +1,6 @@
-﻿using Space3x.InspectorAttributes.Editor.Utilities;
+﻿using System;
+using System.Reflection;
+using Space3x.InspectorAttributes.Editor.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 
@@ -15,7 +17,25 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return invokableMember != null;
         }
 
-//        public static SerializedProperty GetSerializedProperty(this PropertyField self)
+        private static MethodInfo s_PropertyFieldReset = null;
+
+        public static void AssignToPropertyField(this SerializedProperty property, PropertyField target)
+        {
+            s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
+                "Reset", 
+                BindingFlags.Instance | BindingFlags.NonPublic,
+                null,
+                new Type[] { typeof(SerializedProperty) },
+                null);
+
+            if (s_PropertyFieldReset != null)
+                s_PropertyFieldReset.Invoke(target, new object[] { property });
+        }
+
+        public static int GetDecoratorsContainerHash(this SerializedProperty property) => 
+            property.serializedObject.GetHashCode();
+
+        //        public static SerializedProperty GetSerializedProperty(this PropertyField self)
 //        {
 //            return GetSerializedPropertyIn(self);
 //        }

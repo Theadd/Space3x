@@ -181,8 +181,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         private void OnValueChangeCallback(ChangeEvent<IEnumerable<Type>> e)
         {
             OnValueChange(e.newValue);
-            Debug.Log("<b>e.StopPropagation();</b>");
-            e.StopPropagation();
+//            Debug.Log("<b>e.StopPropagation();</b>");
+//            e.StopPropagation();
         }
 
         protected virtual void OnValueChange(IEnumerable<Type> newValues)

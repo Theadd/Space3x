@@ -11,6 +11,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         VisualElement Content { get; set; }
         VisualElement ContentContainer { get; set; }
+        
+        public MarkerDecoratorsCache DecoratorsCache { get; }
 
         VisualElement CreateContentGUI();
         

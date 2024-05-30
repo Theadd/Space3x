@@ -70,10 +70,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnUpdate()
         {
             var isPending = true;
-            Debug.Log($"<color=#71ff70ff><b>#> OnUpdate: {DebugId}</b></color> (AutoGrouping: {(UngroupedMarkerDecorators.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
+            Debug.Log($"<color=#71ff70ff><b>#> OnUpdate: {DebugId}</b></color> (AutoGrouping: {(DecoratorsCache.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
             if (!m_HasUpdated)
             {
-                if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
+                if (!DecoratorsCache.IsAutoGroupingDisabled())
                 {
                     // m_HasUpdated = true; // TODO: uncomment
                     this.RebuildGroupMarkerIfRequired();
@@ -87,20 +87,20 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                             Debug.Log($"<color=#71ff70ff>#>   :- Populate (@OnUpdate): {DebugId}</color>");
                             Marker.PopulateGroupMarker();
                             isPending = false;
-                            UngroupedMarkerDecorators.Remove(this);
-                            UngroupedMarkerDecorators.Remove(LinkedMarkerDecorator);
+                            DecoratorsCache.Remove(this);
+                            DecoratorsCache.Remove(LinkedMarkerDecorator);
                         }
                     }
                 }
                 if (isPending)
-                    UngroupedMarkerDecorators.MarkPending(this);
+                    DecoratorsCache.MarkPending(this);
             }
-            UngroupedMarkerDecorators.PrintCachedInstances();
-
-//            if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled() && UngroupedMarkerDecorators.HasOnlyPending())
+            DecoratorsCache.PrintCachedInstances();
+            DecoratorsCache.HandlePendingDecorators();
+//            if (!DecoratorsCache.IsAutoGroupingDisabled() && DecoratorsCache.HasOnlyPending())
 //            {
 //                IGroupMarkerDecorator pendingDecorator = null;
-//                if (UngroupedMarkerDecorators.TryGet(decorator =>
+//                if (DecoratorsCache.TryGet(decorator =>
 //                    {
 //                        pendingDecorator = decorator;
 //                        return true;
@@ -114,7 +114,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnAttachedAndReady(VisualElement element)
         {
-            Debug.Log($"<color=#5dd1ffff><b>#> OnAttachedAndReady: {DebugId}</b></color> (AutoGrouping: {(UngroupedMarkerDecorators.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
+            Debug.Log($"<color=#5dd1ffff><b>#> OnAttachedAndReady: {DebugId}</b></color> (AutoGrouping: {(DecoratorsCache.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
             // #5dd1ff
             Container.LogThis($"<color=#486979EE><b>READY & ATTACHING PROPERLY...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
             EnsureContainerIsProperlyAttached();
@@ -141,7 +141,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 //            }
 //            else
             {
-                UngroupedMarkerDecorators.Add(this);
+                DecoratorsCache.Add(this);
             }
         }
         
@@ -344,6 +344,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnReset(bool disposing = false)
         {
+            Debug.Log($"  <color=#00000099>~OnReset(disposing: {disposing}): {DebugId}</color>");
             if (!disposing)
             {
                 if (this.IsGroupMarkerUsed())
@@ -354,7 +355,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 //                else
                 {
                     Container.LogThis($"<color=#FF6979FF><b>SOFT RESET...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
-                    UngroupedMarkerDecorators.Remove(this);
+                    DecoratorsCache.Remove(this);
                     if (Target.IsOpen && GroupContainer != null)
                     {
                         GroupContainer.RemoveFromHierarchy();
@@ -390,7 +391,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             else
             {
-                UngroupedMarkerDecorators.Remove(this);
+                DecoratorsCache.Remove(this);
                 if (Target.IsOpen && GroupContainer != null)
                     GroupContainer.RemoveFromHierarchy();
 //                if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)

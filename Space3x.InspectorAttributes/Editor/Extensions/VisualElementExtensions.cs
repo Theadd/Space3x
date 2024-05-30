@@ -1,4 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
+using Space3x.UiToolkit.Types;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -143,6 +148,36 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         {
             self.hierarchy.parent?.hierarchy.Remove(self);
             return self;
+        }
+        
+        public static IEnumerable<T> GetChildren<T>(this VisualElement self) where T : VisualElement
+        {
+            foreach (var child in self.Children())
+            {
+                if (child is T t)
+                    yield return t;
+                else
+                    foreach (var c in GetChildren<T>(child))
+                        yield return c;
+            }
+            yield break;
+        }
+        
+        // TODO: remove
+        public static string CreateRichTextReport(this VisualElement element, string titlePrefix = "")
+        {
+            var parentInspector = element.GetClosestParentOfType<InspectorElement>();
+            var title = string.IsNullOrEmpty(titlePrefix) ? element.AsString() : titlePrefix + " " + element.AsString();
+            if (parentInspector == null)
+            {
+                Debug.LogError($"<color=#FF0000CC><b>No matching parent InspectorElement found for {element.name}</b></color>\n{title}");
+                return title;
+            }
+            var allText = parentInspector.AsHierarchyString();
+            var count = RichTextViewer.Count();
+            title = $"{count}: {title}";
+            RichTextViewer.AddText(title, allText);
+            return title;
         }
     }
 }
