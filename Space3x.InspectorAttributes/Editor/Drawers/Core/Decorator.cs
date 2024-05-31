@@ -59,7 +59,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private bool m_Detached;
         private bool m_Ready;
-        private bool m_Invalid;
         private bool m_GeometryChangePending;
         private bool m_GeometryChangeCompleted;
         private bool m_Disposed = false;
@@ -67,17 +66,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         private IVisualElementScheduledItem m_DelayedTask;
 
         protected virtual bool RedrawOnAnyValueChange => false;
-        
-        /// <summary>
-        /// There are a few cases where <c>CreatePropertyGUI</c> is called multiple times, such when encountering a
-        /// <c>[field: SerializeField]</c> attribute on a public property member, which causes all previously rendered
-        /// decorators to be redrawn and since we re-parent our decorators to the same parent as their attribute target
-        /// we need to keep them together as a single element. Override this property and return <c>false</c> to get rid
-        /// of the existing element and create a new one, or just leave it as is to keep the existing element and ignore
-        /// the new one.
-        /// </summary>
-        protected virtual bool KeepExistingOnCreatePropertyGUI => false; // TODO: true;
-        
+
         protected virtual void OnCreatePropertyGUI(VisualElement container) {}
 
         /// <summary>
@@ -87,38 +76,20 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public sealed override VisualElement CreatePropertyGUI()
         {
-            if (Container != null || m_Invalid)
-            {
-                Debug.LogWarning($"<color=#FF0000CC>Container already created: {Container?.name}; INVALID: {m_Invalid}, {attribute.GetType().Name}</color>");
-//                if (this is GroupMarkerDecorator groupMarkerDecorator)
-//                {
-//                    DebugMe();
-//                    Debug.Log("... continue from 'Container already created' ..." + groupMarkerDecorator.ValidateAllString());
-//                }
-                if (attribute is ShowInInspectorAttribute attr)
-                    throw new Exception($"ShowInInspectorAttribute is not expected here.");
-                if (m_Invalid || KeepExistingOnCreatePropertyGUI)
-                    throw new Exception($"Unexpected code path here. m_Invalid: {m_Invalid}, KeepExistingOnCreatePropertyGUI: {KeepExistingOnCreatePropertyGUI}");
-                    // return IgnoreCreatePropertyGUI();
-                
+            if (Container != null)
                 OnReset(disposing: false);
-            }
-            
+
             if (Container == null)
             {
-                Container = new T() { /*name = attribute.GetType().Name + "_Drawer" + $"--{Target.GetType().Name}"*/ };
-                Container.name = attribute.GetType().Name + "_Drawer" + $"--{Container.GetHashCode()}";
-                Container.WithClasses(this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this), Target.GetType().Name + "-" + Target.GetHashCode());
+                Container = new T();
                 OnCreatePropertyGUI(Container);
             }
             
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
-            GhostContainer.WithClasses(this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this), Target.GetType().Name + "-" + Target.GetHashCode());
             m_Detached = false;
             m_Ready = false;
             GhostContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachGhostToPanel);
 
-            GhostContainer.LogThis("CREATE GHOST DECORATOR");
             return GhostContainer;
         }
 
@@ -130,13 +101,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (m_Detached)
                 Debug.LogError($"GhostContainer already attached: {((VisualElement)ev.target).name}");
 
-            BindToClosestParentPropertyFieldOf(GhostContainer);     // ((VisualElement)ev.target);
+            BindToClosestParentPropertyFieldOf(GhostContainer);
             if (Field != null)
             {
                 ((IDrawer) this).AddDefaultStyles();
-//                m_Detached = true;
-//                Container.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachContainerToPanel);
-////                this.Detach();
                 EnsureContainerIsProperlyAttached(OnAttachContainerToPanel);
             }
             else
@@ -250,22 +218,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnGeometryChanged(GeometryChangedEvent ev)
         {
-//            if (m_GeometryChangeCompleted && !KeepExistingOnCreatePropertyGUI)
-//                return;
-//            
-//            m_GeometryChangePending = false;
-//            if (m_Invalid)
-//            {
-//                m_GeometryChangePending = KeepExistingOnCreatePropertyGUI;
-//                return;
-//            }
-
             m_GeometryChangeCompleted = true;
-            Debug.Log($"In GeometryChangedEvent: {attribute.GetType().Name}");
             if (((IDrawer) this).InspectorElement is InspectorElement inspectorElement)
             {
                 inspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-                Container.LogThis("CALL ONUPDATE FROM GEOMETRYCHANGED");
                 OnUpdate();
             }
             else
@@ -276,14 +232,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public virtual void OnReset(bool disposing = false)
         {
-            Container?.LogThis("RESET");
             ((IDrawer) this).InspectorElement?.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             Container?.RemoveFromHierarchy();
             Property = null;
             Field = null;
             Container = null;
             m_Detached = false;
-            // m_Invalid = !disposing;
             m_Ready = false;
             m_GeometryChangePending = false;
             m_GeometryChangeCompleted = false;
@@ -303,40 +257,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 return;
             }
 
-            DebugMe();
-            // TODO
-            Property = typeof(PropertyField).GetField(
-                    "m_SerializedProperty", 
-                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)
-                ?.GetValue(Field) as SerializedProperty;
-            
-            // TODO
-            if (Property != null)
-            {
-                Debug.Log("Getting parent property field... " + this.GetType().Name + " " + this.GetHashCode());
-                var parentField = Field.GetParentPropertyField();
-                if (parentField != null)
-                {
-                    var parentProperty = parentField.GetSerializedProperty();
-                    Debug.Log($"<color=#FF0099FF>  ..IN OnCreatePropertyGUI, propertyPath: {Property.propertyPath}, parentPropertyPath: {parentProperty.propertyPath}, " +
-                              $"property.hash: {Property.GetHashCode()}, parentProperty.hash: {parentProperty.GetHashCode()}, " +
-                              $"serializedObject.hash: {Property.serializedObject.GetHashCode()}, " +
-                              $"parentSerializedObject.hash: {parentProperty.serializedObject.GetHashCode()}" +
-                              $"</color>\n{parentField.AsString()}");
-                }
-                else
-                {
-                    Debug.Log($"<color=#FF0099FF>  ..IN !!OnCreatePropertyGUI, propertyPath: {Property.propertyPath}, " +
-                              $"property.hash: {Property.GetHashCode()}, " +
-                              $"serializedObject.hash: {Property.serializedObject.GetHashCode()}</color>");
-                }
-            }
-            
-            if (RedrawOnAnyValueChange && !m_Invalid)
+            Property = Field.GetSerializedProperty();
+            if (RedrawOnAnyValueChange)
                 TrackAllChangesOnInspectorElement();
-
-            target.LogThis("BOUND TO PARENT PROPERTY FIELD");
-            m_Invalid = false;
         }
 
         private void TrackAllChangesOnInspectorElement()
@@ -345,56 +268,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         }
         
         private void OnSerializedObjectValueChanged(SerializedObject serializedObject) => OnUpdate();
-
-        internal void DebugMe()
-        {
-            var allText = ((IDrawer) this).InspectorElement.AsHierarchyString();
-            var count = RichTextViewer.Count();
-            var title = $"{count}: {attribute.GetType().Name}-{attribute.GetHashCode()} {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}";
-            RichTextViewer.AddText(title, allText);
-            Debug.Log("<color=#FF00FFCC>[DebugMe] " + title + "</color>");
-//            if (Target is not BeginColumnAttribute)
-//                return;
-//
-//            var allText = ((IDrawer) this).InspectorElement.AsHierarchyString();
-//
-//            var chunkSize = 4600;
-//            var chunkCount = ((allText.Length - 1) / chunkSize) + 1;
-//            
-//            for (var i = 0; i < chunkCount; i++)
-//            {
-//                var start = i * chunkSize;
-//                var end = (i + 1) * chunkSize;
-//                end = end > allText.Length ? allText.Length : end;
-//                Debug.Log($"<color=#FF0000CC>DEBUGGING ({i + 1}): </color>\n" + allText.Substring(start, end - start));
-//            }
-        }
-        
-        
-//        #region KeepExistingOnCreatePropertyGUI
-//        
-//        private VisualElement IgnoreCreatePropertyGUI()
-//        {
-//            m_Invalid = true;
-//            Container.LogThis("KEEPING EXISTING");
-//            Debug.Log($"Creating an invalid drawer: {attribute.GetType().Name}");
-//            var invalidContainer = new VisualElement() { name = attribute.GetType().Name + "_InvalidDrawer" };
-//            invalidContainer.LogThis("NEW & INVALID");
-//            invalidContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanelInvalid);
-//            return invalidContainer;
-//        }
-//
-//        private void OnAttachToPanelInvalid(AttachToPanelEvent ev)
-//        {
-//            ((VisualElement) ev.target).LogThis("REMOVE INVALID FROM HIERARCHY");
-//            ((VisualElement) ev.target).RemoveFromHierarchy();
-//            Field.AddBefore(Container);
-//            m_Invalid = false;
-//            if (m_GeometryChangePending)
-//                OnGeometryChanged(null);
-//        }
-//        
-//        #endregion
 
         public virtual bool HasValidContainer() => 
             Container != null 
@@ -415,37 +288,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 return;
             if (disposing)
                 m_Disposed = true;
-            else
-                Debug.LogWarning("<b>@<color=#FFFF00FF>Decorator.Dispose(false!?);</color></b>");
-            
+
             OnReset(disposing: true);
         }
         
-//        static Decorator()
-//        {
-//            // TODO
-//            s_CachedInstances = new Dictionary<int, IDrawer>();
-//            //EditorApplicationUtility.onSelectionChange += ClearCache;
-//        }
-//
-//        private static Dictionary<int, IDrawer> s_CachedInstances;
-//
-//        private static void ClearCache()
-//        {
-//            try
-//            {
-//                foreach (var cachedInstance in s_CachedInstances.Values)
-//                {
-//                    cachedInstance.Dispose();
-//                }
-//            }
-//            finally
-//            {
-//                s_CachedInstances.Clear();
-//            }
-//        }
-        
         #endregion
-
     }
 }

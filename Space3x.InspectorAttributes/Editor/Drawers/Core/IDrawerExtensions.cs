@@ -30,27 +30,5 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                           $"{editor.name} - {editor.GetType().Name} - {editor.serializedObject.ToString()}");
             }
         }
-        
-//        internal void SetDrawMode(SpriteDrawMode drawMode)
-//        {
-//            if (drawMode == (SpriteDrawMode) this.m_DrawMode.intValue)
-//                return;
-//            foreach (SpriteRenderer targetObject in this.serializedObject.targetObjects)
-//            {
-//                Transform transform = targetObject.transform;
-//                Undo.RecordObjects(new UnityEngine.Object[2]
-//                {
-//                    (UnityEngine.Object) targetObject,
-//                    (UnityEngine.Object) transform
-//                }, SpriteRendererEditor.Styles.drawModeChange.text);
-//                targetObject.drawMode = drawMode;
-//                foreach (Editor activeEditor in ActiveEditorTracker.sharedTracker.activeEditors)
-//                {
-//                    if (activeEditor.target == (UnityEngine.Object) transform)
-//                        activeEditor.serializedObject.SetIsDifferentCacheDirty();
-//                }
-//            }
-//            this.serializedObject.SetIsDifferentCacheDirty();
-//        }
     }
 }

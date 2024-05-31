@@ -24,8 +24,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
                 ?? Property.serializedObject.GetHashCode(),
                 Property.serializedObject.GetHashCode());
-        
-        // public MarkerDecoratorsCache DecoratorsCache => m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(Property.serializedObject.GetHashCode());
 
         private MarkerDecoratorsCache m_DecoratorsCache;
         
@@ -52,7 +50,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public virtual void OnReset(bool disposing = false)
         {
-            Container?.LogThis(disposing ? "RESET (DISPOSING)" : "RESET");
             if (disposing)
             {
                 Container?.UnregisterCallback<AttachToPanelEvent>(OnAttachToPanel);
@@ -75,9 +72,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 return;
             if (disposing)
                 m_Disposed = true;
-            else
-                Debug.LogWarning("<b>@<color=#FFFF00FF>Drawer.Dispose(false!?);</color></b>");
-            
+
             OnReset(disposing: true);
         }
         

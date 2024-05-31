@@ -26,9 +26,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         IGroupMarkerDecorator LinkedMarkerDecorator { get; set; }
         
         VisualElement GroupContainer { get; set; }
-        
-//        bool IsResetting { get; set; }
-        
+
         // TODO: remove
         string DebugId { get; }
 
@@ -40,8 +38,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public GroupMarkerAttribute GetGroupMarkerAttribute() => (GroupMarkerAttribute) (((DecoratorDrawer) this).attribute);
     }
-    
-    // [CustomPropertyDrawer(typeof(GroupMarkerAttribute), true)]
+
     public abstract class GroupMarkerDecorator<TDecorator, TGroupAttribute> : 
             Decorator<TDecorator, TGroupAttribute>, 
             IAttributeExtensionContext<TGroupAttribute>,
@@ -50,99 +47,50 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         where TGroupAttribute : GroupMarkerAttribute
     {
         public GroupMarker Marker { get; set; }
-
-        // public virtual GroupMarkerDecorator<TDecorator, TGroupAttribute> LinkedMarkerDecorator { get; set; } = null;
+        
         public virtual IGroupMarkerDecorator LinkedMarkerDecorator { get; set; } = null;
         
         public VisualElement GroupContainer { get; set; } = null;
         
         public override TGroupAttribute Target => (TGroupAttribute) attribute;
-
-        protected override bool KeepExistingOnCreatePropertyGUI => false;   // Marker?.IsUsed == true;
         
         // TODO: remove
         public string DebugId => this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this);
-        
-//        public bool IsResetting { get; set; } = false;
-        
-        private bool m_HasUpdated = false;
 
         public override void OnUpdate()
         {
             var isPending = true;
-            Debug.Log($"<color=#71ff70ff><b>#> OnUpdate: {DebugId}</b></color> (AutoGrouping: {(DecoratorsCache.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
-            if (!m_HasUpdated)
+            if (!DecoratorsCache.IsAutoGroupingDisabled())
             {
-                if (!DecoratorsCache.IsAutoGroupingDisabled())
+                this.RebuildGroupMarkerIfRequired();
+                if (this.TryLinkToMatchingGroupMarkerDecorator())
                 {
-                    // m_HasUpdated = true; // TODO: uncomment
-                    this.RebuildGroupMarkerIfRequired();
-                    if (this.TryLinkToMatchingGroupMarkerDecorator())
+                    if (Target.IsOpen)
+                        Debug.LogWarning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
+                    
+                    if (!Target.IsOpen && !this.IsGroupMarkerUsed())
                     {
-                        if (Target.IsOpen)
-                            Debug.LogWarning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
-                        
-                        if (!Target.IsOpen && !this.IsGroupMarkerUsed())
-                        {
-                            Debug.Log($"<color=#71ff70ff>#>   :- Populate (@OnUpdate): {DebugId}</color>");
-                            Marker.PopulateGroupMarker();
-                            isPending = false;
-                            DecoratorsCache.Remove(this);
-                            DecoratorsCache.Remove(LinkedMarkerDecorator);
-                        }
+                        Marker.PopulateGroupMarker();
+                        isPending = false;
+                        DecoratorsCache.Remove(this);
+                        DecoratorsCache.Remove(LinkedMarkerDecorator);
                     }
                 }
-                if (isPending)
-                    DecoratorsCache.MarkPending(this);
             }
-            DecoratorsCache.PrintCachedInstances();
+            if (isPending)
+                DecoratorsCache.MarkPending(this);
             DecoratorsCache.HandlePendingDecorators();
-//            if (!DecoratorsCache.IsAutoGroupingDisabled() && DecoratorsCache.HasOnlyPending())
-//            {
-//                IGroupMarkerDecorator pendingDecorator = null;
-//                if (DecoratorsCache.TryGet(decorator =>
-//                    {
-//                        pendingDecorator = decorator;
-//                        return true;
-//                    }))
-//                {
-//                    Debug.Log("Calling pending decorator: " + pendingDecorator.DebugId);
-//                    pendingDecorator.OnUpdate();
-//                }
-//            }
         }
 
         public override void OnAttachedAndReady(VisualElement element)
         {
-            Debug.Log($"<color=#5dd1ffff><b>#> OnAttachedAndReady: {DebugId}</b></color> (AutoGrouping: {(DecoratorsCache.IsAutoGroupingDisabled() ? "OFF" : "ON")})");
-            // #5dd1ff
-            Container.LogThis($"<color=#486979EE><b>READY & ATTACHING PROPERLY...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
             EnsureContainerIsProperlyAttached();
             if (!HasValidMarker())
                 RebuildGroupMarker();
             if (Target.IsOpen)
                 Marker.GetOrCreatePropertyGroupFieldForMarker();
-            
-            // TODO: uncomment?
-//            if (!UngroupedMarkerDecorators.IsAutoGroupingDisabled())
-//            {
-//                UngroupedMarkerDecorators.TryRebuildAll(); // MOD_ME
-//                if (this.TryLinkToMatchingGroupMarkerDecorator())
-//                {
-//                    Container.LogThis($"  <color=#486979FF><b>READY, ¡LINKED! & PROPERLY ATTACHED WITH MARKER</b></color>");
-//                    UngroupedMarkerDecorators.Remove(this);
-//                    UngroupedMarkerDecorators.Remove(LinkedMarkerDecorator);
-//                }
-//                else
-//                {
-//                    Container.LogThis($"  <color=#486979CC><b>READY & PROPERLY ATTACHED WITH MARKER (NOT LINKED)</b></color>");
-//                    UngroupedMarkerDecorators.Add(this);
-//                }
-//            }
-//            else
-            {
-                DecoratorsCache.Add(this);
-            }
+
+            DecoratorsCache.Add(this);
         }
         
         public override bool HasValidContainer()
@@ -169,7 +117,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         }
                     }
                 }
-
                 if (!isValid)
                 {
                     if (Target.IsOpen)
@@ -177,25 +124,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         isValid = GetNextClosestPropertyFieldOf(Container) == Field;
                     }
                 }
-
-//                if (!isValid && !Target.IsOpen)
-//                {
-//                    if (Container.GetNextSibling() is GroupMarker groupMarker)
-//                    {
-//                        if (groupMarker.GetNextSibling() == null)
-//                        {
-//                            
-//                            if (parent is PropertyGroup pg)
-//                            {
-//                                parent = pg.hierarchy.parent;
-//                                if (parent is PropertyGroupField pgf)
-//                                {
-//                                    isValid = pgf.GetNextSiblingOfType<PropertyField>() == Field;
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
             }
             
             return isValid;
@@ -203,37 +131,26 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private PropertyField GetNextClosestPropertyFieldOf(VisualElement element)
         {
-            var next = element; //.GetNextSibling();
+            var next = element;
             PropertyField match = null;
             while (next != null && match == null)
             {
                 if (next is PropertyField pf)
-                {
                     match = pf;
-                } 
                 else if (next is PropertyGroupField pgf)
-                {
                     if (pgf.contentContainer.hierarchy.childCount > 0)
-                    {
                         match = GetNextClosestPropertyFieldOf(pgf.contentContainer.hierarchy.ElementAt(0));
-                    }
-                }
+
                 next = next.GetNextSibling();
             }
 
             if (match != null)
-            {
                 return match;
-            }
             else
             {
                 if (element.hierarchy.parent is PropertyGroup pg)
-                {
                     if (pg.hierarchy.parent is PropertyGroupField pgf)
-                    {
                         return GetNextClosestPropertyFieldOf(pgf.GetNextSibling());
-                    }
-                }
 
                 return null;
             }
@@ -246,30 +163,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 isValid = Container.GetPreviousSibling() switch
                 {
-                    PropertyGroupField group => group.contentContainer.hierarchy.childCount > 0 && group.contentContainer.hierarchy.ElementAt(group.contentContainer.hierarchy.childCount - 1) == Marker,
+                    PropertyGroupField group => group.contentContainer.hierarchy.childCount > 0 
+                                                && group.contentContainer.hierarchy.ElementAt(group.contentContainer.hierarchy.childCount - 1) == Marker,
                     GroupMarker marker => marker == Marker,
                     _ => false
                 };
             }
 
             return isValid;
-        }
-
-        public string ValidateAllString()
-        {
-            var msg = "<color=#000000FF><b>[ValidateAll]</b></color> (Self) " + Target.GetType().Name + ": ";
-            
-            msg += HasValidContainer() ? "<color=#00FF00FF>CONTAINER</color>, " : "<color=#FF0000FF>CONTAINER</color>, ";
-            msg += HasValidMarker() ? "<color=#00FF00FF>MARKER</color>" : "<color=#FF0000FF>MARKER</color>";
-
-            if (LinkedMarkerDecorator != null)
-            {
-                msg += "; (Linked) " + ((DecoratorDrawer) LinkedMarkerDecorator).attribute.GetType().Name + ": ";
-                msg += LinkedMarkerDecorator.HasValidContainer() ? "<color=#00FF00FF>CONTAINER</color>, " : "<color=#FF0000FF>CONTAINER</color>, ";
-                msg += LinkedMarkerDecorator.HasValidMarker() ? "<color=#00FF00FF>MARKER</color>" : "<color=#FF0000FF>MARKER</color>";
-            }
-
-            return msg + " " + RuntimeHelpers.GetHashCode(this);
         }
 
         public void RebuildGroupMarker()
@@ -296,14 +197,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 group.IsUsed = false;
                 beginDecorator.GroupContainer = null;
             }
-//            var group = Marker.GetClosestParentOfType<PropertyGroupField>();
-//            group.UngroupAll();
-//            group.RemoveFromHierarchy();
         }
 
         public override void OnReset(bool disposing = false)
         {
-            Debug.Log($"  <color=#00000099>~OnReset(disposing: {disposing}): {DebugId}</color>");
             if (!disposing)
             {
                 if (this.IsGroupMarkerUsed())
@@ -311,53 +208,23 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     Debug.LogError($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
                     UndoAllHierarchyGrouping();
                 }
-//                else
+
+                Container.LogThis($"<color=#FF6979FF><b>SOFT RESET...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
+                CachedDecoratorsCache?.Remove(this);
+                if (Target.IsOpen && GroupContainer != null)
                 {
-                    Container.LogThis($"<color=#FF6979FF><b>SOFT RESET...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
-                    CachedDecoratorsCache?.Remove(this);
-                    if (Target.IsOpen && GroupContainer != null)
-                    {
-                        GroupContainer.RemoveFromHierarchy();
-                        GroupContainer = null;
-                    }
-                    
-//                    IsResetting = true;
-                    RemoveGroupMarker();
-                    if (LinkedMarkerDecorator != null)
-                    {
-//                        LinkedMarkerDecorator.IsResetting = true;
-                        LinkedMarkerDecorator.RemoveGroupMarker(); // TODO: is this needed?
-                    }
+                    GroupContainer.RemoveFromHierarchy();
+                    GroupContainer = null;
                 }
-//                if (LinkedMarkerDecorator != null)
-//                {
-//                    Debug.Log("Resetting linked group marker decorator " + Target.GetType().Name);
-//                    IsResetting = true;
-//                    LinkedMarkerDecorator.IsResetting = true;
-//                    if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)
-//                    {
-//                        UndoAllHierarchyGrouping();
-//                        LinkedMarkerDecorator.RemoveGroupMarker();
-//                    }
-//                    else
-//                    {
-//                        LinkedMarkerDecorator.RemoveGroupMarker();
-//                        Debug.LogError($"This group marker was linked but not marked as used.");
-//                    }
-//                }
-//
-//                RemoveGroupMarker();
+                
+                RemoveGroupMarker();
+                if (LinkedMarkerDecorator != null) LinkedMarkerDecorator.RemoveGroupMarker(); // TODO: is this needed?
             }
             else
             {
                 CachedDecoratorsCache?.Remove(this);
                 if (Target.IsOpen && GroupContainer != null)
                     GroupContainer.RemoveFromHierarchy();
-//                if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)
-//                {
-//                    if (!Target.IsOpen)
-//                        Marker.GetClosestParentOfType<PropertyGroupField>().RemoveFromHierarchy();
-//                }
                 RemoveGroupMarker();
                 LinkedMarkerDecorator = null;
             }

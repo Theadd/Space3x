@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Reflection;
-using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -58,36 +56,22 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             parentProperty ??= parentField.GetSerializedProperty();
             var parentPath = parentProperty.propertyPath;
             var property = parentProperty.Copy();
-            var parentDepth = property.depth;
             var visitedNodes = new HashSet<long>();
-            Debug.Log($"!! Rebuilding decorators !! hasChildren: {property.hasChildren}, " +
-                      $"isExpanded: {property.isExpanded}, hasVisibleChildren: {property.hasVisibleChildren}, " +
-                      $"depth: {property.depth}");
-            
+
             SerializedProperty endProperty = property.GetEndProperty();
             var allChildFields = parentField.GetChildren<PropertyField>();
             var childFieldsByPath = new Dictionary<string, PropertyField>();
             foreach (var childField in allChildFields)
             {
-                var childProperty = childField.GetSerializedProperty();
-                // #unity-property-field-ObjectType.MiddleValue .unity-property-field .unity-property-field__inspector-property
-                if (childProperty != null)
-                    childFieldsByPath.Add(childProperty.propertyPath, childField);
-                else
-                {
-                    var pName = childField.name ?? "";
-                    Debug.Log($"  .. @ RebuildChildDecorator, pName: {pName}");
-                    pName = pName.Replace("unity-property-field-", "");
-                    if (!string.IsNullOrEmpty(pName) && !childFieldsByPath.ContainsKey(pName))
-                        childFieldsByPath.Add(pName, childField);
-                }
+                var pName = childField.name ?? "";
+                pName = pName.Replace("unity-property-field-", "");
+                if (!string.IsNullOrEmpty(pName) && !childFieldsByPath.ContainsKey(pName))
+                    childFieldsByPath.Add(pName, childField);
             }
             bool visitChild;
             do
             {
-                // default is false so we don't enumerate each character of each string,
                 visitChild = false;
-                
                 if (property.propertyType == SerializedPropertyType.ManagedReference)
                 {
                     long refId = property.managedReferenceId;
@@ -99,14 +83,12 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 if (childFieldsByPath.TryGetValue(childProperty.propertyPath, out var childField))
                 {
                     var childAssignedTo = childField.GetSerializedProperty()?.propertyPath ?? "";
-                    Debug.Log($"Found child: {childProperty.propertyPath}; AssignedTo: {childAssignedTo}; PropertyField.childCount: {childField.hierarchy.childCount}");
                     if (childProperty.propertyPath != childAssignedTo || childField.hierarchy.childCount <= 0)
                     {
                         var prevNestingLevel = childField.GetDrawNestingLevel();
                         childField.SetDrawNestingLevel(0);
                         childProperty.AssignToPropertyField(childField);
                         childField.SetDrawNestingLevel(prevNestingLevel);
-                        Debug.Log($"         .... REASSIGNED {childProperty.propertyPath}      ");
                         if (childProperty.propertyPath.StartsWith(parentPath))
                         {
                             var childRelativePath = childProperty.propertyPath.Substring(parentPath.Length + 1);
@@ -115,7 +97,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                             {
                                 childField.BindProperty(rebindTo);
                                 childField.MarkDirtyRepaint();
-                                Debug.Log($"                      !!!! REBOUND TO RELATIVE PATH: {childRelativePath}");
                             }
                             else
                             {
@@ -132,7 +113,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 {
                     Debug.Log($"Not found: {childProperty.propertyPath}");
                 }
-                // TODO: NextVisible => Next
             } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
             endProperty = (SerializedProperty) null;
         }

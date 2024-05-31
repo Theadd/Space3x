@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
@@ -11,9 +10,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         VisualElement Content { get; set; }
         VisualElement ContentContainer { get; set; }
-
         public bool IsExpanded { get; set; }
-
         public MarkerDecoratorsCache DecoratorsCache { get; }
 
         VisualElement CreateContentGUI();
@@ -58,16 +55,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 s_PropertyFieldReset.Invoke(Content as PropertyField, new object[] { property });
             
         }
-
-        
-//        public static object CreateWrapper<TIn>(Type targetType, TIn value)
-//        {
-//            var method = typeof(Unsafe3x).GetMethod(
-//                    "CreateInstance", 
-//                    BindingFlags.Static | BindingFlags.Public)
-//                .MakeGenericMethod(typeof(TIn), targetType);
-//            return method.Invoke(null, PublicStaticFlags, null, new object[] { value }, CultureInfo.InvariantCulture);
-//        }
 
         public void ExecuteDelayedUpdate();
     }

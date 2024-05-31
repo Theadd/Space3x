@@ -22,19 +22,13 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             IExpandablePropertyContent
         where TAttribute : BaseSearchableTypeAttribute
     {
-//        // Flag: Has Dispose already been called?
-//        private bool m_Disposed = false;
         private int m_SelectedIndex;
         private bool m_IsTypeValue;
         private Type m_ElementType;
         
-        // public override TAttribute Target => (TAttribute) attribute;
-        // public SerializedProperty Property { get; private set; }
-        
         protected QuickSearchPopup Popup { get; set; }
         protected QuickSearchElement PopupContent { get; set; }
         protected VisualElement SelectorField { get; private set; }
-        // protected VisualElement Container { get; private set; }
         public VisualElement Content { get; set; }
         public VisualElement ContentContainer { get; set; }
         public bool IsExpanded { get; set; }
@@ -45,52 +39,24 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected override VisualElement OnCreatePropertyGUI(SerializedProperty property)
         {
             Property = property;
-            Debug.Log($"<color=#FF0099FF>IN OnCreatePropertyGUI, propertyPath: {property.propertyPath}, property.name: {property.name}, " +
-                      $"property.hash: {property.GetHashCode()}, serializedObject.hash: {property.serializedObject.GetHashCode()}</color>");
             m_ElementType = GetUnderlyingElementType(property);
             m_IsTypeValue = IsTypeValue(m_ElementType);
-            // Debug.Log($"IsTypeValue: {m_IsTypeValue}, name: {property.name}, propertyType: {property.propertyType}, isArray: {property.isArray}, property.GetUnderlyingType(): {property.GetUnderlyingType()}");
             Validate();
             if (attribute.applyToCollection)
             {
-                if (!Property.isArray) Debug.LogError($"Collection property {Property.name} is not an array", property.serializedObject.targetObject);
-//                Container = CreatePropertyCollectionGUI(property);
-//                return Container;
+                if (!Property.isArray) 
+                    Debug.LogError($"Collection property {Property.name} is not an array", property.serializedObject.targetObject);
                 return CreatePropertyCollectionGUI(property);
             }
-//            Container = CreateContainerGUI();
-//            RepaintContainerGUI();
-////            if (GetAllTypes().Count > 0)
-////                OnValueChange(GetAllTypes().ElementAtOrDefault(m_SelectedIndex));
-//            
-//            // Container.RegisterCallback<SerializedPropertyChangeEvent>(OnPropertyChanged);
-//            return Container;
-            
+
             UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), true);
             IsExpanded = Property.isExpanded;
-            Debug.Log($"WasExpanded: {IsExpanded}");
             if (!m_IsTypeValue)
                 Property.isExpanded = false;
 
             return CreateContainerGUI();
         }
 
-//        // TODO: Remove
-//        private void OnPropertyChanged(SerializedPropertyChangeEvent ev)
-//        {
-//            try
-//            {
-//                Debug.LogWarning($"[BaseSearchableTypeDrawer] OnPropertyChanged: {ev.changedProperty.boxedValue}");
-//            }
-//            catch (Exception)
-//            {
-//                Debug.Log("Ignored exception");
-//            }
-//        }
-
-        /*
-         * <voffset=0em><line-height=0px><b>RangeDrawer</b> <br><voffset=0em><align="right"><alpha=#7F>(in UnityEditor)<alpha=#FF>
-         */
         public virtual VisualElement CreatePropertyCollectionGUI(SerializedProperty property)
         {
             ListViewElement = CreateListView();
@@ -145,23 +111,17 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         private void RepaintContainerGUI()
         {
-            Debug.Log($"<color=#FF00FFCC>IN REPAINT: Container.childCount: {Container.hierarchy.childCount}</color>");
             Container.Clear();
             m_SelectorFieldAttached = false;
             m_ContentAttached = false;
             
             ((IExpandablePropertyContent) this).RebuildExpandablePropertyContentGUI(OnAttachContentToPanel);
 
-            m_InitialContentHashCode = m_IsTypeValue 
-                ? Property.GetHashCode() 
-                : ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
-            
             SelectorField = AddSelectorFieldEventListeners(
                 ApplySelectorFieldVisuals(
                     CreateSelectorFieldGUI()));
-            Container.Add(SelectorField);
             
-//            Container.Add(Content);
+            Container.Add(SelectorField);
             Container.Add(ContentContainer);
         }
         
@@ -175,7 +135,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         private static bool IsTypeValue(Type type)
         {
-            if (type == null) return false;
+            if (type == null)
+                return false;
             
             foreach (var ct in type.GetConstructors())
             {
@@ -199,27 +160,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual VisualElement CreateContainerGUI()
         {
             Container = new BindableElement() { viewDataKey = "vdk-container" };
-
             Context.WithExtension<TrackChangesOnEx, ITrackChangesOn, BindableElement>((BindableElement) Container, out var success);
             if (!success) 
                 OnUpdate();
-//            Debug.LogWarning("// TODO: ITrackChangesEx");
-//            if (Target is ITrackChangesEx targetWithTrackChanges)
-//            {
-//                var trackedPropertyName = targetWithTrackChanges.TrackChangesOn;
-//                if (trackedPropertyName != string.Empty)
-//                {
-//                    var trackedProperty = Property.serializedObject.FindProperty(trackedPropertyName);
-//                    if (trackedProperty != null)
-//                    {
-//                        element.Unbind();
-//                        element.TrackPropertyValue(trackedProperty, OnTrackedPropertyChanged);
-//                        element.BindProperty(trackedProperty);
-//                    }
-//                    else
-//                        Debug.LogWarning($"Could not find property {trackedPropertyName} on {Property.serializedObject.targetObject}");
-//                }
-//            }
 
             return Container;
         }
@@ -260,15 +203,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual VisualElement AddSelectorFieldEventListeners(VisualElement selectorField)
         {
             selectorField.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachSelectorFieldToPanel);
-//            if (selectorField is BindableElement bindableField)
-//            {
-//                bindableField.RegisterCallback<ChangeEvent<Type[]>>(OnValueChangeCallback);
-//            }
-            
             return selectorField;
         }
 
-        private IVisualElementScheduledItem m_BindTask;
         private bool m_SelectorFieldAttached = false;
         private bool m_ContentAttached = false;
         
@@ -286,7 +223,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 OnContainerFullyAttached();
         }
 
-        private int m_InitialContentHashCode;
         private int m_AttachedContentHashCode;
         private int m_DelayedContentHashCode;
 
@@ -295,38 +231,34 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             if (SelectorField is TypeInstanceField instanceField)
             {
                 Property.isExpanded = true;
-                ContentContainer.SetVisible(true);
+                // ContentContainer.SetVisible(true);
+                ContentContainer.SetVisible(false);
                 Content.MarkDirtyRepaint();
                 EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                 {
-                    Debug.Log($"... @BaseSearchableTypeDrawer.OnContainerFullyAttached: {Content.AsString()}");
-                    // Property.isExpanded = false;
                     m_AttachedContentHashCode = ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
-                    Debug.Log($"    ///////////////////// ContentHashCodes: Initial = {m_InitialContentHashCode}, Attached = {m_AttachedContentHashCode}, Property = {Property.GetHashCode()}");
                     if (m_AttachedContentHashCode != 0)
                     {
                         var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_AttachedContentHashCode);
                         altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                        Debug.Log("                     ///////////////////// AutoGrouping DISABLED");
                     }
-                    DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);  // MOD_ME
+                    DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
                     UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), false);
-                    // Property.isExpanded = true;
                     Content.MarkDirtyRepaint();
 
                     EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                     {
-                        ContentContainer.SetVisible(true);
-                        // Property.isExpanded = true;
+                        // ContentContainer.SetVisible(true);
+                        ContentContainer.SetVisible(false);
                         BindPropertyToTypeField(SelectorField);
-                        
-    //                        Property.isExpanded = true;
-                        //instanceField.Foldout.value = true;
+
                         // Property.isExpanded = IsExpanded;
                         // if (!IsExpanded)
                         //     ContentContainer.SetVisible(false);
                         // else
-                            ContentContainer.SetVisible(instanceField.Property.managedReferenceValue != null);
+                        //     ContentContainer.SetVisible(instanceField.Property.managedReferenceValue != null);
+                        Debug.Log($"2: instanceField.Foldout.value = {IsExpanded};");
+                        instanceField.Foldout.value = IsExpanded;
                         Content.MarkDirtyRepaint();
                     });
                 });
@@ -339,143 +271,41 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             }
             else
                 throw new NotImplementedException("Missing code path");
-//            m_BindTask = Container.schedule.Execute(() => BindPropertyToTypeField(SelectorField));
-//            m_BindTask.ExecuteLater(1);
         }
         
         private void BindPropertyToTypeField(VisualElement selectorField)
         {
-            Debug.Log("                                       #2 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-//            m_BindTask?.Pause();
-//            Debug.Log("                                       #3 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
             if (selectorField is TypeInstanceField instanceField)
             {
-//                var altInstanceIdA = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
                 m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
-                Debug.Log(Container.CreateRichTextReport("RichTextReport A"));
-                Debug.Log($"    ///////////////////// ContentHashCodes: Initial = {m_InitialContentHashCode}, " +
-                          $"Attached = {m_AttachedContentHashCode}, Delayed = {m_DelayedContentHashCode}, " +
-                          $"Property = {Property.GetHashCode()}");
                 var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
                 altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                Debug.Log("                                       #4 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
                 instanceField.BindProperty(Property, -1);
-                Debug.Log(Container.CreateRichTextReport("RichTextReport A.2"));
                 if (Content is PropertyField propertyField)
                 {
-                    var assignedProperty = propertyField.GetSerializedProperty();
-                    // if (assignedProperty.propertyPath == Property.propertyPath)
-                    // {
-                    //     Debug.Log($"Reassigning property {Property.propertyPath} (from {assignedProperty.propertyPath})");
-                    //     var prevNestingLevel = propertyField.GetDrawNestingLevel();
-                    //     propertyField.SetDrawNestingLevel(0);
-                    //     Property.AssignToPropertyField(propertyField);
-                    //     propertyField.SetDrawNestingLevel(prevNestingLevel);
-                    //     assignedProperty = propertyField.GetSerializedProperty();
-                    // }
-                    var isMatch = assignedProperty?.managedReferenceId == Property.managedReferenceId;
-                    Debug.Log($" ------------->>>>> PropertyField: isMatch {isMatch}, hasChildren: {propertyField.hierarchy.childCount != 0}, " +
-                              $"Property: type: {Property.propertyType.ToString()}, path = {Property.propertyPath}; " +
-                              $"assignedProperty: type: {assignedProperty?.propertyType.ToString()}, path = {assignedProperty?.propertyPath}; " +
-                              $"\n{propertyField.AsString()}");
-                    // var childProperty = Property;//.Copy();
-                    // Debug.Log($"Found property: {childProperty.propertyPath}");
-                    // var prevNestingLevel = propertyField.GetDrawNestingLevel();
-                    // propertyField.SetDrawNestingLevel(0);
-                    // childProperty.AssignToPropertyField(propertyField);
-                    // propertyField.SetDrawNestingLevel(prevNestingLevel);
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport A.3"));
-                    propertyField.RebuildChildDecoratorDrawersIfNecessary(Property); // Property
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport A.4"));
-                    assignedProperty = propertyField.GetSerializedProperty();
-                    Debug.Log($"  ==========>>> assignedProperty: type: {assignedProperty?.propertyType.ToString()}, path = {assignedProperty?.propertyPath};" +
-                              $"\n{propertyField.AsString()}");
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport B"));
+                    propertyField.RebuildChildDecoratorDrawersIfNecessary(Property);
                     altDecoratorsCache.TryRebuildAll();
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport B2"));
                     DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport B3"));
                     altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                     altDecoratorsCache.HandlePendingDecorators();
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport F"));
                     DecoratorsCache.HandlePendingDecorators();
-                    Debug.Log(Container.CreateRichTextReport("RichTextReport G!!"));
                 }
-// //                Property.isExpanded = false;
-//                 instanceField.BindPropertyToContent();
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport B"));
-//                 Debug.Log("                                       #5 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-//                 altDecoratorsCache.TryRebuildAll();
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport C"));
-//                 DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport D"));
-//                 Debug.Log("                                       #6 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-// //                DecoratorsCache.TryRebuildAndLinkAll();
-//                 altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
-//                 DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport E"));
-//                 Debug.Log($"  ... AFTER @BaseSearchableTypeDrawer.BindPropertyToTypeField: {selectorField.AsString()}");
-//                 altDecoratorsCache.HandlePendingDecorators();
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport F"));
-//                 DecoratorsCache.HandlePendingDecorators();
-//                 Debug.Log(Container.CreateRichTextReport("RichTextReport G"));
-                
-                
-                
-//                var altInstanceIdB = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
-//                Debug.Log($"<color=#ffffffff><b>  .. ALTERNATIVE DECORATORS CACHE INSTANCE ID A: {altInstanceIdA} .. </b></color>");
-//                Debug.Log($"<color=#ffffffff><b>  .. ALTERNATIVE DECORATORS CACHE INSTANCE ID B: {altInstanceIdB} .. </b></color>");
-
-//                Property.isExpanded = IsExpanded;
-//                Content.MarkDirtyRepaint();
-//                if (IsExpanded)
-//                {
-//                    EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
-//                    {
-//                        Container.SetVisible(Property.managedReferenceValue != null);
-////                        Property.isExpanded = true;
-//                        instanceField.Foldout.value = true;
-//                    });
-//                }
-            } 
-//            else if (selectorField is TypeField typeField)
-//            {
-//                typeField.BindProperty(Property, -1);
-//            }
-//            else
-//                throw new NotImplementedException("Missing code path");
+            }
         }
 
         private IVisualElementScheduledItem m_DelayedUpdateTask;
         
         public void ExecuteDelayedUpdate()
         {
-//            Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate");
             m_DelayedUpdateTask = Container.schedule.Execute(() =>
             {
                 m_DelayedUpdateTask?.Pause();
-                Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate INNER");
                 OnUpdate();
                 m_DelayedUpdateTask = null;
-                Debug.Log(".. .. .. @BaseSearchableTypeDrawer.ExecuteDelayedUpdate DONE");
             });
             m_DelayedUpdateTask.ExecuteLater(1);
         }
-
-//        private void OnValueChangeCallback(ChangeEvent<IEnumerable<Type>> e) => OnValueChange(e.newValue);
-//
-//        protected virtual void OnValueChange(IEnumerable<Type> newValues)
-//        {
-//            foreach (var newValue in newValues)
-//            {
-//                Property.SetUnderlyingValue(Unsafe3x.CreateWrapper<Type>(Property.GetUnderlyingType(), newValue));
-//                ((TextField)SelectorField).value = newValue.Name;
-//                Property.serializedObject.ApplyModifiedProperties();
-//            }
-////            Property.managedReferenceValue = typeof(LayerDrawer);
-////            Property.serializedObject.ApplyModifiedProperties();
-//        }
 
         public override void OnUpdate()
         {
@@ -483,17 +313,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             RepaintContainerGUI();
         }
 
-//        protected virtual void OnTrackedPropertyChanged(SerializedProperty trackedProperty)
-//        {
-//            OnReload();
-//            RepaintContainerGUI();
-//        }
-        
         public override void OnReset(bool disposing = false)
         {
             if (!disposing)
             {
-                // ...
                 Container?.LogThis("// TODO: SOFT DRAWER RESET " + GetType().Name + "(NOT DISPOSING)");
             }
             else
@@ -517,27 +340,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 SelectorField = null;
                 Container?.RemoveFromHierarchy();
                 Container = null;
-//                if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)
-//                {
-//                    if (!Target.IsOpen)
-//                        Marker.GetClosestParentOfType<PropertyGroupField>().RemoveFromHierarchy();
-//                }
-//                RemoveGroupMarker();
-//                LinkedMarkerDecorator = null;
             }
             
             base.OnReset(disposing);
         }
-        
-//        protected virtual void Dispose(bool disposing)
-//        {
-//            if (m_Disposed) return;
-//            if (disposing)
-//            {
-////                if (SelectorField is BindableElement bindableField)
-////                    bindableField.UnregisterCallback<ChangeEvent<Type[]>>(OnValueChangeCallback);
-//            }
-//            m_Disposed = true;
-//        }
     }
 }

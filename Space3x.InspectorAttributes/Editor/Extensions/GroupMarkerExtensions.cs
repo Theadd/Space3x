@@ -19,19 +19,16 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             var parent = group.hierarchy.parent;
             var indexInParent = parent.hierarchy.IndexOf(group);
             var parentGroupTypeClass = "";
-            var exceptionTarget = "";
             var iMax = group.contentContainer.hierarchy.childCount - 1;
             if (parent is PropertyGroup pg && pg.hierarchy.parent is PropertyGroupField pgf)
                 parentGroupTypeClass = $"ui3x-group--{pgf.Type.ToString().ToLower()}";
             
             for (var i = iMax; i >= 0; i--)
             {
-                exceptionTarget = $"#i = {i}/{iMax}; ";
                 try
                 {
                     var element = group.contentContainer.hierarchy.ElementAt(i);
-                    exceptionTarget += element.AsString(); /* TODO: remove */
-                    if (element is PropertyField /*or BlockDecorator or PropertyGroupField*/)
+                    if (element is PropertyField)
                     {
                         element.WithClasses(false, "ui3x-group--none", "ui3x-group--column", "ui3x-group--row", "ui3x-group-item--last");
                         if (parentGroupTypeClass != "")
@@ -41,7 +38,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(e.ToString() + "\n\n" + exceptionTarget + "\n");
+                    Debug.LogWarning(e.ToString());
                 }
             }
 
@@ -52,7 +49,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         {
             var beginDecorator = self.MarkerDecorator.GetGroupBeginMarkerDecorator();
             var endDecorator = self.MarkerDecorator.GetGroupEndMarkerDecorator();
-            Debug.Log($"  ~> [POPULATING] {beginDecorator.DebugId} => {endDecorator.DebugId}");
             if (beginDecorator.Marker == null)
                 beginDecorator.RebuildGroupMarkerIfRequired();
             if (endDecorator.Marker == null)
@@ -60,60 +56,15 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             var beginMarker = beginDecorator.Marker;
             var endMarker = endDecorator.Marker;
             var group = GetOrCreatePropertyGroupFieldForMarker(beginMarker);
-            Debug.Log($"    --> NULLs? group: {group == null}, beginMarker: {beginMarker == null}/{beginDecorator == null}, endMarker: {endMarker == null}/{endDecorator == null}");
-            group.WithClasses(beginMarker.MarkerDecorator.GetType().Name + "-" + beginMarker.MarkerDecorator.GetHashCode(),
-                endMarker.MarkerDecorator.GetType().Name + "-" + endMarker.MarkerDecorator.GetHashCode());
-            group.LogThis("<color=#797348FF>BEGIN: CLOSE GROUP</color>");
             var parent = endMarker.parent;
             var beginIndex = parent.IndexOf(beginMarker);
             var endIndex = parent.IndexOf(endMarker);
             group.IsUsed = true;
-            // Debug.Log($"$$$$$$$$$$ SHOULD BE TRUE: {((PropertyGroupField) self.MarkerDecorator.GetGroupBeginMarkerDecorator().GroupContainer).IsUsed}");
             var rawNodes = parent.Children()
                 .Skip(beginIndex)
                 .Take(endIndex - beginIndex + 1).ToList();
             group.AddAllToGroup(rawNodes);
-            group.LogThis("<color=#797348FF>END: CLOSE GROUP</color>");
         }
-      
-//        public static bool CloseGroupMarker(this GroupMarker endMarker, GroupMarker beginMarker = null)
-//        {
-//            var parent = endMarker.parent;
-//            beginMarker ??= endMarker.GetMatchingGroupMarker();
-//            if (beginMarker == null)
-//            {
-//                Debug.LogError("<color=#FF0000CC><b>Couldn't find matching group marker<b></color>");
-//                endMarker.Origin.LogThis("<color=#FF0000FF>NO MATCHING BEGIN MARKER</color>");
-//                return false;
-//            }
-//            var endIndex = parent.IndexOf(endMarker);
-//            var beginIndex = parent.IndexOf(beginMarker);
-//            
-//            if (endIndex < 0 || beginIndex < 0)
-//                throw new Exception($"Invalid group marker indexes: {endIndex}, {beginIndex}");
-//
-//            var rawNodes = parent.Children()
-//                .Skip(beginIndex)
-//                .Take(endIndex - beginIndex + 1).ToList();
-//
-//            var group = GetOrCreatePropertyGroupFieldForMarker(beginMarker);
-//            
-//            endMarker.LinkTo(beginMarker);
-//            
-//            group.WithClasses(beginMarker.MarkerDecorator.GetType().Name + "-" + beginMarker.MarkerDecorator.GetHashCode(),
-//                endMarker.MarkerDecorator.GetType().Name + "-" + endMarker.MarkerDecorator.GetHashCode());
-//            
-//            
-//            
-//            group.LogThis("<color=#797348FF>BEGIN: CLOSE GROUP</color>");
-//            parent.Insert(beginIndex, group);
-////            rawNodes.ForEach(group.AddToGroup);
-//            group.AddAllToGroup(rawNodes);
-//            
-//            group.LogThis("<color=#797348FF>END: CLOSE GROUP</color>");
-////            Debug.Log("AFTER GROUP CLOSED: " + beginMarker.MarkerDecorator.ValidateAllString());
-//            return true;
-//        }
 
         public static PropertyGroupField GetOrCreatePropertyGroupFieldForMarker(this GroupMarker beginMarker)
         {
@@ -170,25 +121,8 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return group;
         }
 
-        private static string CreateHierarchyReportAndRetrieveReportTitleFor(VisualElement element, string titlePrefix = "")
-        {
-            var parentInspector = element.GetClosestParentOfType<InspectorElement>();
-            var title = string.IsNullOrEmpty(titlePrefix) ? element.AsString() : titlePrefix + " " + element.AsString();
-            if (parentInspector == null)
-            {
-                Debug.LogError($"<color=#FF0000CC><b>No matching parent InspectorElement found for {element.name}</b></color>\n{title}");
-                return title;
-            }
-            var allText = parentInspector.AsHierarchyString();
-            var count = RichTextViewer.Count();
-            title = $"{count}: {title}";
-            RichTextViewer.AddText(title, allText);
-            return title;
-        }
-
         private static void AddAllToGroup(this PropertyGroupField group, List<VisualElement> allElements)
         {
-            var msg = "";
             var elements = allElements.GetRange(0, allElements.Count);
             elements.Reverse();
             var iMax = elements.Count - 1;
@@ -197,18 +131,14 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 var element = elements[iMax - index];
                 try
                 {
-                    msg = element.AsString();
-//                    group.Add(element);
                     group.contentContainer.hierarchy.Add(element);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogWarning(e.ToString() + "\n" + msg + "\n");
-                    Debug.Log(CreateHierarchyReportAndRetrieveReportTitleFor(element, e.Message));
-                    element.LogThis($"<color=#FF0000FF><b>ERROR ADDING TO GROUP ({((group == null) ? "NULL" : "NOT NULL")})</b></color>");
+                    Debug.LogWarning(e.ToString());
                 }
 
-                if (element is PropertyField /*or BlockDecorator or PropertyGroupField*/)
+                if (element is PropertyField)
                 {
                     switch (group.Type)
                     {
@@ -228,8 +158,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                             throw new ArgumentOutOfRangeException();
                     }
                 }
-                else
-                    Debug.LogWarning(element.GetType().Name);
             }
 
             elements
@@ -237,33 +165,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 ?.WithClasses(true, "ui3x-group-item--last");
         }
         
-//        private static void AddToGroup(this PropertyGroupField group, VisualElement element)
-//        {
-//            group.Add(element);
-//            if (element is PropertyField /*or BlockDecorator or PropertyGroupField*/)
-//            {
-//                switch (group.Type)
-//                {
-//                    case GroupType.Row:
-//                        element.WithClasses(false, "ui3x-group--none", "ui3x-group--column")
-//                            .WithClasses(true, "ui3x-group--row");
-//                        break;
-//                    case GroupType.Column:
-//                        element.WithClasses(false, "ui3x-group--none", "ui3x-group--row")
-//                            .WithClasses(true, "ui3x-group--column");
-//                        break;
-//                    case GroupType.None:
-//                        element.WithClasses(false, "ui3x-group--row", "ui3x-group--column")
-//                            .WithClasses(true, "ui3x-group--none");
-//                        break;
-//                }
-//            }
-//            else
-//                Debug.LogWarning(element.GetType().Name);
-////            else
-////                VisualStyle.ApplyStyles(group.Type, element, !string.IsNullOrEmpty(group.GroupName));
-//        }
-
         public static GroupMarker GetMatchingGroupMarker(this GroupMarker endMarker, int maxRecursiveCalls = 5)
         {
             if (maxRecursiveCalls < 0)
@@ -283,10 +184,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             // If matching group marker was not properly attached (positioned), rebuild it and recursively call this method again.
             if (beginMarker is GroupMarker other)
                 if (other.RebuildGroupMarkerIfRequired())
-                {
-                    Debug.Log("    --------------------------------------------- TODO: REMOVE THIS LOG ENTRY -----------------------------------------------");
                     return endMarker.GetMatchingGroupMarker(maxRecursiveCalls: maxRecursiveCalls - 1);
-                }
 
             return beginMarker as GroupMarker;
         }

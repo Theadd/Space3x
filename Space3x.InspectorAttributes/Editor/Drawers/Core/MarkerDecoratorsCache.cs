@@ -41,12 +41,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             SetupActiveSelection();
             if (!m_CachedInstances.Contains(decorator))
-            {
-                var o = decorator.GetSerializedObject();
-                Debug.Log($"<b>  ![ADD] {decorator.Property.propertyPath} ({((DecoratorDrawer) decorator).attribute.GetType().Name}) " +
-                          $"@ {o.GetHashCode()} :: {o.targetObject.name} {o.targetObject.GetHashCode()}</b>");
                 m_CachedInstances.Add(decorator);
-            }
         }
 
         public void Remove(IGroupMarkerDecorator decorator)
@@ -69,9 +64,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 m_FailedInstances.Add(decorator);
         }
 
-        public int Count() => m_CachedInstances.Count;
-        
-        public bool HasOnlyPending()
+        private bool HasOnlyPending()
         {
             if (m_PendingInstances.Count > 0 && m_PendingInstances.Count == m_CachedInstances.Count)
             {
@@ -86,7 +79,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return false;
         }
 
-        public bool TryGet(Func<IGroupMarkerDecorator, bool> predicate)
+        private bool TryGet(Func<IGroupMarkerDecorator, bool> predicate)
         {
             var isValid = false;
             var index = 0;
@@ -119,56 +112,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 if (groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
                     groupMarkerDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
             }
-
-            Debug.Log("  ________ AFTER TryRebuildAll() _________  ");
-            PrintCachedInstances();
-
+            
             return true;
         }
         
-        public bool TryRebuildAndLinkAll()
-        {
-            var cachedCount = m_CachedInstances.Count;
-            SetupActiveSelection();
-            Debug.Log($"_______________________ <b>@MarkerDecoratorsCache.TryRebuildAndLinkAll</b> ({cachedCount}/{m_CachedInstances.Count}) _______________________");
-            
-            var allInstances = m_CachedInstances.GetRange(0, m_CachedInstances.Count);
-            foreach (var groupMarkerDecorator in allInstances)
-            {
-                Debug.Log($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b></color> (AutoGrouping: {(IsAutoGroupingDisabled() ? "OFF" : "ON")})");
-                if (!m_CachedInstances.Contains(groupMarkerDecorator))
-                {
-                    Debug.Log($"<color=#f2ff47ff>#>     > Skipped: {groupMarkerDecorator.DebugId}</color>");
-                    continue;
-                }
-                groupMarkerDecorator.RebuildGroupMarkerIfRequired();
-                if (IsAutoGroupingDisabled())
-                {
-                    if (groupMarkerDecorator.GetGroupMarkerAttribute().IsOpen)
-                    {
-                        groupMarkerDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
-                    }
-                }
-                else
-                {
-                    if (groupMarkerDecorator.TryLinkToMatchingGroupMarkerDecorator())
-                    {
-                        if (groupMarkerDecorator.GetGroupBeginMarkerDecorator() is IGroupMarkerDecorator beginDecorator)
-                        {
-                            beginDecorator.Marker.GetOrCreatePropertyGroupFieldForMarker();
-                        }
-
-                        Remove(decorator: groupMarkerDecorator);
-                        Remove(decorator: groupMarkerDecorator.LinkedMarkerDecorator);
-                    }
-                }
-            }
-
-            Debug.Log($"________F I N A L______ <b>@MarkerDecoratorsCache.TryRebuildAndLinkAll</b> ({m_CachedInstances.Count}) _______________________");
-            
-            return true;
-        }
-
         public void HandlePendingDecorators()
         {
             if (!IsAutoGroupingDisabled())
@@ -182,7 +129,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                             return true;
                         }))
                     {
-                        Debug.Log("Calling pending decorator: " + pendingDecorator.DebugId);
                         pendingDecorator.OnUpdate();
                     }
                 }
@@ -199,11 +145,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
         }
         
-        private int GetActiveSelectionHash()
-        {
-            var o = Selection.activeObject;
-            return o != null ? o.GetHashCode() : 0;
-        }
+        private int GetActiveSelectionHash() =>
+            Selection.activeObject != null ? Selection.activeObject.GetHashCode() : 0;
 
         private void SetupActiveSelection()
         {
@@ -216,32 +159,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             ClearCache();
         }
 
-//        private void RegisterCallbacks(bool register)
-//        {
-//            Debug.Log("<color=#000000FF><b>@MarkerDecoratorsCache.RegisterCallbacks</b></color>");
-//            s_CachedInstances = new List<IGroupMarkerDecorator>();
-//            s_PendingInstances = new List<IGroupMarkerDecorator>();
-//            Selection.selectionChanged -= OnSelectionChanged;
-//            if (register)
-//                Selection.selectionChanged += OnSelectionChanged;
-//        }
-
-//        private void OnSelectionChanged() => SetupActiveSelection();
-
         public void ClearCache()
         {
-            Debug.Log("<color=#000000FF><b>.. @MarkerDecoratorsCache.ClearCache</b></color>");
-//            try
-//            {
-//                foreach (var cachedInstance in s_CachedInstances)
-//                    cachedInstance.Dispose();
-//            }
-//            finally
-//            {
-                m_CachedInstances.Clear();
-                m_PendingInstances.Clear();
-                m_FailedInstances.Clear();
-//            }
+            m_CachedInstances.Clear();
+            m_PendingInstances.Clear();
+            m_FailedInstances.Clear();
         }
 
         public void PrintCachedInstances()
