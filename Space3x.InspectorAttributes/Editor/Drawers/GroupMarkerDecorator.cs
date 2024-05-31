@@ -27,7 +27,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         VisualElement GroupContainer { get; set; }
         
-        bool IsResetting { get; set; }
+//        bool IsResetting { get; set; }
         
         // TODO: remove
         string DebugId { get; }
@@ -63,7 +63,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         // TODO: remove
         public string DebugId => this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this);
         
-        public bool IsResetting { get; set; } = false;
+//        public bool IsResetting { get; set; } = false;
         
         private bool m_HasUpdated = false;
 
@@ -272,47 +272,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return msg + " " + RuntimeHelpers.GetHashCode(this);
         }
 
-//        private void CloseGroupIfPossible()
-//        {
-//            Debug.Log(ValidateAllString());
-//            if (LinkedMarkerDecorator != null)
-//            {
-//                // This Group was already closed (before resetting), so we need to close it again.
-//                if (LinkedMarkerDecorator.Marker == null)
-//                    LinkedMarkerDecorator.RebuildGroupMarker();
-//                if (Marker == null)
-//                    RebuildGroupMarker();
-//
-//                if (Marker?.IsOpen == false)
-//                    CloseGroupOf(this);
-//                else if (LinkedMarkerDecorator.Marker?.IsOpen == false)
-//                    CloseGroupOf(LinkedMarkerDecorator);
-//                else
-//                    throw new Exception("Both group markers are open.");
-//            }
-//            else if (Marker?.IsOpen == false) 
-//                CloseGroupOf(this);
-//        }
-//
-////        private void CloseGroupOf(GroupMarkerDecorator<TDecorator, TGroupAttribute> decorator)
-//        private void CloseGroupOf(IGroupMarkerDecorator decorator)
-//        {
-//            var success = decorator.Marker.CloseGroupMarker();
-//
-//            if (this.GetGroupBeginMarkerDecorator()?.GroupContainer is PropertyGroupField group)
-//                group.IsUsed = success;
-//            
-//            if (!success)
-//            {
-////                UngroupedMarkerDecorators.Add(decorator);
-//            }
-////            else
-////            {
-////                UngroupedMarkerDecorators.Remove(decorator);
-////                UngroupedMarkerDecorators.Remove(decorator.LinkedMarkerDecorator);
-////            }
-//        }
-
         public void RebuildGroupMarker()
         {
             RemoveGroupMarker();
@@ -355,18 +314,18 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 //                else
                 {
                     Container.LogThis($"<color=#FF6979FF><b>SOFT RESET...</b> {this.GetType().Name}-{RuntimeHelpers.GetHashCode(this)}</color>");
-                    DecoratorsCache.Remove(this);
+                    CachedDecoratorsCache?.Remove(this);
                     if (Target.IsOpen && GroupContainer != null)
                     {
                         GroupContainer.RemoveFromHierarchy();
                         GroupContainer = null;
                     }
                     
-                    IsResetting = true;
+//                    IsResetting = true;
                     RemoveGroupMarker();
                     if (LinkedMarkerDecorator != null)
                     {
-                        LinkedMarkerDecorator.IsResetting = true;
+//                        LinkedMarkerDecorator.IsResetting = true;
                         LinkedMarkerDecorator.RemoveGroupMarker(); // TODO: is this needed?
                     }
                 }
@@ -391,7 +350,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             else
             {
-                DecoratorsCache.Remove(this);
+                CachedDecoratorsCache?.Remove(this);
                 if (Target.IsOpen && GroupContainer != null)
                     GroupContainer.RemoveFromHierarchy();
 //                if (Marker?.IsUsed == true || Marker?.ClassListContains(GroupMarker.UssUsedClassName) == true)

@@ -149,9 +149,30 @@ namespace Space3x.UiToolkit.Types
 
             return string.Join('\n', ancestors);
         }
+
+        private static bool ShouldIterateOnChildren(VisualElement element)
+        {
+            if (element.hierarchy.childCount <= 0)
+                return false;
+            return element switch
+            {
+                ScrollView => false,
+                _ => !element.ClassListContains("unity-base-field") || element.ClassListContains("ui3x-property-group-field")
+            };
+        }
         
         [HideInCallstack]
         public static string AsHierarchyString(this VisualElement self, int depth = 999, int indentLevel = 0) =>
+            string.Join("", Enumerable.Repeat("<color=#FFFFFF33>|</color> ", indentLevel))
+            + self.AsString()
+            + (depth > 0 && ShouldIterateOnChildren(self)
+                ? "\n" + string.Join('\n', self.hierarchy
+                    .Children()
+                    .Select(e => e.AsHierarchyString(depth - 1, indentLevel + 1)))
+                : string.Empty);
+        
+        [HideInCallstack]
+        public static string AsFullHierarchyString(this VisualElement self, int depth = 999, int indentLevel = 0) =>
             string.Join("", Enumerable.Repeat("<color=#FFFFFF33>|</color> ", indentLevel))
             + self.AsString()
             + (depth > 0 && self.hierarchy.childCount > 0

@@ -18,8 +18,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
     {
         public Toggle FoldoutToggle => Foldout?.hierarchy.ElementAt(0) as Toggle;
         public VisualElement FoldoutHeader => FoldoutToggle?.hierarchy.ElementAt(0);
-        public Foldout ContentFoldout;
-        public Toggle ContentFoldoutToggle;
+//        public Foldout ContentFoldout;
+        public Foldout ContentFoldout => Content.Children().FirstOrDefault() as Foldout;
+//        public Toggle ContentFoldoutToggle;
+
+        private bool m_IgnoreValueChangesInFoldout;
 
         private void ApplyFoldoutStyles()
         {
@@ -52,13 +55,31 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         private void OnFoldoutToggle(ChangeEvent<bool> ev)
         {
-            if (ContentFoldout != null)
-                ContentFoldout.value = ev.newValue;
+            Debug.Log("OnFoldoutToggle: " + ev.newValue);
+            if (ContentFoldout != null) ContentFoldout.value = ev.newValue;
+            Container.SetVisible(ev.newValue && Property.managedReferenceValue != null);
+            Property.isExpanded = ev.newValue;
+//
+//            if (ContentFoldout != null && !m_IgnoreValueChangesInFoldout)
+//                ContentFoldout.value = ev.newValue;
         }
 
+        public void BindPropertyToContent()
+        {
+            try
+            {
+                Content.BindProperty(Property);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("<color=#FF7F00FF>" + e.ToString() + "</color>");
+            }
+        }
+        
+        [Obsolete("Use BindPropertyToContent instead.")]
         protected virtual void SetPropertyContent(bool unbind = false)
         {
-            BindContentFoldout();
+//            BindContentFoldout();
             try
             {
                 Content.BindProperty(Property);
@@ -130,38 +151,43 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 //            }
         }
 
-        private void BindContentFoldout()
-        {
-            Debug.Log(" . . . . . BindContentFoldout . . . . . 0");
-            ContentFoldout = null;
-            ContentFoldoutToggle = null;
-            Content.UnregisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
-            if (Content.hierarchy.childCount > 0)
-            {
-                Debug.Log(" . . . . . BindContentFoldout . . . . . 1");
-                var (contentFoldout, _) = Content.AsChildren();
-                ContentFoldout = contentFoldout as Foldout;
-                if (ContentFoldout != null)
-                {
-                    Debug.Log(" . . . . . BindContentFoldout . . . . . 2");
-                    if (ContentFoldout.hierarchy.childCount > 0)
-                        ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
-                    ContentFoldoutToggle?.SetVisible(false);
-                    if (ContentFoldout.value != Foldout.value) Foldout.value = ContentFoldout.value;
-                }
-            }
-            if (ContentFoldout == null)
-            {
-                Debug.Log(" . . . . . BindContentFoldout . . . . . 3");
-                Content.RegisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
-            }
-        }
-
-        private void OnContentGeometryChanged(GeometryChangedEvent evt)
-        {
-            Debug.Log(" . . . . . BindContentFoldout . . . . . CALLBACK");
-            BindContentFoldout();
-        }
+//        private void BindContentFoldout()
+//        {
+//            Debug.Log(" . . . . . BindContentFoldout . . . . . 0");
+//            ContentFoldout = null;
+//            ContentFoldoutToggle = null;
+//            Content.UnregisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
+//            if (Content.hierarchy.childCount > 0)
+//            {
+//                Debug.Log(" . . . . . BindContentFoldout . . . . . 1");
+//                var (contentFoldout, _) = Content.AsChildren();
+//                ContentFoldout = contentFoldout as Foldout;
+//                if (ContentFoldout != null)
+//                {
+//                    Debug.Log(" . . . . . BindContentFoldout . . . . . 2");
+//                    if (ContentFoldout.hierarchy.childCount > 0)
+//                        ContentFoldoutToggle = ContentFoldout.hierarchy.ElementAt(0) as Toggle;
+//                    ContentFoldoutToggle?.SetVisible(false);
+//                    if (ContentFoldout.value != Foldout.value)
+//                    {
+//                        // m_IgnoreValueChangesInFoldout = true;
+//                        Foldout.value = ContentFoldout.value;
+//                        // m_IgnoreValueChangesInFoldout = false;
+//                    }
+//                }
+//            }
+//            if (ContentFoldout == null)
+//            {
+//                Debug.Log(" . . . . . BindContentFoldout . . . . . 3");
+//                Content.RegisterCallback<GeometryChangedEvent>(OnContentGeometryChanged);
+//            }
+//        }
+//
+//        private void OnContentGeometryChanged(GeometryChangedEvent evt)
+//        {
+//            Debug.Log(" . . . . . BindContentFoldout . . . . . CALLBACK");
+//            BindContentFoldout();
+//        }
     }
     
     
@@ -224,32 +250,44 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         public override void BindProperty(SerializedProperty property, int propertyIndex = -1)
         {
-            Debug.Log("<b>BINDING... 23</b>");
 //            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: true);
             CollectionProperty = propertyIndex >= 0 ? property : null;
             PropertyIndex = propertyIndex;
             Property = propertyIndex == -1 ? property : property.GetArrayElementAtIndex(propertyIndex);
             Foldout.text = Property.displayName;
+//            ExpandablePropertyContent.IsExpanded = Property.isExpanded;
+//            Debug.Log($"<b>BINDING... wasExpanded: {ExpandablePropertyContent.IsExpanded}</b>");
+//            Container.SetVisible(false);
+//            Property.isExpanded = true;
             // ((IBindable) this).BindProperty(Property);
             SetValue(GetTypeFromSerializedPropertyValue(Property));
 
-            var allBindingInfos = Content.GetBindingInfos().ToList();
-            Debug.Log("<b>allBindingInfos.Count: " + allBindingInfos.Count + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</b>");
+//            var allBindingInfos = Content.GetBindingInfos().ToList();
+//            Debug.Log("<b>allBindingInfos.Count: " + allBindingInfos.Count + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</b>");
             
-            Content.Unbind(); // MOD
-            if (Property.managedReferenceValue != null) 
-                SetPropertyContent(unbind: true);
+//            Content.Unbind(); // MOD
+    //            if (Property.managedReferenceValue != null)     // TODO: Always bind even when no value.
+    //                SetPropertyContent(unbind: true);
 //            else
 //                Content.Unbind();
-            allBindingInfos = Content.GetBindingInfos().ToList();
-            Debug.Log("<b>(SECOND) allBindingInfos.Count: " + allBindingInfos.Count + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</b>");
+//            allBindingInfos = Content.GetBindingInfos().ToList();
+//            Debug.Log("<b>(SECOND) allBindingInfos.Count: " + allBindingInfos.Count + " !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</b>");
             // MOD
 //            UngroupedMarkerDecorators.TryRebuildAndLinkAll(); // MOD_ME
 //            UngroupedMarkerDecorators.TryRebuildAll();
 //            UngroupedMarkerDecorators.DisableAutoGroupingOnActiveSelection(disable: false);
 //            UngroupedMarkerDecorators.TryRebuildAndLinkAll();
             
-            Container.SetVisible(Property.managedReferenceValue != null);
+//            Container.SetVisible(Property.managedReferenceValue != null);
+//            if (wasExpanded)
+//            {
+//                EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+//                {
+//                    Property.isExpanded = true;
+//                    ContentFoldout.value = true;
+//                });
+//            }
+
             TypeUndoRedoController.Bind(Property, this);
         }
         
@@ -284,7 +322,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             ExpandablePropertyContent.DecoratorsCache.ClearCache();
             ExpandablePropertyContent.DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
             Property.serializedObject.Update();
-
+            var wasExpanded = Property.isExpanded;
 //            Debug.Log(".. .. .. BEGIN REBUILD");
 //            ExpandablePropertyContent.RebuildExpandablePropertyContentGUI();
 //            Debug.Log(".. .. .. END REBUILD");
@@ -296,7 +334,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 // BEGIN EDIT
                 if (Property.managedReferenceValue != null && newValue == null)
                 {
-                    Content.Unbind();
+                    // MODX: Content.Unbind();
                     SetPropertyValue(null);
                     // Property.managedReferenceValue = null;
 //                    Property.serializedObject.ApplyModifiedProperties();
@@ -312,7 +350,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 // END EDIT
                 {
                     Debug.Log($"OnValueChange: {newValue?.FullTypeName()}");
-                    Content.Unbind();
+                    // MODX: Content.Unbind();
                     SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
                     // Property.managedReferenceValue = newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null;
 //                    Property.serializedObject.ApplyModifiedProperties();
@@ -323,6 +361,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 throw new NotImplementedException("TODO: HERE!");
                 // CollectionProperty.GetArrayElementAtIndex(PropertyIndex).boxedValue = newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null);
             SetValue(newValue);
+            Property.isExpanded = false;
             Property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
             TypeUndoRedoController.AddValue(Undo.GetCurrentGroup(), Property);
             Undo.FlushUndoRecordObjects();
@@ -330,22 +369,31 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
             // BEGIN EDIT
             Debug.Log(".. .. .. REBUILD on CHANGE #A");
-            Property.isExpanded = false;
+//            Property.isExpanded = false;
+//            Property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
+//            Property.isExpanded = true;
             Debug.Log(".. .. .. REBUILD on CHANGE #A1");
             SetPropertyContent();
-            Content.Unbind();
+            // MODX: Content.Unbind();
             Content.MarkDirtyRepaint();
             Debug.Log(".. .. .. REBUILD on CHANGE #A2");
 
-            if (newValue != null)
-                Property.isExpanded = true;
+//            if (newValue != null)
+//                Property.isExpanded = true;
+            Container.SetVisible(Property.managedReferenceValue != null);
+//            Property.serializedObject.ApplyModifiedPropertiesWithoutUndo();
             
-            Debug.Log(".. .. .. REBUILD on CHANGE #A3");
+            Debug.Log(".. .. .. REBUILD on CHANGE #A3 sss");
             
             EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
             {
-                Debug.Log(".. .. .. REBUILD on CHANGE #B");
-                Content.Unbind();
+                if (wasExpanded)
+                {
+                    Property.isExpanded = true;
+                    if (ContentFoldout != null) ContentFoldout.value = true;
+                }
+                /*Debug.Log(".. .. .. REBUILD on CHANGE #B");
+                // MODX: Content.Unbind();
                 SetPropertyContent();   // Content.BindProperty(Property);
                 Content.MarkDirtyRepaint();
                 Debug.Log(".. .. .. REBUILD on CHANGE #B2");
@@ -357,6 +405,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 ExpandablePropertyContent.DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                 Debug.Log(".. .. .. REBUILD on CHANGE #B3");
                 
+                
 //                EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
 //                {
 //                    Debug.Log(".. .. .. REBUILD on CHANGE #C");
@@ -365,7 +414,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 //                    Content.MarkDirtyRepaint();
 //                    Debug.Log(".. .. .. REBUILD on CHANGE #C2");
 //                    
-//                });
+//                });*/
             });
 
             // END EDIT
@@ -476,21 +525,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 {
                     Debug.Log($"Not found: {childProperty.propertyPath}");
                 }
-                
-
                 // TODO: NextVisible => Next
             } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
-
-
             endProperty = (SerializedProperty) null;
-            
-//            foreach (SerializedProperty property in parentProperty)
-//            {
-//                if (property.depth == parentDepth + 1)
-//                {
-//                    
-//                }
-//            }
         }
 
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)

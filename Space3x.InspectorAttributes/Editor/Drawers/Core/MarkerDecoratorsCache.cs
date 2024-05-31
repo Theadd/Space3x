@@ -12,6 +12,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         private List<IGroupMarkerDecorator> m_CachedInstances;
         private List<IGroupMarkerDecorator> m_PendingInstances;
+        private List<IGroupMarkerDecorator> m_FailedInstances;
 
         private int m_ActiveSelectedObjectHash = 0;
         
@@ -23,6 +24,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             m_CachedInstances = new List<IGroupMarkerDecorator>();
             m_PendingInstances = new List<IGroupMarkerDecorator>();
+            m_FailedInstances = new List<IGroupMarkerDecorator>();
             m_ActiveSelectedObjectHash = GetActiveSelectionHash();
         }
 
@@ -53,12 +55,18 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 m_CachedInstances.Remove(decorator);
             if (m_PendingInstances.Contains(decorator))
                 m_PendingInstances.Remove(decorator);
+            if (m_FailedInstances.Contains(decorator))
+                m_FailedInstances.Remove(decorator);
         }
 
         public void MarkPending(IGroupMarkerDecorator decorator)
         {
-            if (m_CachedInstances.Contains(decorator) && !m_PendingInstances.Contains(decorator))
+            var isCached = m_CachedInstances.Contains(decorator);
+            var isPending = m_PendingInstances.Contains(decorator);
+            if (isCached && !isPending)
                 m_PendingInstances.Add(decorator);
+            else if (!isCached && !m_FailedInstances.Contains(decorator))
+                m_FailedInstances.Add(decorator);
         }
 
         public int Count() => m_CachedInstances.Count;
@@ -163,17 +171,30 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public void HandlePendingDecorators()
         {
-            if (!IsAutoGroupingDisabled() && HasOnlyPending())
+            if (!IsAutoGroupingDisabled())
             {
-                IGroupMarkerDecorator pendingDecorator = null;
-                if (TryGet(decorator =>
-                    {
-                        pendingDecorator = decorator;
-                        return true;
-                    }))
+                if (HasOnlyPending())
                 {
-                    Debug.Log("Calling pending decorator: " + pendingDecorator.DebugId);
-                    pendingDecorator.OnUpdate();
+                    IGroupMarkerDecorator pendingDecorator = null;
+                    if (TryGet(decorator =>
+                        {
+                            pendingDecorator = decorator;
+                            return true;
+                        }))
+                    {
+                        Debug.Log("Calling pending decorator: " + pendingDecorator.DebugId);
+                        pendingDecorator.OnUpdate();
+                    }
+                }
+                else if (m_CachedInstances.Count == 0 && m_FailedInstances.Count > 0)
+                {
+                    for (var i = m_FailedInstances.Count - 1; i >= 0; i--)
+                    {
+                        var failedInstance = m_FailedInstances[i];
+                        failedInstance.OnReset(disposing: false);
+                    }
+
+                    m_FailedInstances.Clear();
                 }
             }
         }
@@ -219,6 +240,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 //            {
                 m_CachedInstances.Clear();
                 m_PendingInstances.Clear();
+                m_FailedInstances.Clear();
 //            }
         }
 

@@ -51,11 +51,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public T Container { get; private set; }
         
         public MarkerDecoratorsCache DecoratorsCache => 
-            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
-                ?? Property.serializedObject.GetHashCode());
+            CachedDecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() ?? Property.serializedObject.GetHashCode(),
+                Property.serializedObject.GetHashCode());
 
-        private MarkerDecoratorsCache m_DecoratorsCache;
+        protected MarkerDecoratorsCache CachedDecoratorsCache;
         
         private bool m_Detached;
         private bool m_Ready;

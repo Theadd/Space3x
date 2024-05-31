@@ -90,3 +90,7 @@
     flex-grow: 1;
     flex-shrink: 1;
 }
+
+.ui3x-no-toggle > .unity-foldout > .unity-toggle {
+    display: none;
+}
