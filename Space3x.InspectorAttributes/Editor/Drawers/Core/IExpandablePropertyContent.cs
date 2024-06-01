@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Reflection;
-using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
@@ -30,32 +28,32 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             ContentContainer.Add(Content);
         }
 
-        public virtual void ReloadPropertyContentGUI(Action onContentAttached = null)
-        {
-            Content.Unbind();
-            Content.RemoveFromHierarchy();
-            Content.MarkDirtyRepaint();
-            if (onContentAttached != null) 
-                Content.RegisterCallbackOnce<AttachToPanelEvent>(_ => onContentAttached.Invoke());
-            ContentContainer.Add(Content);
-        }
-        
-        private static MethodInfo s_PropertyFieldReset = null;
-
-        public virtual void CallResetForContentAsPropertyField(SerializedProperty property)
-        {
-            s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
-                "Reset", 
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                new Type[] { typeof(SerializedProperty) },
-                null);
-
-            if (s_PropertyFieldReset != null)
-                s_PropertyFieldReset.Invoke(Content as PropertyField, new object[] { property });
-            
-        }
-
-        public void ExecuteDelayedUpdate();
+        // public virtual void ReloadPropertyContentGUI(Action onContentAttached = null)
+        // {
+        //     Content.Unbind();
+        //     Content.RemoveFromHierarchy();
+        //     Content.MarkDirtyRepaint();
+        //     if (onContentAttached != null) 
+        //         Content.RegisterCallbackOnce<AttachToPanelEvent>(_ => onContentAttached.Invoke());
+        //     ContentContainer.Add(Content);
+        // }
+        //
+        // private static MethodInfo s_PropertyFieldReset = null;
+        //
+        // public virtual void CallResetForContentAsPropertyField(SerializedProperty property)
+        // {
+        //     s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
+        //         "Reset", 
+        //         BindingFlags.Instance | BindingFlags.NonPublic,
+        //         null,
+        //         new Type[] { typeof(SerializedProperty) },
+        //         null);
+        //
+        //     if (s_PropertyFieldReset != null)
+        //         s_PropertyFieldReset.Invoke(Content as PropertyField, new object[] { property });
+        //     
+        // }
+        //
+        // public void ExecuteDelayedUpdate();
     }
 }

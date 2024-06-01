@@ -68,10 +68,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual ListView CreateListView()
         {
-            // TODO: Remove
-            if (!m_IsTypeValue) 
-                Debug.LogError("TODO: makeItem = () => ... new TypeInstanceField() { OnShowPopup = OnShowPopup, Container = ContentContainer, Content = (PropertyField) Content };");
-            
             var listView = new ListView
             {
                 virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
@@ -88,16 +84,21 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 headerTitle = "Elements",
                 makeItem = () =>
                 {
-                    return m_IsTypeValue 
-                        ? new TypeField(showLabel: false) { OnShowPopup = OnShowPopup } 
-                        : new TypeInstanceField() { OnShowPopup = OnShowPopup };
+                    return m_IsTypeValue
+                        ? new TypeField(showLabel: false) { OnShowPopup = OnShowPopup }
+                        : new ExpandableTypeInstanceItem() { OnShowPopup = OnShowPopup };
+                    // : new TypeInstanceField() { OnShowPopup = OnShowPopup };
                 },
                 bindItem = (element, i) => {
-                    if (element is TypeInstanceField instanceField)
+                    // if (element is TypeInstanceField instanceField)
+                    // {
+                    //     instanceField.Unbind(); // TODO
+                    //     instanceField.BindProperty(Property, i);
+                    //     instanceField.BindPropertyToContent();
+                    // }
+                    if (element is ExpandableTypeInstanceItem instanceItem)
                     {
-                        instanceField.Unbind(); // TODO
-                        instanceField.BindProperty(Property, i);
-                        instanceField.BindPropertyToContent();
+                        instanceItem.BindProperty(Property, i);
                     }
                     else if (element is TypeField field)
                     {
@@ -127,7 +128,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual void Validate()
         {
-            if (!m_IsTypeValue && Property.propertyType != SerializedPropertyType.ManagedReference)
+            if (!m_IsTypeValue && (Property.propertyType != SerializedPropertyType.ManagedReference && !attribute.applyToCollection))
                 throw new Exception(nameof(TAttribute) 
                                     + " can be used only with a ManagedReference. Add a [SerializedReference] attribute"
                                     + " to the property you want to use this attribute on.");
@@ -176,8 +177,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 ? new TypeField(showLabel: true, initialLabel: Property.displayName) { OnShowPopup = OnShowPopup }
                 : new TypeInstanceField() { OnShowPopup = OnShowPopup, ExpandablePropertyContent = this };
 
-        protected virtual void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
+        public void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
         {
+            Debug.Log($"OnShowPopup!");
             PopupContent ??= new QuickSearchElement() { };
 //            var swatch = new System.Diagnostics.Stopwatch();
 //            swatch.Start();
@@ -258,7 +260,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                         // else
                         //     ContentContainer.SetVisible(instanceField.Property.managedReferenceValue != null);
                         Debug.Log($"2: instanceField.Foldout.value = {IsExpanded};");
-                        instanceField.Foldout.value = IsExpanded;
+                        // instanceField.Foldout.value = IsExpanded;
+                        instanceField.SetFoldoutValue(IsExpanded);
                         Content.MarkDirtyRepaint();
                     });
                 });
@@ -294,18 +297,18 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             }
         }
 
-        private IVisualElementScheduledItem m_DelayedUpdateTask;
-        
-        public void ExecuteDelayedUpdate()
-        {
-            m_DelayedUpdateTask = Container.schedule.Execute(() =>
-            {
-                m_DelayedUpdateTask?.Pause();
-                OnUpdate();
-                m_DelayedUpdateTask = null;
-            });
-            m_DelayedUpdateTask.ExecuteLater(1);
-        }
+        // private IVisualElementScheduledItem m_DelayedUpdateTask;
+        //
+        // public void ExecuteDelayedUpdate()
+        // {
+        //     m_DelayedUpdateTask = Container.schedule.Execute(() =>
+        //     {
+        //         m_DelayedUpdateTask?.Pause();
+        //         OnUpdate();
+        //         m_DelayedUpdateTask = null;
+        //     });
+        //     m_DelayedUpdateTask.ExecuteLater(1);
+        // }
 
         public override void OnUpdate()
         {

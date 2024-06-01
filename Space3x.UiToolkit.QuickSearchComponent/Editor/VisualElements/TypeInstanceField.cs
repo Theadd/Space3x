@@ -51,11 +51,30 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         private void OnFoldoutToggle(ChangeEvent<bool> ev)
         {
-            Debug.Log($"3: OnFoldoutToggle: {ev.newValue}");
-            if (ContentFoldout != null) ContentFoldout.value = ev.newValue;
-            Container.SetVisible(ev.newValue && Property.managedReferenceValue != null);
-            Property.isExpanded = ev.newValue;
-            ExpandablePropertyContent.IsExpanded = ev.newValue;
+            Debug.Log($"3V: OnFoldoutToggle: {ev.newValue}");
+            SetFoldoutValue(ev.newValue);
+            // if (ContentFoldout != null) ContentFoldout.value = ev.newValue;
+            // Container.SetVisible(ev.newValue && Property.managedReferenceValue != null);
+            // Property.isExpanded = ev.newValue;
+            // ExpandablePropertyContent.IsExpanded = ev.newValue;
+        }
+        
+        public void SetFoldoutValue(bool isOpen)
+        {
+            Debug.Log($"3U: SetFoldoutValue: {Foldout.value} => {isOpen}");
+            if (Foldout.value != isOpen)
+            {
+                Foldout.value = isOpen;
+            }
+            else
+            {
+                Debug.Log($"4: ApplyFoldoutValue: {isOpen}");
+                if (ContentFoldout != null) ContentFoldout.value = isOpen;
+                Container.SetVisible(isOpen && Property.managedReferenceValue != null);
+                Property.isExpanded = isOpen;
+                ExpandablePropertyContent.IsExpanded = isOpen;
+            }
+            
         }
 
         public void BindPropertyToContent()
@@ -116,7 +135,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             CollectionProperty = null;
             PropertyIndex = -1;
             Property = null;
-            Content.Unbind();
+            Content?.Unbind();
         }
 
         public override void BindProperty(SerializedProperty property, int propertyIndex = -1)
@@ -149,8 +168,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
             TypeUndoRedoController.RecordObject(Property.serializedObject.targetObject, UndoGroupName);
 
-            if (PropertyIndex == -1)
-            {
+            // if (PropertyIndex == -1)
+            // {
                 if (Property.managedReferenceValue != null && newValue == null)
                 {
                     SetPropertyValue(null);
@@ -163,9 +182,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 {
                     SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
                 }
-            }
-            else
-                throw new NotImplementedException("TODO: HERE!");
+            // }
+            // else
+            //     throw new NotImplementedException("TODO: HERE!");
 
             SetValue(newValue);
             Property.isExpanded = false;
@@ -193,10 +212,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         protected override void SetPropertyValue(Type newValue, object newValueInstance = null)
         {
-            if (PropertyIndex == -1)
+            // if (PropertyIndex == -1)
                 Property.managedReferenceValue = newValueInstance;
-            else
-                throw new NotImplementedException("TODO: HERE!");
+            // else
+            //     throw new NotImplementedException("TODO: HERE!");
         }
         
         public override void OnUndoRedoCallback(in UndoRedoInfo undo)
