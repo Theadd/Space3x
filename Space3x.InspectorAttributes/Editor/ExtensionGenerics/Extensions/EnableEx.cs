@@ -8,14 +8,14 @@ using UnityEngine;
 namespace Space3x.InspectorAttributes.Editor
 {
     [UsedImplicitly]
-    public class VisibleEx : Extension<IVisible>
+    public class EnableEx : Extension<IEnableEx>
     {
         public override bool TryApply<TValue, TContent>(IExtensionContext context, TContent content, out TValue outValue, TValue defaultValue)
         {
             if (context is IDrawer drawer)
             {
-                drawer.VisualTarget.SetVisible(content.Visible);
-                if (!(content.Visible is TValue value))
+                drawer.VisualTarget.SetEnabled(content.Enabled);
+                if (!(content.Enabled is TValue value))
                     value = defaultValue;
                 
                 outValue = value;

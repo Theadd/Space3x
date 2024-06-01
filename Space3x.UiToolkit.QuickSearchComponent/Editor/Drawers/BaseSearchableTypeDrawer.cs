@@ -51,6 +51,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
             UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), true);
             IsExpanded = Property.isExpanded;
+            Debug.Log($"isExpanded: {IsExpanded}, " +
+                      $"PropertyPath: {Property.propertyPath}, " +
+                      $"PropertyHash: {Property.GetHashCode()}, " +
+                      $"SerializedObjectHash: {Property.serializedObject.GetHashCode()}");
             if (!m_IsTypeValue)
                 Property.isExpanded = false;
 
@@ -80,22 +84,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 allowAdd = true,
                 allowRemove = true,
                 reorderMode = ListViewReorderMode.Animated,
-                // onAdd = (BaseListView list) => Debug.Log($"onAdd {list}"),
                 headerTitle = "Elements",
                 makeItem = () =>
                 {
                     return m_IsTypeValue
                         ? new TypeField(showLabel: false) { OnShowPopup = OnShowPopup }
                         : new ExpandableTypeInstanceItem() { OnShowPopup = OnShowPopup };
-                    // : new TypeInstanceField() { OnShowPopup = OnShowPopup };
                 },
                 bindItem = (element, i) => {
-                    // if (element is TypeInstanceField instanceField)
-                    // {
-                    //     instanceField.Unbind(); // TODO
-                    //     instanceField.BindProperty(Property, i);
-                    //     instanceField.BindPropertyToContent();
-                    // }
+
                     if (element is ExpandableTypeInstanceItem instanceItem)
                     {
                         instanceItem.BindProperty(Property, i);
@@ -105,7 +102,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                         field.Unbind();
                         field.BindProperty(Property, i);
                     }
-                }
+                },
+                viewDataKey = $"vdk-{Property.serializedObject.targetObject.GetInstanceID()}-{Property.propertyPath}-lv"
             };
             return listView;
         }
@@ -160,7 +158,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual VisualElement CreateContainerGUI()
         {
-            Container = new BindableElement() { viewDataKey = "vdk-container" };
+            Container = new BindableElement() { viewDataKey = "vdk-ct-" + Property.serializedObject.targetObject.GetInstanceID() + "-" + Property.propertyPath };
             Context.WithExtension<TrackChangesOnEx, ITrackChangesOn, BindableElement>((BindableElement) Container, out var success);
             if (!success) 
                 OnUpdate();

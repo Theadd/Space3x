@@ -39,7 +39,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return Container;
         }
 
-        private void OnAttachToPanel(AttachToPanelEvent evt) => ((IDrawer) this).AddDefaultStyles();
+        private void OnAttachToPanel(AttachToPanelEvent evt) => 
+            ((IDrawer)this).AddDefaultStyles();
 
         /// <summary>
         /// Override this method to perform any custom logic when the property drawer needs to be updated.

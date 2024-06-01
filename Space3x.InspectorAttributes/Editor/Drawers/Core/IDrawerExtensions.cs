@@ -26,8 +26,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             for (var index = 0; index < editors.Length; index++)
             {
                 var editor = editors[index];
-                Debug.Log($"#{index} - {editor.target.name} - {editor.serializedObject.targetObject.name} - " +
-                          $"{editor.name} - {editor.GetType().Name} - {editor.serializedObject.ToString()}");
+                Debug.LogWarning($"#{index} - {editor.target.name} - {editor.serializedObject.targetObject.name} - " +
+                          $"{editor.serializedObject.GetType().Name} - {editor.GetType().Name} - {editor.serializedObject.GetHashCode()}");
             }
         }
     }

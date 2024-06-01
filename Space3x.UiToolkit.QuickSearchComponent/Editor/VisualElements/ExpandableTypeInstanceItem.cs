@@ -80,8 +80,14 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             Container.Add(ContentContainer);
         }
 
+        // viewDataKey = "vdk-items-ct-" + Property.serializedObject.targetObject.GetInstanceID() + "-" + Property.propertyPath
         public virtual VisualElement CreateContentGUI() => 
-            new PropertyField(Property) { viewDataKey = "vdk-item-content--" + PropertyIndex }.WithClasses("ui3x-no-toggle");
+            new PropertyField(Property)
+            {
+                viewDataKey = $"vdk-{CollectionProperty.serializedObject.targetObject.GetInstanceID()}-{CollectionProperty.propertyPath}-ipf-{PropertyIndex}",
+                
+            }.WithClasses("ui3x-no-toggle");
+            // new PropertyField(Property) { viewDataKey = "vdk-item-content--" + PropertyIndex }.WithClasses("ui3x-no-toggle");
 
         private TypeInstanceField CreateSelectorFieldGUI() => (TypeInstanceField)
             (new TypeInstanceField() { OnShowPopup = OnShowItemPopup, ExpandablePropertyContent = this })

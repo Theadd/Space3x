@@ -111,9 +111,11 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 }
                 else
                 {
-                    Debug.Log($"Not found: {childProperty.propertyPath} ON {parentPath}");
+                    if (childProperty.propertyPath != parentPath)
+                        Debug.Log($"Not found: {childProperty.propertyPath} ON {parentPath}");
                 }
-            } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
+            } while (property.Next(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
+            // } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
             endProperty = (SerializedProperty) null;
         }
     }
