@@ -20,7 +20,8 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 "m_SerializedProperty",
                 System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             
-            return s_SerializedPropertyInPropertyField?.GetValue(propertyField) as SerializedProperty;
+            // return s_SerializedPropertyInPropertyField?.GetValue(propertyField) as SerializedProperty;
+            return s_SerializedPropertyInPropertyField != null ? (SerializedProperty) s_SerializedPropertyInPropertyField.GetValue(propertyField) : null;
         }
 
         public static int GetDrawNestingLevel(this PropertyField propertyField)

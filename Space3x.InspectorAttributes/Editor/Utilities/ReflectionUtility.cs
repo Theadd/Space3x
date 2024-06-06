@@ -7,6 +7,7 @@ using UnityEditor;
 using System.Linq;
 using System.Reflection;
 using System.Collections;
+using Space3x.InspectorAttributes.Editor.Extensions;
 
 namespace Space3x.InspectorAttributes.Editor.Utilities
 {
@@ -173,8 +174,10 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 
 		public static MemberInfo GetValidMemberInfo(string memberName, SerializedProperty serializedProperty, out object targetObj)
 		{
-			var initialTarget = (object)serializedProperty.serializedObject.targetObject;
-			var targetObject = (object)serializedProperty.serializedObject.targetObject;
+			// var initialTarget = (object)serializedProperty.serializedObject.targetObject;
+			// var targetObject = (object)serializedProperty.serializedObject.targetObject;
+			var initialTarget = (object)serializedProperty.GetDeclaringObject();
+			var targetObject = (object)serializedProperty.GetDeclaringObject();
 
 			MemberInfo memberInfo = FindField(memberName, serializedProperty, ref targetObject);
 			

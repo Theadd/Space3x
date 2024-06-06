@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -12,10 +13,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         
         public int InstanceID { get; private set; }
 
-        public Object TargetObject { get; private set; }
+        public Object TargetObject { get; private set; }    // TODO: rename
         
-        public Type TargetType { get; private set; }
+        public Type TargetType { get; private set; }    // TODO: rename
         
+        public object DeclaringObject { get; private set; }
+
+        public Type DeclaringType => DeclaringObject?.GetType();
+
         public UnityEditor.Editor Editor => m_Editor ??=
             ActiveEditorTracker.sharedTracker.activeEditors.FirstOrDefault(
                 e => e.target.GetInstanceID() == InstanceID);
@@ -37,6 +42,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     TargetObject = serializedObject.targetObject;
                     InstanceID = TargetObject.GetInstanceID();
                     TargetType = TargetObject.GetType();
+                    DeclaringObject = drawer.Property.GetDeclaringObject(); // TODO: IProperty.DeclaringObject
                     var targetDeclaringType = TargetType.DeclaringType;
                     Type fieldDeclaringType = null;
                     

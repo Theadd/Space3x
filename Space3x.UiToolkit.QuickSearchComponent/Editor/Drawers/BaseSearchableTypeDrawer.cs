@@ -16,6 +16,7 @@ using Unity.VisualScripting;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 {
+    [CanEditMultipleObjects]
     public abstract class BaseSearchableTypeDrawer<TAttribute> : 
             Drawer<TAttribute>, 
             IAttributeExtensionContext<TAttribute>,

@@ -74,6 +74,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// </summary>
         public virtual void OnUpdate() {}
         
+        public virtual void OnAttachedAndReady(VisualElement element) { }
+        
         public sealed override VisualElement CreatePropertyGUI()
         {
             if (Container != null)
@@ -227,8 +229,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             else
                 Debug.LogError($"<color=#FF0000FF><b>Could not find InspectorElement for {attribute.GetType().Name}</b> {((VisualElement)ev.target)?.AsString()}</color>");
         }
-
-        public virtual void OnAttachedAndReady(VisualElement element) { }
 
         public virtual void OnReset(bool disposing = false)
         {

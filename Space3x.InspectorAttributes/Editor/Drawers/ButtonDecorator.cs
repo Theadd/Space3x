@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 using Space3x.Attributes.Types;
+using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEditor;
@@ -7,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(ButtonAttribute), useForChildren: true)]
+    [CustomPropertyDrawer(typeof(ButtonAttribute), useForChildren: false)]
     public class ButtonDecorator : Decorator<BlockDecorator, ButtonAttribute>, IAttributeExtensionContext<ButtonAttribute>
     {
         public override ButtonAttribute Target => (ButtonAttribute) attribute;
@@ -37,13 +38,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         private void OnClick()
         {
             if (m_ButtonMethod != null)
-                m_ButtonMethod.Invoke(Property.serializedObject.targetObject, null);
+                m_ButtonMethod.Invoke(Property.GetDeclaringObject(), null);
         }
         
         public override void OnUpdate()
         {
             if (Property == null) return;
-            var target = Property.serializedObject.targetObject;
+            var target = Property.GetDeclaringObject();
             m_ButtonMethod = ReflectionUtility.FindFunction(Target.MethodName, target);
         }
     }
