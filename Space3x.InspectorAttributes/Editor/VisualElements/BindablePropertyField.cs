@@ -15,6 +15,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public VisualElement Field;
         public object DeclaringObject;
         public string PropertyName;
+        public IProperty Property;
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
         private VisualElement m_DecoratorDrawersContainer;
 
@@ -22,7 +23,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             if (DecoratorDrawersContainer != null)
             {
-                this.WithClasses(ussClassName);
+                this.WithClasses(ussClassName, "unity-property-field");
             }
         }
 
@@ -38,7 +39,13 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             DeclaringObject = declaringObject;
             PropertyName = propertyName;
-            var propertyInfo = declaringObject.GetType().GetRuntimeField(propertyName);
+            // var propertyInfo = declaringObject.GetType().GetRuntimeField(propertyName);
+            var propertyInfo = declaringObject.GetType().GetField(propertyName, 
+                BindingFlags.Instance 
+                | BindingFlags.Static
+                | BindingFlags.NonPublic
+                | BindingFlags.Public);
+            var isAdded = Field != null;
             VisualElement field = propertyInfo.GetValue(declaringObject) switch
             {
                 long _ => ConfigureField<LongField, long>(Field as LongField, (Func<LongField>)(() => new LongField())),
@@ -54,6 +61,8 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindTo)}().")
             };
             Field = field;
+            if (!isAdded)
+                this.Add(Field);
         }
         
         private TField ConfigureField<TField, TValue>(

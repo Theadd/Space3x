@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -17,7 +18,7 @@ namespace Space3x.InspectorAttributes.Editor
         public IEnumerable<IPropertyNode> Children();
     }
     
-    public interface IPropertyNode : IProperty
+    public interface IPropertyNode : IProperty, IPropertyFlags
     {
         public object Value { get; }
         
@@ -28,12 +29,12 @@ namespace Space3x.InspectorAttributes.Editor
 
     public interface ISerializedPropertyNode : IPropertyNode
     {
-        
+        public VisualElement Field { get; }
     }
     
     public interface INonSerializedPropertyNode : IPropertyNode
     {
-        
+        public VisualElement Field { get; }
     }
 
     public interface INodeArray : IProperty

@@ -30,5 +30,32 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                           $"{editor.serializedObject.GetType().Name} - {editor.GetType().Name} - {editor.serializedObject.GetHashCode()}");
             }
         }
+
+        public static string GetParentPath(this IDrawer drawer)
+        {
+            var prop = drawer.Property;
+            if (prop == null || prop.propertyPath == prop.name)
+                return "";
+            if (prop.propertyPath.EndsWith("." + prop.name))
+                return prop.propertyPath[..^(prop.name.Length + 1)];
+            else
+            {
+                Debug.LogError($"Case not implemented in IDrawer.GetParentPath() for: {prop.propertyPath}");
+                return prop.propertyPath;
+            }
+        }
+
+        public static int GetParentObjectHash(this IDrawer drawer)
+        {
+            var parentPath = drawer.GetParentPath();
+            if (string.IsNullOrEmpty(parentPath))
+            {
+                return drawer.Property.serializedObject.targetObject.GetInstanceID();
+            }
+            else
+            {
+                return drawer.Property.serializedObject.targetObject.GetInstanceID() ^ parentPath.GetHashCode();
+            }
+        }
     }
 }

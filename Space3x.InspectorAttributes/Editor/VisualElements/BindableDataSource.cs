@@ -13,7 +13,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public BindableDataSource(object declaringObject, string propertyName)
         {
             DeclaringObject = declaringObject;
-            PropertyInfo = declaringObject.GetType().GetRuntimeField(propertyName);
+            PropertyInfo = declaringObject.GetType().GetField(
+                propertyName, 
+                BindingFlags.Instance 
+                | BindingFlags.Static
+                | BindingFlags.NonPublic
+                | BindingFlags.Public);
         }
         
         [UxmlAttribute, CreateProperty]

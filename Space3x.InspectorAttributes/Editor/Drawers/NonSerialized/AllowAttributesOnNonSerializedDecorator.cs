@@ -1,9 +1,11 @@
-﻿using Space3x.Attributes.Types;
+﻿using System.Collections.Generic;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -38,16 +40,52 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 m_Button = new Button(OnClick) { text = "Breakpoint! #" + UpdateCount };
                 element.Add(m_Button);
             }
-            for (var i = 0; i < Controller.AnnotatedType.Values.Count; i++)
+
+            var parentElement = element.hierarchy.parent;
+            var allFields = new Dictionary<string, VisualElement>();
+            foreach (var child in parentElement.hierarchy.Children())
             {
-                var annotatedType = Controller.AnnotatedType.Values[i];
-                if (!annotatedType.IsSerializable && !annotatedType.IsHidden)
+                if (child is PropertyField childField)
                 {
-                    Debug.Log($"[CUSTOM] {annotatedType.Name} {annotatedType.FieldType}");
-                    
+                    var childProp = childField.GetSerializedProperty();
+                    if (childProp != null)
+                        allFields.Add(childProp.name, childField);
                 }
             }
+            
+            foreach (var k in allFields.Keys)
+            {
+                Debug.Log("      K: " + k);
+            }
 
+            object declaringObject = null;
+            VisualElement previousField = null;
+            for (var i = 0; i < Controller.Properties.Values.Count; i++)
+            {
+                var prop = Controller.Properties.Values[i];
+                if (prop is SerializedPropertyNode serializedNode)
+                {
+                    if (allFields.TryGetValue(serializedNode.Name, out VisualElement targetField))
+                    {
+                        previousField = targetField;
+                        serializedNode.Field = targetField;
+                    }
+                    else
+                        Debug.LogWarning($"No PropertyField found for {serializedNode.Name}.");
+                }
+                else if (prop is NonSerializedPropertyNode nonSerializedNode)
+                {
+                    declaringObject ??= this.Property.GetDeclaringObject();
+                    var bindableField = new BindablePropertyField
+                    {
+                        Property = nonSerializedNode
+                    };
+                    bindableField.BindTo(declaringObject, nonSerializedNode.Name);
+                    nonSerializedNode.Field = bindableField;
+                    previousField.AddAfter(bindableField);
+                    previousField = bindableField;
+                }
+            }
             // m_IsReady = true;
         }
 

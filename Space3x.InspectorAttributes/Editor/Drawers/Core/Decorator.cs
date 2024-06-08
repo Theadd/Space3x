@@ -9,7 +9,6 @@ using UnityEngine.UIElements;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
-using UnityEditor.Build.Content;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {

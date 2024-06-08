@@ -4,7 +4,7 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public interface IPropertyFlags
     {
-        public VTypeFlags Flags { get; protected set; }
+        public VTypeFlags Flags { get; }
         
         /// <summary>
         /// Serializable properties are not hidden, even if they are not public (for example, using SerializeField

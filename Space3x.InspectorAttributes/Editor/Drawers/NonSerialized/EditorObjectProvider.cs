@@ -20,6 +20,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         public object DeclaringObject { get; private set; }
 
         public Type DeclaringType => DeclaringObject?.GetType();
+        
+        public string ParentPath { get; private set; }
 
         public UnityEditor.Editor Editor => m_Editor ??=
             ActiveEditorTracker.sharedTracker.activeEditors.FirstOrDefault(
@@ -34,6 +36,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             var serializedObject = drawer.Property?.serializedObject;
             if (serializedObject != null)
             {
+                Debug.Log($"  [PATH]: {drawer.Property.propertyPath}");
+                ParentPath = drawer.GetParentPath();
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
                 if (!IsEditingMultipleObjects || (IsEditingMultipleObjects &&
                                                   PropertyHandlingExtensions.AllObjectTypesAreTheSame(
