@@ -21,7 +21,7 @@ namespace Space3x.InspectorAttributes.Editor
             
             if (!string.IsNullOrEmpty(content.PropertyName))
             {
-                var trackedProperty = drawer.Property.serializedObject.FindProperty(content.PropertyName);
+                var trackedProperty = drawer.Property.GetSerializedObject().FindProperty(content.PropertyName);
                 if (trackedProperty != null)
                 {
                     element.Unbind();
@@ -29,7 +29,7 @@ namespace Space3x.InspectorAttributes.Editor
                     ((IBindable) element).BindProperty(trackedProperty);
                 }
                 else
-                    Debug.LogWarning($"Unable to find related property {content.PropertyName} on {drawer.Property.serializedObject.targetObject}");
+                    Debug.LogWarning($"Unable to find related property {content.PropertyName} on {drawer.Property.GetSerializedObject().targetObject}");
             }
 
             return true;

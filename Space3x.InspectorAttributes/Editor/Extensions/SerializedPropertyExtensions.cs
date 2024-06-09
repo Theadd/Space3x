@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -53,5 +54,30 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             
             return property.serializedObject.targetObject;
         }
+        
+        public static string GetParentPath(this SerializedProperty prop)
+        {
+            if (prop == null || prop.propertyPath == prop.name)
+                return "";
+            if (prop.propertyPath.EndsWith("." + prop.name))
+                return prop.propertyPath[..^(prop.name.Length + 1)];
+            else
+            {
+                Debug.LogError($"Case not implemented in SerializedProperty.GetParentPath() for: {prop.propertyPath}");
+                return prop.propertyPath;
+            }
+        }
+
+        public static int GetParentObjectHash(this SerializedProperty prop)
+        {
+            var parentPath = prop.GetParentPath();
+            if (string.IsNullOrEmpty(parentPath))
+                return prop.serializedObject.targetObject.GetInstanceID();
+            else
+                return prop.serializedObject.targetObject.GetInstanceID() ^ parentPath.GetHashCode();
+        }
+
+        public static IProperty GetPropertyNode(this SerializedProperty prop) => 
+            PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
     }
 }

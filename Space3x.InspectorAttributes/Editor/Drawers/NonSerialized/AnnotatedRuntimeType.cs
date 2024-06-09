@@ -35,6 +35,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             return value;
         }
         
+        public VTypeMember GetValue(string key)
+        {
+            var i = Keys.IndexOf(key);
+            return i >= 0 ? Values[i] : null;
+        }
+        
         private void Bind(Type declaringType)
         {
             Debug.LogWarning($"<b>AnnotatedRuntimeType.Bind({declaringType.FullName})</b>");
@@ -81,7 +87,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                                     Values.Add(new VTypeMember()
                                     {
                                         FieldType = fieldInfo.FieldType,
-                                        Name = propInfo.Name,
+                                        Name = fieldInfo.Name,
                                         RuntimeProperty = propInfo,
                                         RuntimeField = fieldInfo,
                                         PropertyGetter =

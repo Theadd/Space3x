@@ -38,6 +38,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 
         public List<Type> DecoratorDrawers => m_DecoratorDrawers ?? (Rebuild() ? m_DecoratorDrawers : null);
         public Type PropertyDrawer => m_DecoratorDrawers == null ? (Rebuild() ? m_PropertyDrawer : null) : m_PropertyDrawer;
+        public PropertyAttribute PropertyDrawerAttribute { get; private set; } = null;
 
         public bool IsHidden => (Flags | VTypeFlags.HideInInspector) == Flags ||
                                 !((Flags | VTypeFlags.Serializable) == Flags ||
@@ -71,6 +72,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     if (IsArrayOrList(FieldType) && !PropertyAttributes[i].applyToCollection)   // TODO: Not really accurate.
                         continue;
                     m_PropertyDrawer = drawer;
+                    PropertyDrawerAttribute = PropertyAttributes[i];
                 }
             }
 

@@ -35,9 +35,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         where T : VisualElement, new()
         where TAttribute : PropertyAttribute
     {
-        public PropertyField Field { get; set; }
+        public VisualElement Field { get; set; }
         
-        public SerializedProperty Property { get; set; }
+        public IProperty Property { get; set; }
         
         public virtual TAttribute Target => (TAttribute) attribute;
 
@@ -51,8 +51,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public MarkerDecoratorsCache DecoratorsCache => 
             CachedDecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() ?? Property.serializedObject.GetHashCode(),
-                Property.serializedObject.GetHashCode());
+                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() ?? Property.GetSerializedObject().GetHashCode(),
+                Property.GetSerializedObject().GetHashCode());
 
         protected MarkerDecoratorsCache CachedDecoratorsCache;
         
@@ -249,21 +249,21 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private void BindToClosestParentPropertyFieldOf(VisualElement target)
         {
-            Field = target.GetClosestParentOfType<PropertyField, InspectorElement>();
+            Field = target.GetClosestParentOfAnyType<BindablePropertyField, PropertyField, InspectorElement>();
             if (Field == null)
             {
                 Debug.LogWarning($"<color=#FF0000CC>Could not find parent PropertyField of {target.name} for {attribute.GetType().Name}</color>");
                 return;
             }
 
-            Property = Field.GetSerializedProperty();
+            Property = Field.GetPropertyNode();
             if (RedrawOnAnyValueChange)
                 TrackAllChangesOnInspectorElement();
         }
 
         private void TrackAllChangesOnInspectorElement()
         {
-            ((IDrawer) this).InspectorElement.TrackSerializedObjectValue(Property.serializedObject, OnSerializedObjectValueChanged);
+            ((IDrawer) this).InspectorElement.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
         }
         
         private void OnSerializedObjectValueChanged(SerializedObject serializedObject) => OnUpdate();

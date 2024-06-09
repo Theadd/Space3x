@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
+using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
@@ -43,13 +46,26 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 s_PropertyFieldDrawNestingLevel.SetValue(propertyField, value);
         }
 
-        public static PropertyField GetParentPropertyField(this PropertyField propertyField)
+        public static PropertyField GetParentPropertyField(this VisualElement propertyFieldElement)
         {
-            s_PropertyFieldParentPropertyField ??= typeof(PropertyField).GetField(
-                "m_ParentPropertyField",
-                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            
-            return s_PropertyFieldParentPropertyField != null ? (PropertyField) s_PropertyFieldParentPropertyField.GetValue(propertyField) : null;
+            if (propertyFieldElement is PropertyField propertyField)
+            {
+                s_PropertyFieldParentPropertyField ??= typeof(PropertyField).GetField(
+                    "m_ParentPropertyField",
+                    System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+                return s_PropertyFieldParentPropertyField != null
+                    ? (PropertyField)s_PropertyFieldParentPropertyField.GetValue(propertyField)
+                    : null;
+            }
+            else if (propertyFieldElement is BindablePropertyField bindablePropertyField)
+            {
+                return bindablePropertyField.GetClosestParentOfType<PropertyField, InspectorElement>();
+            }
+            else
+                throw new ArgumentException(
+                    $"Type {propertyFieldElement.GetType().Name} is not valid in {nameof(GetParentPropertyField)}.",
+                    nameof(propertyFieldElement));
         }
         
         public static void RebuildChildDecoratorDrawersIfNecessary(this PropertyField parentField, SerializedProperty parentProperty = null)

@@ -19,7 +19,7 @@ namespace Space3x.InspectorAttributes.Editor
                     if (drawer.Property.TryCreateInvokable<TIn, TOut>(content.Condition, out invokable)) 
                         return true;
 
-                    Debug.LogError($"Could not find member {content.Condition} on {drawer.Property.GetDeclaringObject()}");
+                    Debug.LogError($"Could not find member {content.Condition} on {drawer.Property.PropertyPath}");
                 }
 
             invokable = null;

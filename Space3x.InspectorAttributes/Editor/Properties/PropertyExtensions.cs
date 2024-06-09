@@ -1,7 +1,14 @@
 ﻿using System;
+using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
+using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor.Utilities;
+using Space3x.InspectorAttributes.Editor.VisualElements;
+using Unity.Properties;
 using Unity.VisualScripting;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -38,6 +45,127 @@ namespace Space3x.InspectorAttributes.Editor
             index = -1;
             return false;
         }
+
+        public static SerializedObject GetSerializedObject(this IProperty self)
+        {
+            if (self is IPropertyWithSerializedObject property)
+                return property.SerializedObject;
+
+            return null;
+        }
+        
+        public static bool HasSerializedProperty(this IProperty self) => 
+            self is ISerializedPropertyNode;
+
+        public static SerializedProperty GetSerializedProperty(this IProperty self) =>
+            self is ISerializedPropertyNode property
+                ? property.SerializedObject.FindProperty(property.PropertyPath)
+                : null;
+
+        public static int GetParentObjectHash(this IProperty property)
+        {
+            var parentPath = property.ParentPath;
+            if (string.IsNullOrEmpty(parentPath))
+                return property.GetSerializedObject().targetObject.GetInstanceID();
+            else
+                return property.GetSerializedObject().targetObject.GetInstanceID() ^ parentPath.GetHashCode();
+        }
+        
+        public static IProperty GetPropertyNode(this VisualElement element)
+        {
+            if (element is PropertyField propertyField)
+            {
+                var prop = propertyField.GetSerializedProperty();
+                return PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
+            }
+            if (element is BindablePropertyField bindablePropertyField)
+                return bindablePropertyField.Property;
+
+            throw new ArgumentException(
+                $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.",
+                nameof(element));
+        }
+        
+        public static bool IsArray(this IProperty self) => 
+            (self is INodeArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
+
+        public static bool IsExpanded(this IProperty self) => 
+            self.GetSerializedProperty()?.isExpanded ?? false;
+
+        public static void SetExpanded(this IProperty self, bool expanded)
+        {
+            if (self.HasSerializedProperty())
+                self.GetSerializedProperty().isExpanded = expanded;
+        }
+
+        public static string DisplayName(this IProperty self) =>
+            self.HasSerializedProperty()
+                ? self.GetSerializedProperty().displayName
+                : ObjectNames.NicifyVariableName(self.Name);
+
+        public static bool TryCreateInvokable<TIn, TOut>(
+            this IProperty self,
+            string memberName, 
+            out Invokable<TIn, TOut> invokableMember)
+        {
+            if (self.GetSerializedProperty() is SerializedProperty property)
+            {
+                invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, property);
+            }
+            else
+            {
+                invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self);
+            }
+            return invokableMember != null;
+        }
+        
+        public static object GetDeclaringObject(this IProperty property) => 
+            PropertyAttributeController.GetInstance(property)?.DeclaringObject;
+
+        public static void BindProperty<TValue>(this BaseField<TValue> field, IProperty property)
+        {
+            if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
+            {
+                field.BindProperty(serializedProperty);
+            }
+            else
+            {
+                field.dataSource = new BindableDataSource<TValue>(property.GetDeclaringObject(), property.Name);
+                field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
+                {
+                    dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
+                    bindingMode = BindingMode.TwoWay
+                });
+            }
+        }
+        
+        // private TField ConfigureField<TField, TValue>(
+        //     TField field,
+        //     // SerializedProperty property,
+        //     Func<TField> factory)
+        //     where TField : BaseField<TValue>
+        // {
+        //     if ((object) field == null)
+        //     {
+        //         field = factory();
+        //         field.RegisterValueChangedCallback<TValue>((evt => 
+        //             this.OnFieldValueChanged((EventBase) evt)));
+        //         this.dataSource = new BindableDataSource<TValue>(DeclaringObject, PropertyName);
+        //     }
+        //     // string str = this.label ?? property.localizedDisplayName;
+        //     // field.bindingPath = property.propertyPath;
+        //     // field.SetProperty(BaseField<TValue>.serializedPropertyCopyName, (object) property.Copy());
+        //     // field.name = "unity-input-" + property.propertyPath;
+        //     // field.label = str;
+        //     field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
+        //     {
+        //         dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
+        //         bindingMode = BindingMode.TwoWay
+        //     });
+        //     // PropertyField.ConfigureFieldStyles<TField, TValue>(field);
+        //     return field;
+        // }
+        
         
         // private static Type GetUnderlyingElementType(this IProperty self)  // SerializedProperty property
         // {

@@ -8,36 +8,44 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    public abstract class Drawer<TAttribute> : PropertyDrawer, IDrawer<TAttribute>
+    public interface ICreateDrawerOnPropertyNode
+    {
+        public VisualElement CreatePropertyNodeGUI(IProperty property);
+    }
+    
+    public abstract class Drawer<TAttribute> : PropertyDrawer, IDrawer<TAttribute>, ICreateDrawerOnPropertyNode
         where TAttribute : PropertyAttribute
     {
         public virtual TAttribute Target => (TAttribute) attribute;
-        public SerializedProperty Property { get; set; }
+        public IProperty Property { get; set; }
         public VisualElement Container { get; set; }
         public VisualElement VisualTarget => Field;
-        public PropertyField Field => m_Field ??= Container.GetClosestParentOfType<PropertyField, InspectorElement>();
+        public VisualElement Field => m_Field ??= Container.GetClosestParentOfType<PropertyField, InspectorElement>();
 
-        private PropertyField m_Field;
+        private VisualElement m_Field;
 
         public MarkerDecoratorsCache DecoratorsCache => 
             m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
                 Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
-                ?? Property.serializedObject.GetHashCode(),
-                Property.serializedObject.GetHashCode());
+                ?? Property.GetSerializedObject().GetHashCode(),
+                Property.GetSerializedObject().GetHashCode());
 
         private MarkerDecoratorsCache m_DecoratorsCache;
         
         private bool m_Disposed;
         
-        protected abstract VisualElement OnCreatePropertyGUI(SerializedProperty property);
-        
-        public sealed override VisualElement CreatePropertyGUI(SerializedProperty property)
+        protected abstract VisualElement OnCreatePropertyGUI(IProperty property);
+
+        public VisualElement CreatePropertyNodeGUI(IProperty property)
         {
             Property = property;
-            Container = OnCreatePropertyGUI(property);
+            Container = OnCreatePropertyGUI(Property);
             Container.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
             return Container;
         }
+        
+        public sealed override VisualElement CreatePropertyGUI(SerializedProperty property) => 
+            CreatePropertyNodeGUI(property.GetPropertyNode());
 
         private void OnAttachToPanel(AttachToPanelEvent evt) => 
             ((IDrawer)this).AddDefaultStyles();

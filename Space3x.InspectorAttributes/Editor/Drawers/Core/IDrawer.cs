@@ -12,11 +12,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         public static StyleSheet DefaultStyleSheet  = Resources.Load<StyleSheet>("Space3x.InspectorAttributes.Stylesheet");
         
-        public SerializedProperty Property { get; }
+        public IProperty Property { get; }
         
         public VisualElement Container { get; }
         
-        public PropertyField Field { get; }
+        public VisualElement Field { get; }
         
         /// <summary>
         /// The VisualElement that the effects of the decorator or property drawer should be applied to.

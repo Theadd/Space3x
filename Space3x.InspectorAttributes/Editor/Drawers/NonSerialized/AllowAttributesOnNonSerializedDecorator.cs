@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Extensions;
@@ -32,7 +33,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             Field.WithClasses("dev-ui3x-on-ready");
             ((IDrawer)this).InspectorElement.WithClasses("dev-ui3x-on-ready");
             
-            Controller = PropertyAttributeController.GetInstance(this);
+            Controller = PropertyAttributeController.GetInstance(Property);
             element.WithClasses($"{this.GetType().Name}--{this.GetHashCode()}");
             Debug.Log("PropertyAttributeController DONE! OnAttachedAndReady " + element.AsString());
             if (m_Button == null)
@@ -58,7 +59,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 Debug.Log("      K: " + k);
             }
 
-            object declaringObject = null;
+            // object declaringObject = null;
             VisualElement previousField = null;
             for (var i = 0; i < Controller.Properties.Values.Count; i++)
             {
@@ -75,14 +76,18 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 }
                 else if (prop is NonSerializedPropertyNode nonSerializedNode)
                 {
-                    declaringObject ??= this.Property.GetDeclaringObject();
-                    var bindableField = new BindablePropertyField
-                    {
-                        Property = nonSerializedNode
-                    };
-                    bindableField.BindTo(declaringObject, nonSerializedNode.Name);
-                    nonSerializedNode.Field = bindableField;
+                    
+                    
+                    //declaringObject ??= Controller.DeclaringObject;
+                    var bindableField = new BindablePropertyField();
+                    // {
+                    //     Property = nonSerializedNode
+                    // };
+                    bindableField.BindProperty(nonSerializedNode);
+                    // bindableField.BindTo(declaringObject, nonSerializedNode.Name);
+                    // nonSerializedNode.Field = bindableField;
                     previousField.AddAfter(bindableField);
+                    bindableField.AttachDecoratorDrawers();
                     previousField = bindableField;
                 }
             }
@@ -131,6 +136,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             if (disposing)
             {
+                Debug.LogWarning("Disposing that...");
                 if (Controller != null)
                     PropertyAttributeController.RemoveFromCache(Controller);
             }

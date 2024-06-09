@@ -294,5 +294,126 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 					TargetObject = targetObject 
 				};
 		}
+		
+		/* ------------------------ */
+		
+		public static Invokable<TIn, TOut> CreateInvokable<TIn, TOut>(string memberName, IProperty property)
+		{
+			var mInfo = GetValidMemberInfo(memberName, property, out object targetObject);
+			return mInfo == null 
+				? null 
+				: new Invokable<TIn, TOut>() 
+				{
+					CallableMember = mInfo,
+					TargetObject = targetObject 
+				};
+		}
+		
+		public static MemberInfo GetValidMemberInfo(string memberName, IProperty property, out object targetObj)
+		{
+			// var initialTarget = (object)serializedProperty.serializedObject.targetObject;
+			// var targetObject = (object)serializedProperty.serializedObject.targetObject;
+			var initialTarget = (object)property.GetDeclaringObject();
+			var targetObject = (object)property.GetDeclaringObject();
+
+			MemberInfo memberInfo = FindField(memberName, property, ref targetObject);
+			
+			if (memberInfo == null)
+			{
+				targetObject = initialTarget;
+				memberInfo = FindProperty(memberName, property, ref targetObject);
+				
+				if (memberInfo == null)
+				{
+					targetObject = initialTarget;
+					memberInfo = FindFunction(memberName, property, ref targetObject);
+				}
+			}
+			targetObj = targetObject;
+			return memberInfo;
+		}
+		
+		public static FieldInfo FindField(string fieldName, IProperty property, ref object targetObject)
+		{
+			var fieldInfo = FindField(fieldName, targetObject);
+
+			// If the field null we try to see if its inside a serialized object
+			if (fieldInfo == null)
+			{
+				var serializedObjectType = GetSerializedObjectFieldType(property, out object properTarget);
+
+				if (serializedObjectType != null)
+				{
+					fieldInfo = serializedObjectType.GetField(fieldName, BINDING_FLAGS);
+					targetObject = properTarget;
+				}
+			}
+
+			return fieldInfo;
+		}
+		
+		public static Type GetSerializedObjectFieldType(IProperty property, out object serializedObject)
+		{
+			var targetObject = property.GetSerializedObject().targetObject;
+			var pathComponents = property.PropertyPath.Split('.'); // Split the property path to get individual components
+			var targetObjectType = targetObject.GetType();
+
+			var serializedObjectField = FindMember(pathComponents[0], targetObjectType, BINDING_FLAGS, MemberTypes.Field) as FieldInfo;
+
+			serializedObject = serializedObjectField.GetValue(targetObject);
+
+			return serializedObject?.GetType();
+		}
+		
+		public static PropertyInfo FindProperty(string propertyName, IProperty property, ref object targetObject)
+		{
+			var propertyInfo = FindProperty(propertyName, targetObject);
+
+			// If the property null we try to see if its inside a serialized object
+			if (propertyInfo == null)
+			{
+				var serializedObjectType = GetSerializedObjectFieldType(property, out object properTarget);
+
+				if (serializedObjectType != null)
+				{
+					propertyInfo = serializedObjectType.GetProperty(propertyName, BINDING_FLAGS);
+					targetObject = properTarget;
+				}
+			}
+
+			return propertyInfo;
+		}
+		
+		public static MethodInfo FindFunction(string functionName, IProperty property, ref object targetObject)
+		{
+			MethodInfo methodInfo = FindFunction(functionName, targetObject);
+			
+			// If the method is null we try to see if it's inside a serialized object
+			if (methodInfo == null)
+			{
+				var serializedObjectType = GetSerializedObjectFieldType(property, out object properTarget);
+
+				try
+				{
+					methodInfo = serializedObjectType.GetMethod(functionName, BINDING_FLAGS);
+				}
+				catch (AmbiguousMatchException)
+				{
+					var functions = serializedObjectType.GetMethods();
+
+					foreach (var function in functions)
+					{
+						if (function.Name == functionName)
+						{
+							methodInfo = function;
+							targetObject = properTarget;
+							break;
+						}
+					}
+				}
+			}
+
+			return methodInfo;
+		}
     }
 }

@@ -7,7 +7,7 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public interface IAttributeExtensionContext
     {
-        SerializedProperty Property { get; }
+        IProperty Property { get; }
     }
 
     public interface IAttributeExtensionContext<TAttribute> : IExtensionContext, IAttributeExtensionContext

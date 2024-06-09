@@ -1,5 +1,6 @@
 ﻿using System;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
+using UnityEditor;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -8,7 +9,7 @@ namespace Space3x.InspectorAttributes.Editor
     {
         public VTypeFlags Flags { get; set; }
         public string Name { get; set; }
-
+        public SerializedObject SerializedObject { get; set; }
         public string PropertyPath => string.IsNullOrEmpty(ParentPath) || string.IsNullOrEmpty(Name)
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;

@@ -38,6 +38,24 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             }
             return null;
         }
+        
+        public static VisualElement GetClosestParentOfAnyType<T, T2, TLimit>(this VisualElement element) 
+            where T : VisualElement
+            where T2 : VisualElement
+        {
+            VisualElement parent = element;
+            while (parent != null)
+            {
+                if (parent is T)
+                    return parent as T;
+                if (parent is T2)
+                    return parent as T2;
+                if (parent is TLimit)
+                    return null;
+                parent = parent.parent;
+            }
+            return null;
+        }
 
         public static VisualElement GetPreviousSibling(this VisualElement element)
         {

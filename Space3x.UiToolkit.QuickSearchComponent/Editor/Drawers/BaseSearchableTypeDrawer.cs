@@ -16,7 +16,7 @@ using Unity.VisualScripting;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 {
-    [CanEditMultipleObjects]
+    // [CanEditMultipleObjects]
     public abstract class BaseSearchableTypeDrawer<TAttribute> : 
             Drawer<TAttribute>, 
             IAttributeExtensionContext<TAttribute>,
@@ -37,27 +37,28 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual List<Type> GetAllTypes() => Target.GetAllTypes();
         protected virtual void OnReload() => Target.ReloadCache();
 
-        protected override VisualElement OnCreatePropertyGUI(SerializedProperty property)
+        protected override VisualElement OnCreatePropertyGUI(IProperty property)
         {
-            Property = property;
-            m_ElementType = GetUnderlyingElementType(property);
+            if (!(property.GetSerializedProperty() is SerializedProperty serializedProperty))
+                return null;
+            m_ElementType = GetUnderlyingElementType(serializedProperty);
             m_IsTypeValue = IsTypeValue(m_ElementType);
             Validate();
             if (attribute.applyToCollection)
             {
-                if (!Property.isArray) 
-                    Debug.LogError($"Collection property {Property.name} is not an array", property.serializedObject.targetObject);
-                return CreatePropertyCollectionGUI(property);
+                if (!Property.IsArray()) 
+                    Debug.LogError($"Collection property {Property.Name} is not an array", serializedProperty.serializedObject.targetObject);
+                return CreatePropertyCollectionGUI(serializedProperty);
             }
 
-            UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), true);
-            IsExpanded = Property.isExpanded;
+            UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), true);
+            IsExpanded = Property.IsExpanded();
             Debug.Log($"isExpanded: {IsExpanded}, " +
-                      $"PropertyPath: {Property.propertyPath}, " +
+                      $"PropertyPath: {Property.PropertyPath}, " +
                       $"PropertyHash: {Property.GetHashCode()}, " +
-                      $"SerializedObjectHash: {Property.serializedObject.GetHashCode()}");
+                      $"SerializedObjectHash: {Property.GetSerializedObject().GetHashCode()}");
             if (!m_IsTypeValue)
-                Property.isExpanded = false;
+                Property.SetExpanded(false);
 
             return CreateContainerGUI();
         }
@@ -73,6 +74,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual ListView CreateListView()
         {
+            // TODO
+            var serializedProperty = Property.GetSerializedProperty();
             var listView = new ListView
             {
                 virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight,
@@ -96,15 +99,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
                     if (element is ExpandableTypeInstanceItem instanceItem)
                     {
-                        instanceItem.BindProperty(Property, i);
+                        instanceItem.BindProperty(serializedProperty, i);
                     }
                     else if (element is TypeField field)
                     {
                         field.Unbind();
-                        field.BindProperty(Property, i);
+                        field.BindProperty(serializedProperty, i);
                     }
                 },
-                viewDataKey = $"vdk-{Property.serializedObject.targetObject.GetInstanceID()}-{Property.propertyPath}-lv"
+                viewDataKey = $"vdk-{Property.GetSerializedObject().targetObject.GetInstanceID()}-{Property.PropertyPath}-lv"
             };
             return listView;
         }
@@ -127,7 +130,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual void Validate()
         {
-            if (!m_IsTypeValue && (Property.propertyType != SerializedPropertyType.ManagedReference && !attribute.applyToCollection))
+            // TODO
+            if (!m_IsTypeValue && (Property.GetSerializedProperty().propertyType != SerializedPropertyType.ManagedReference && !attribute.applyToCollection))
                 throw new Exception(nameof(TAttribute) 
                                     + " can be used only with a ManagedReference. Add a [SerializedReference] attribute"
                                     + " to the property you want to use this attribute on.");
@@ -159,7 +163,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual VisualElement CreateContainerGUI()
         {
-            Container = new BindableElement() { viewDataKey = "vdk-ct-" + Property.serializedObject.targetObject.GetInstanceID() + "-" + Property.propertyPath };
+            Container = new BindableElement() { viewDataKey = "vdk-ct-" + Property.GetSerializedObject().targetObject.GetInstanceID() + "-" + Property.PropertyPath };
             Context.WithExtension<TrackChangesOnEx, ITrackChangesOn, BindableElement>((BindableElement) Container, out var success);
             if (!success) 
                 OnUpdate();
@@ -169,11 +173,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         public virtual VisualElement CreateContentGUI() => m_IsTypeValue 
             ? new VisualElement() 
-            : (new PropertyField(Property) { viewDataKey = "vdk-content" }).WithClasses("ui3x-no-toggle");
+            : (new PropertyField(Property.GetSerializedProperty()) { viewDataKey = "vdk-content" }).WithClasses("ui3x-no-toggle");
 
         protected virtual VisualElement CreateSelectorFieldGUI() =>
             m_IsTypeValue
-                ? new TypeField(showLabel: true, initialLabel: Property.displayName) { OnShowPopup = OnShowPopup }
+                ? new TypeField(showLabel: true, initialLabel: Property.DisplayName()) { OnShowPopup = OnShowPopup }
                 : new TypeInstanceField() { OnShowPopup = OnShowPopup, ExpandablePropertyContent = this };
 
         public void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
@@ -231,7 +235,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             if (SelectorField is TypeInstanceField instanceField)
             {
-                Property.isExpanded = true;
+                Property.SetExpanded(true);
                 // ContentContainer.SetVisible(true);
                 ContentContainer.SetVisible(false);
                 Content.MarkDirtyRepaint();
@@ -244,7 +248,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                         altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
                     }
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), false);
+                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), false);
                     Content.MarkDirtyRepaint();
 
                     EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -268,8 +272,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             }
             else if (SelectorField is TypeField typeField)
             {
-                typeField.BindProperty(Property, -1);
-                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), false);
+                typeField.BindProperty(Property.GetSerializedProperty(), -1);
+                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), false);
             }
             else
                 throw new NotImplementedException("Missing code path");
@@ -282,10 +286,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
                 var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
                 altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                instanceField.BindProperty(Property, -1);
+                instanceField.BindProperty(Property.GetSerializedProperty(), -1);
                 if (Content is PropertyField propertyField)
                 {
-                    propertyField.RebuildChildDecoratorDrawersIfNecessary(Property);
+                    propertyField.RebuildChildDecoratorDrawersIfNecessary(Property.GetSerializedProperty());
                     altDecoratorsCache.TryRebuildAll();
                     DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
                     altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);

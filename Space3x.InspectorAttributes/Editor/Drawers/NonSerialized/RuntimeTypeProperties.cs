@@ -7,12 +7,21 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         private PropertyAttributeController Controller { get; set; }
 
         public List<IProperty> Values { get; set; }
+        
+        public List<int> Keys { get; }
 
         public RuntimeTypeProperties(PropertyAttributeController controller)
         {
             Controller = controller;
             Values = new List<IProperty>();
+            Keys = new List<int>();
             Bind();
+        }
+
+        public IProperty GetValue(int key)
+        {
+            var i = Keys.IndexOf(key);
+            return i >= 0 ? Values[i] : null;
         }
 
         private void Bind()
@@ -26,8 +35,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     {
                         Name = entry.Name,
                         ParentPath = Controller.ParentPath,
-                        Flags = entry.Flags
+                        Flags = entry.Flags,
+                        SerializedObject = Controller.SerializedObject
                     });
+                    Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
                 }
                 else
                 {
@@ -41,8 +52,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                         {
                             Name = entry.Name,
                             ParentPath = Controller.ParentPath,
-                            Flags = entry.Flags
+                            Flags = entry.Flags,
+                            SerializedObject = Controller.SerializedObject
                         });
+                        Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
                     }
                 }
             }

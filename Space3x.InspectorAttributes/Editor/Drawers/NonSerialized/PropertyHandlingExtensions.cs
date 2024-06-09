@@ -12,7 +12,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         {
             drawer.LogActiveEditors();
             Debug.Log("------------------------------------------");
-            var serializedObject = drawer.Property?.serializedObject;
+            var serializedObject = drawer.Property?.GetSerializedObject();
             var targetObject = serializedObject?.targetObject;  // for example, a Component instance of SimpleQuickShowAsPopup Type. (MonoBehaviour/ScriptableObject/etc.)
             Type targetType = targetObject != null ? targetObject.GetType() : null;
             var isEditingMultipleObjects = serializedObject?.isEditingMultipleObjects ?? false;
