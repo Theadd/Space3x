@@ -28,7 +28,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 try
                 {
                     var element = group.contentContainer.hierarchy.ElementAt(i);
-                    if (element is PropertyField)
+                    if (element is PropertyField or BindablePropertyField)
                     {
                         element.WithClasses(false, "ui3x-group--none", "ui3x-group--column", "ui3x-group--row", "ui3x-group-item--last");
                         if (parentGroupTypeClass != "")
@@ -138,7 +138,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                     Debug.LogWarning(e.ToString());
                 }
 
-                if (element is PropertyField)
+                if (element is PropertyField or BindablePropertyField)
                 {
                     switch (group.Type)
                     {
@@ -161,7 +161,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             }
 
             elements
-                .FirstOrDefault(e => e is PropertyField)
+                .FirstOrDefault(e => e is PropertyField or BindablePropertyField)
                 ?.WithClasses(true, "ui3x-group-item--last");
         }
         

@@ -98,7 +98,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             var isValid = Container != null && Field != null;
             if (isValid)
             {
-                if (Container.GetNextSiblingOfType<PropertyField>() != Field)
+                if (Container.GetNextSiblingOfType<PropertyField, BindablePropertyField>() != Field)
                 {
                     isValid = false;
                     if (Container.GetNextSibling<AutoDecorator>() is PropertyGroupField pgf)
@@ -107,13 +107,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         {
                             var firstElement = pgf.contentContainer.hierarchy.ElementAt(0);
                             if (firstElement is PropertyField pf)
-                            {
                                 isValid = pf == Field;
-                            }
+                            else if (firstElement is BindablePropertyField bpf)
+                                isValid = bpf == Field;
                             else
-                            {
-                                isValid = firstElement.GetNextSiblingOfType<PropertyField>() == Field;
-                            }
+                                isValid = firstElement.GetNextSiblingOfType<PropertyField, BindablePropertyField>() == Field;
                         }
                     }
                 }
@@ -129,14 +127,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return isValid;
         }
 
-        private PropertyField GetNextClosestPropertyFieldOf(VisualElement element)
+        private VisualElement GetNextClosestPropertyFieldOf(VisualElement element)
         {
             var next = element;
-            PropertyField match = null;
+            VisualElement match = null;
             while (next != null && match == null)
             {
                 if (next is PropertyField pf)
                     match = pf;
+                else if (next is BindablePropertyField bpf)
+                    match = bpf;
                 else if (next is PropertyGroupField pgf)
                     if (pgf.contentContainer.hierarchy.childCount > 0)
                         match = GetNextClosestPropertyFieldOf(pgf.contentContainer.hierarchy.ElementAt(0));

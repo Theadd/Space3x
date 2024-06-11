@@ -271,7 +271,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public virtual bool HasValidContainer() => 
             Container != null 
             && Field != null 
-            && Container.GetNextSiblingOfType<PropertyField>() == Field;
+            && Container.GetNextSiblingOfType<PropertyField, BindablePropertyField>() == Field;
 
         #region IDisposable
         

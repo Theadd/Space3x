@@ -125,6 +125,30 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return null;
         }
         
+        public static VisualElement GetNextSiblingOfType<T, T2>(this VisualElement element)
+            where T : VisualElement
+            where T2 : VisualElement
+        {
+            var parent = element.hierarchy.parent;
+            if (parent == null)
+                return null;
+            
+            var index = parent.hierarchy.IndexOf(element);
+            
+            for (var i = index + 1; i < parent.hierarchy.childCount; i++)
+            {
+                VisualElement match = parent.hierarchy.ElementAt(i) switch
+                {
+                    T m1 => m1,
+                    T2 m2 => m2,
+                    _ => null
+                };
+                if (match != null)
+                    return match;
+            }
+            return null;
+        }
+        
         /// <summary>
         /// Add a sibling before this element
         /// </summary>

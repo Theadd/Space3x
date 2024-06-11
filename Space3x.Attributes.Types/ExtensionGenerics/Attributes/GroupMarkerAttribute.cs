@@ -24,7 +24,6 @@ namespace Space3x.Attributes.Types
         /// <summary>
         /// Group serialized members within this attribute marker to it's corresponding closing attribute.
         /// </summary>
-        public GroupMarkerAttribute(GroupType groupType, bool applyToCollection = false)
-            : base(applyToCollection: applyToCollection) => this.Type = groupType;
+        public GroupMarkerAttribute(GroupType groupType) => this.Type = groupType;
     }
 }
