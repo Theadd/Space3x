@@ -169,12 +169,30 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                         return ((ICreateDrawerOnPropertyNode)drawer).CreatePropertyNodeGUI(Property);
                     };
                 }
-
                 field = list switch
                 {
-                    int[] _ => ConfigureListView<int[], VisualElement, int>
-                        (Field as ListView, () => new ListView(), itemFactory ?? (() => new IntegerField())),
-                    _ => null
+                    int[] _ => ConfigureListView<int[], int>(itemFactory ?? (() => new IntegerField()), Field as ListView),
+                    uint[] _ => ConfigureListView<uint[], uint>(itemFactory ?? (() => new UnsignedIntegerField()), Field as ListView),
+                    long[] _ => ConfigureListView<long[], long>(itemFactory ?? (() => new LongField()), Field as ListView),
+                    ulong[] _ => ConfigureListView<ulong[], ulong>(itemFactory ?? (() => new UnsignedLongField()), Field as ListView),
+                    double[] _ => ConfigureListView<double[], double>(itemFactory ?? (() => new DoubleField()), Field as ListView),
+                    float[] _ => ConfigureListView<float[], float>(itemFactory ?? (() => new FloatField()), Field as ListView),
+                    bool[] _ => ConfigureListView<bool[], bool>(itemFactory ?? (() => new Toggle()), Field as ListView),
+                    string[] _ => ConfigureListView<string[], string>(itemFactory ?? (() => new TextField()), Field as ListView),
+                    Color[] _ => ConfigureListView<Color[], Color>(itemFactory ?? (() => new ColorField()), Field as ListView),
+                    Vector2[] _ => ConfigureListView<Vector2[], Vector2>(itemFactory ?? (() => new Vector2Field()), Field as ListView),
+                    Vector3[] _ => ConfigureListView<Vector3[], Vector3>(itemFactory ?? (() => new Vector3Field()), Field as ListView),
+                    Vector4[] _ => ConfigureListView<Vector4[], Vector4>(itemFactory ?? (() => new Vector4Field()), Field as ListView),
+                    Rect[] _ => ConfigureListView<Rect[], Rect>(itemFactory ?? (() => new RectField()), Field as ListView),
+                    Bounds[] _ => ConfigureListView<Bounds[], Bounds>(itemFactory ?? (() => new BoundsField()), Field as ListView),
+                    Vector2Int[] _ => ConfigureListView<Vector2Int[], Vector2Int>(itemFactory ?? (() => new Vector2IntField()), Field as ListView),
+                    Vector3Int[] _ => ConfigureListView<Vector3Int[], Vector3Int>(itemFactory ?? (() => new Vector3IntField()), Field as ListView),
+                    RectInt[] _ => ConfigureListView<RectInt[], RectInt>(itemFactory ?? (() => new RectIntField()), Field as ListView),
+                    BoundsInt[] _ => ConfigureListView<BoundsInt[], BoundsInt>(itemFactory ?? (() => new BoundsIntField()), Field as ListView),
+                    AnimationCurve[] _ => ConfigureListView<AnimationCurve[], AnimationCurve>(itemFactory ?? (() => new CurveField()), Field as ListView),
+                    Gradient[] _ => ConfigureListView<Gradient[], Gradient>(itemFactory ?? (() => new GradientField()), Field as ListView),
+                    Hash128[] _ => ConfigureListView<Hash128[], Hash128>(itemFactory ?? (() => new Hash128Field()), Field as ListView),
+                    _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
                 };
             }
             else 
@@ -189,7 +207,19 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     float _ => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
                     bool _ => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
                     string _ => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
-                    // int[] _ => ConfigureListView<int[], IntegerField, int>(Field as ListView, () => new ListView(), () => new IntegerField()),
+                    Color _ => ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName())),
+                    Vector2 _ => ConfigureField<Vector2Field, Vector2>(Field as Vector2Field, () => new Vector2Field(label: Property.DisplayName())),
+                    Vector3 _ => ConfigureField<Vector3Field, Vector3>(Field as Vector3Field, () => new Vector3Field(label: Property.DisplayName())),
+                    Vector4 _ => ConfigureField<Vector4Field, Vector4>(Field as Vector4Field, () => new Vector4Field(label: Property.DisplayName())),
+                    Rect _ => ConfigureField<RectField, Rect>(Field as RectField, () => new RectField(label: Property.DisplayName())),
+                    Bounds _ => ConfigureField<BoundsField, Bounds>(Field as BoundsField, () => new BoundsField(label: Property.DisplayName())),
+                    Vector2Int _ => ConfigureField<Vector2IntField, Vector2Int>(Field as Vector2IntField, () => new Vector2IntField(label: Property.DisplayName())),
+                    Vector3Int _ => ConfigureField<Vector3IntField, Vector3Int>(Field as Vector3IntField, () => new Vector3IntField(label: Property.DisplayName())),
+                    RectInt _ => ConfigureField<RectIntField, RectInt>(Field as RectIntField, () => new RectIntField(label: Property.DisplayName())),
+                    BoundsInt _ => ConfigureField<BoundsIntField, BoundsInt>(Field as BoundsIntField, () => new BoundsIntField(label: Property.DisplayName())),
+                    AnimationCurve _ => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
+                    Gradient _ => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
+                    Hash128 _ => ConfigureField<Hash128Field, Hash128>(Field as Hash128Field, () => new Hash128Field(label: Property.DisplayName())),
                     _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
                 };
             }
@@ -211,17 +241,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     this.OnFieldValueChanged((EventBase) evt)));
                 this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
             }
-            // string str = this.label ?? property.localizedDisplayName;
-            // field.bindingPath = property.propertyPath;
-            // field.SetProperty(BaseField<TValue>.serializedPropertyCopyName, (object) property.Copy());
-            // field.name = "unity-input-" + property.propertyPath;
-            // field.label = str;
             field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
             {
                 dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
                 bindingMode = BindingMode.TwoWay
             });
-            // PropertyField.ConfigureFieldStyles<TField, TValue>(field);
             return field;
         }
 
@@ -230,17 +254,20 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             Debug.Log("  IN OnFieldValueChanged(ev);");
         }
         
-        private VisualElement ConfigureListView<TValue, TItemField, TItemValue>(
+        private VisualElement ConfigureListView<TValue, TItemValue>(
+            Func<VisualElement> itemFactory,
             ListView listView,
-            Func<ListView> factory,
-            Func<TItemField> itemFactory)
+            Func<ListView> factory = null)
             where TValue : IList, IList<TItemValue>
-            where TItemField : VisualElement
+            // where TItemField : VisualElement
             // where TItemField : BaseField<TItemValue>
         {
             if (listView == null)
             {
-                listView = factory();
+                if (factory != null)
+                    listView = factory();
+                else
+                    listView = new ListView();
                 listView.showBorder = true;
                 listView.selectionType = SelectionType.Multiple;
                 listView.showAddRemoveFooter = true;
@@ -256,20 +283,16 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
             listView.bindItem = (element, i) =>
             {
-                if (element is TItemField itemField)
-                {
-                    itemField.dataSource = new BindableArrayDataSource<TValue, TItemValue>(
+                // if (element is TItemField itemField)
+                element.dataSource = new BindableArrayDataSource<TValue, TItemValue>(
                         m_Controller.DeclaringObject, Property.Name, i);
-                    itemField.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
-                    {
-                        dataSourcePath = new PropertyPath(nameof(BindableArrayDataSource<TValue, TItemValue>.Value)),
-                        bindingMode = BindingMode.TwoWay
-                    });
-                    if (element is BaseField<TItemValue> baseField)
-                    {
-                        baseField.label = "Element " + i;
-                    }
-                }
+                element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
+                {
+                    dataSourcePath = new PropertyPath(nameof(BindableArrayDataSource<TValue, TItemValue>.Value)),
+                    bindingMode = BindingMode.TwoWay
+                });
+                if (element is BaseField<TItemValue> baseField)
+                    baseField.label = "Element " + i;
             };
             listView.onAdd = list =>
             {
@@ -295,17 +318,10 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
             var str = listViewNamePrefix + Property.PropertyPath;
             listView.headerTitle = Property.DisplayName();
-            // listView.userData = (object) serializedProperty;
-            // listView.bindingPath = property.propertyPath;
             listView.viewDataKey = str;
             listView.name = str;
             listView.itemsSource = ((BindableDataSource<TValue>)this.dataSource).Value;
-            // listView.SetProperty((PropertyName) listViewBoundFieldProperty, (object) this);
-            // listView.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
-            // {
-            //     dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
-            //     bindingMode = BindingMode.TwoWay
-            // });
+            
             return (VisualElement) listView;
         }
     }
