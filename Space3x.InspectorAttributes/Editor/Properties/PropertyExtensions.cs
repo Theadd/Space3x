@@ -23,21 +23,30 @@ namespace Space3x.InspectorAttributes.Editor
         private static string FixedPropertyPath(this IProperty self) => 
             self.PropertyPath.Replace(".Array.data[", "[");
         
+        private static string FixedPropertyPath(string propertyPath) => 
+            propertyPath.Replace(".Array.data[", "[");
+        
         private static string[] PropertyPathParts(this IProperty self) => 
             self.FixedPropertyPath().Split('.');
         
         public static bool IsPropertyIndexer(this IProperty self, out string fieldName, out int index)
         {
-            var propertyPart = FixedPropertyPath(self);
+            return IsPropertyIndexer(self.PropertyPath, out fieldName, out index);
+        }
+        
+        public static bool IsPropertyIndexer(string propertyPath, out string fieldName, out int index)
+        {
+            var propertyPart = FixedPropertyPath(propertyPath);
             if (propertyPart[^1] == ']')
             {
                 var iStart = propertyPart.LastIndexOf("[", propertyPart.Length - 1, 6, StringComparison.Ordinal);
                 if (iStart >= 0)
                 {
-                    var sIndex = propertyPart.Substring(iStart, propertyPart.Length - (iStart + 1));
+                    var sIndex = propertyPart.Substring(iStart + 1, propertyPart.Length - (iStart + 2));
                     Debug.Log("sIndex: " + sIndex);
                     index = int.Parse(sIndex);
                     fieldName = propertyPart[..iStart];
+                    Debug.Log($"fieldName: #{fieldName}#, index: #{index}#");
                     return true;
                 }
             }
@@ -89,6 +98,9 @@ namespace Space3x.InspectorAttributes.Editor
         public static bool IsArray(this IProperty self) => 
             (self is INodeArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
 
+        public static bool IsNonReorderable(this IProperty self) => 
+            self is IPropertyFlags property && property.IsNonReorderable;
+        
         public static bool IsExpanded(this IProperty self) => 
             self.GetSerializedProperty()?.isExpanded ?? false;
 
@@ -98,10 +110,14 @@ namespace Space3x.InspectorAttributes.Editor
                 self.GetSerializedProperty().isExpanded = expanded;
         }
 
-        public static string DisplayName(this IProperty self) =>
-            self.HasSerializedProperty()
-                ? self.GetSerializedProperty().displayName
-                : ObjectNames.NicifyVariableName(self.Name);
+        public static string DisplayName(this IProperty self)
+        {
+            Debug.Log($"Name: {self.Name}");
+            if (self.HasSerializedProperty())
+                return self.GetSerializedProperty().displayName;
+            else
+                return ObjectNames.NicifyVariableName(self.Name);
+        }
 
         public static bool TryCreateInvokable<TIn, TOut>(
             this IProperty self,

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 {
@@ -8,17 +9,18 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 
         public List<IProperty> Values { get; set; }
         
-        public List<int> Keys { get; }
+        public List<string> Keys { get; }
 
         public RuntimeTypeProperties(PropertyAttributeController controller)
         {
             Controller = controller;
+            Debug.Log($"<color=#FF00FFFF><b>CREATING PROPERTIES FOR:</b> {controller.ParentPath}</color>");
             Values = new List<IProperty>();
-            Keys = new List<int>();
+            Keys = new List<string>();
             Bind();
         }
 
-        public IProperty GetValue(int key)
+        public IProperty GetValue(string key)
         {
             var i = Keys.IndexOf(key);
             return i >= 0 ? Values[i] : null;
@@ -38,7 +40,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                         Flags = entry.Flags,
                         SerializedObject = Controller.SerializedObject
                     });
-                    Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                    // Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                    Keys.Add(entry.Name);
                 }
                 else
                 {
@@ -55,7 +58,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                             Flags = entry.Flags,
                             SerializedObject = Controller.SerializedObject
                         });
-                        Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                        // Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                        Keys.Add(entry.Name);
                     }
                 }
             }

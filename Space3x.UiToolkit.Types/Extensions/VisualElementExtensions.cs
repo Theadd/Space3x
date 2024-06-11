@@ -72,6 +72,13 @@ namespace Space3x.UiToolkit.Types
             self.SetEnabled(isEnabled);
             return self;
         }
+        
+        public static VisualElement WithVerticalMargin(this VisualElement self, float value)
+        {
+            self.style.marginTop = value;
+            self.style.marginBottom = value;
+            return self;
+        }
 
         /// <summary>
         /// Provides access to the internal VisualElement's children List as an IList{VisualElement} for quick deconstructing.

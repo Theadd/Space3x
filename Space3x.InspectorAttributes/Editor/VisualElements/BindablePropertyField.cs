@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
@@ -6,6 +9,7 @@ using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using Unity.Properties;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -16,11 +20,16 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     {
         public static readonly string ussClassName = "ui3x-bindable-property-field";
         public static readonly string decoratorDrawersContainerClassName = "unity-decorator-drawers-container";
+        public static readonly string listViewNamePrefix = "unity-list-";
+        public static readonly string listViewBoundFieldProperty = "unity-list-view-property-field-bound";
         public VisualElement Field;
         public IProperty Property;
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
         private VisualElement m_DecoratorDrawersContainer;
         private PropertyAttributeController m_Controller;
+        private Type m_PropertyDrawerOnCollectionItems;
+        private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
+        private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
 
         public BindablePropertyField()
         {
@@ -68,6 +77,16 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     drawer = null;
                 }
             }
+
+            m_PropertyDrawerOnCollectionItems = vType.PropertyDrawerOnCollectionItems;
+            if (m_PropertyDrawerOnCollectionItems != null &&
+                typeof(IDrawer).IsAssignableFrom(m_PropertyDrawerOnCollectionItems))
+            {
+                m_PropertyDrawerOnCollectionItemsAttribute = vType.PropertyDrawerOnCollectionItemsAttribute;
+                m_RuntimeField = vType.RuntimeField;
+            }
+            else 
+                m_PropertyDrawerOnCollectionItems = null;
             
             if (drawer == null)
             {
@@ -82,6 +101,9 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 Field = field;
                 Add(Field);
             }
+
+            if (Field != null)
+                Field.tooltip = vType.Tooltip;
         }
 
         public void AttachDecoratorDrawers()
@@ -129,18 +151,48 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 | BindingFlags.NonPublic
                 | BindingFlags.Public);
             var isAdded = Field != null;
-            VisualElement field = propertyInfo.GetValue(m_Controller.DeclaringObject) switch
+            VisualElement field = null;
+            var propertyValue = propertyInfo.GetValue(m_Controller.DeclaringObject);
+            if (propertyValue is IList list)
             {
-                long _ => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
-                ulong _ => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
-                uint _ => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
-                int _ => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
-                double _ => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
-                float _ => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
-                bool _ => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
-                string _ => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
-                _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
-            };
+                Func<VisualElement> itemFactory = null;
+                if (m_PropertyDrawerOnCollectionItems != null)
+                {
+                    itemFactory = () =>
+                    {
+                        PropertyDrawer drawer = null;
+                        drawer = (PropertyDrawer)Activator.CreateInstance(m_PropertyDrawerOnCollectionItems);
+                        drawer.SetAttribute(m_PropertyDrawerOnCollectionItemsAttribute);
+                        drawer.SetFieldInfo(m_RuntimeField);
+                        drawer.SetPreferredLabel(Property.DisplayName());
+                        // TODO: CreatePropertyNodeGUI on Property item instead of the Property array itself.
+                        return ((ICreateDrawerOnPropertyNode)drawer).CreatePropertyNodeGUI(Property);
+                    };
+                }
+
+                field = list switch
+                {
+                    int[] _ => ConfigureListView<int[], VisualElement, int>
+                        (Field as ListView, () => new ListView(), itemFactory ?? (() => new IntegerField())),
+                    _ => null
+                };
+            }
+            else 
+            {
+                field = propertyValue switch
+                {
+                    long _ => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
+                    ulong _ => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
+                    uint _ => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
+                    int _ => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
+                    double _ => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
+                    float _ => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
+                    bool _ => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
+                    string _ => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
+                    // int[] _ => ConfigureListView<int[], IntegerField, int>(Field as ListView, () => new ListView(), () => new IntegerField()),
+                    _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
+                };
+            }
             Field = field;
             if (!isAdded)
                 this.Add(Field);
@@ -154,7 +206,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             if ((object) field == null)
             {
-                field = factory();
+                field = (TField) factory().WithClasses(BaseField<TValue>.alignedFieldUssClassName);
                 field.RegisterValueChangedCallback<TValue>((evt => 
                     this.OnFieldValueChanged((EventBase) evt)));
                 this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
@@ -177,52 +229,84 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             Debug.Log("  IN OnFieldValueChanged(ev);");
         }
+        
+        private VisualElement ConfigureListView<TValue, TItemField, TItemValue>(
+            ListView listView,
+            Func<ListView> factory,
+            Func<TItemField> itemFactory)
+            where TValue : IList, IList<TItemValue>
+            where TItemField : VisualElement
+            // where TItemField : BaseField<TItemValue>
+        {
+            if (listView == null)
+            {
+                listView = factory();
+                listView.showBorder = true;
+                listView.selectionType = SelectionType.Multiple;
+                listView.showAddRemoveFooter = true;
+                listView.showBoundCollectionSize = true;
+                listView.showFoldoutHeader = true;
+                listView.reorderable = !Property.IsNonReorderable();
+                listView.reorderMode = ListViewReorderMode.Animated;
+                listView.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
+                listView.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
+            }
+
+            listView.makeItem = () => itemFactory()
+                .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
+            listView.bindItem = (element, i) =>
+            {
+                if (element is TItemField itemField)
+                {
+                    itemField.dataSource = new BindableArrayDataSource<TValue, TItemValue>(
+                        m_Controller.DeclaringObject, Property.Name, i);
+                    itemField.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
+                    {
+                        dataSourcePath = new PropertyPath(nameof(BindableArrayDataSource<TValue, TItemValue>.Value)),
+                        bindingMode = BindingMode.TwoWay
+                    });
+                    if (element is BaseField<TItemValue> baseField)
+                    {
+                        baseField.label = "Element " + i;
+                    }
+                }
+            };
+            listView.onAdd = list =>
+            {
+                List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
+                newList.Add(default);
+                ((BindableDataSource<TValue>)this.dataSource).Value = list.itemsSource is Array
+                    ? (TValue)((IList<TItemValue>) newList.ToArray())
+                    : (TValue)((IList<TItemValue>) newList.ToList());
+                list.itemsSource = ((BindableDataSource<TValue>)this.dataSource).Value;
+            };
+            listView.onRemove = list =>
+            {
+                List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
+                var indices = new List<int>(list.selectedIndices);
+                if (indices.Count == 0)
+                    indices.Add(newList.Count - 1);
+                newList = newList.Where((item, i) => !indices.Contains(i)).ToList();
+                ((BindableDataSource<TValue>)this.dataSource).Value = list.itemsSource is Array
+                    ? (TValue)((IList<TItemValue>) newList.ToArray())
+                    : (TValue)((IList<TItemValue>) newList.ToList());
+                list.itemsSource = ((BindableDataSource<TValue>)this.dataSource).Value;
+            };
+            this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
+            var str = listViewNamePrefix + Property.PropertyPath;
+            listView.headerTitle = Property.DisplayName();
+            // listView.userData = (object) serializedProperty;
+            // listView.bindingPath = property.propertyPath;
+            listView.viewDataKey = str;
+            listView.name = str;
+            listView.itemsSource = ((BindableDataSource<TValue>)this.dataSource).Value;
+            // listView.SetProperty((PropertyName) listViewBoundFieldProperty, (object) this);
+            // listView.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
+            // {
+            //     dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
+            //     bindingMode = BindingMode.TwoWay
+            // });
+            return (VisualElement) listView;
+        }
     }
 }
-
-// [UxmlElement]
-// public partial class LocalizedToggle : VisualElement
-// {
-//     public static readonly BindingId titleProperty = nameof(Title);
-//  
-//     [UxmlAttribute, CreateProperty]
-//     public string Title
-//     {
-//         get => title;
-//         set
-//         {
-//             if (title == value)
-//                 return;
-//  
-//             title = value;
-//             UpdateText();
-//             NotifyPropertyChanged(titleProperty);
-//         }
-//     }
-//     private string title = "<KEY>";
-//  
-//     private Label label;
-//     private Label off;
-//     private Label on;
-//  
-//     public LocalizedToggle()
-//     {
-//         CreateElement();
-//         UpdateText();
-//     }
-//  
-//     private void CreateElement()
-//     {
-//         VisualTreeAsset uxml = Resources.Load<VisualTreeAsset>("Components/LocalizedToggle");
-//         Add(uxml.CloneTree());
-//     }
-//  
-//     private void UpdateText()
-//     {
-//         label = this.Q<Label>("title");
-//         off = this.Q<Label>("off");
-//         on = this.Q<Label>("on");
-//  
-//         label.text = Title;
-//     }
-// }

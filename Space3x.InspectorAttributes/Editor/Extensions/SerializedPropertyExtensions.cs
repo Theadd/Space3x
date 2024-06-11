@@ -63,8 +63,23 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 return prop.propertyPath[..^(prop.name.Length + 1)];
             else
             {
-                Debug.LogError($"Case not implemented in SerializedProperty.GetParentPath() for: {prop.propertyPath}");
-                return prop.propertyPath;
+                if (PropertyExtensions.IsPropertyIndexer(prop.propertyPath, out var fieldName, out var index))
+                {
+                    var lastDotIndex = fieldName.LastIndexOf('.');
+                    if (lastDotIndex < 0)
+                        return "";
+                    var lastPart = fieldName[(lastDotIndex + 1)..] + ".Array.data[" + index + "]";
+                    if (!prop.propertyPath.EndsWith("." + lastPart))
+                        throw new Exception(
+                            $"Unexpected. PropertyPath \"{prop.propertyPath}\" is not ending with \".{lastPart}\".");
+                    return prop.propertyPath[..^(lastPart.Length + 1)];
+                    // return fieldName;
+                }
+                else
+                {
+                    Debug.LogError($"Case not implemented in SerializedProperty.GetParentPath() for: {prop.propertyPath}");
+                    return prop.propertyPath;
+                }
             }
         }
 
@@ -77,7 +92,23 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 return prop.serializedObject.targetObject.GetInstanceID() ^ parentPath.GetHashCode();
         }
 
-        public static IProperty GetPropertyNode(this SerializedProperty prop) => 
-            PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
+        public static IProperty GetPropertyNode(this SerializedProperty prop)
+        {
+            // return PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
+            var c = PropertyAttributeController.GetInstance(prop);
+            IProperty n = null;
+            if (PropertyExtensions.IsPropertyIndexer(prop.propertyPath, out var fieldName, out var index))
+            {
+                n = c?.GetProperty(fieldName, index);
+                Debug.Log($"fieldName: {fieldName}, index: {index}, n.PropertyPath: {n?.PropertyPath}");
+            }
+            else
+            {
+                n = c?.GetProperty(prop.name);
+            }
+            
+            Debug.Log($"@GetPropertyNode: c is null? {(c == null)}; n is null? {(n == null)}; prop.name = {prop.name}; prop.propertyPath = {prop.propertyPath}");
+            return n;
+        }
     }
 }

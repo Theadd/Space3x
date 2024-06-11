@@ -10,8 +10,9 @@ namespace Space3x.Attributes.Types
         
         public string Text { get; set; } = string.Empty;
 
-        public ButtonAttribute() { }
+        public ButtonAttribute() : base(applyToCollection: false) { }
         
-        public ButtonAttribute(string methodName) => MethodName = methodName;
+        public ButtonAttribute(string methodName, bool applyToCollection = false)
+            : base(applyToCollection: applyToCollection) => MethodName = methodName;
     }
 }

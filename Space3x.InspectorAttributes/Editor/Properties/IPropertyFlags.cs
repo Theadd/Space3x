@@ -28,5 +28,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// [^3]: The rest, matching: !IsSerializable && !IsHidden.
         /// </summary>
         public bool IsSerializable => (Flags | VTypeFlags.Serializable) == Flags;
+        
+        public bool IsNonReorderable => (Flags | VTypeFlags.NonReorderable) == Flags;
     }
 }

@@ -18,4 +18,19 @@ namespace Space3x.InspectorAttributes.Editor
         public Type ValueType { get; }
         public VisualElement Field { get; set; }
     }
+    
+    public class NonSerializedPropertyNodeIndex : INonSerializedPropertyNodeIndex
+    {
+        public IBindablePropertyNode Indexer { get; set; }
+        public int Index { get; set; }
+        public VTypeFlags Flags => Indexer.Flags;
+        public string Name => "Array.data[" + Index + "]";
+        public SerializedObject SerializedObject => Indexer.SerializedObject;
+        public string PropertyPath => ParentPath + "." + Name;
+        public string ParentPath => Indexer.PropertyPath;
+        // TODO: everything below
+        public object Value { get; }
+        public Type ValueType { get; }
+        public VisualElement Field { get; set; }
+    }
 }

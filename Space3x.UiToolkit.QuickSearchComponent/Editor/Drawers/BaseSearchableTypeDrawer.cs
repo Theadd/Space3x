@@ -152,6 +152,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             return false;
         }
         
+        /**
+         * TODO: Use the following code to get rid of the GetUnderlyingType() call in order to allow edits on multiple objects.
+         * internal static System.Type GetArrayOrListElementType(this System.Type listType)
+         * {
+         *   if (listType.IsArray)
+         *     return listType.GetElementType();
+         *   return listType.IsGenericType ? listType.GetGenericArguments()[0] : (System.Type) null;
+         * }
+         */
         private static Type GetUnderlyingElementType(SerializedProperty property)
         {
             var type = property.GetUnderlyingType();

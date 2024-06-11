@@ -33,47 +33,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 
         public bool IsEditingMultipleObjects { get; private set; }
 
-        // protected EditorObjectProvider(IDrawer drawer)
-        // {
-        //     var serializedObject = drawer.Property?.serializedObject;
-        //     if (serializedObject != null)
-        //     {
-        //         Debug.Log($"  [PATH]: {drawer.Property.propertyPath}");
-        //         SerializedObject = serializedObject;
-        //         ParentPath = drawer.GetParentPath();
-        //         IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
-        //         if (!IsEditingMultipleObjects || (IsEditingMultipleObjects &&
-        //                                           PropertyHandlingExtensions.AllObjectTypesAreTheSame(
-        //                                               serializedObject.targetObjects)))
-        //         {
-        //             TargetObject = serializedObject.targetObject;
-        //             InstanceID = TargetObject.GetInstanceID();
-        //             TargetType = TargetObject.GetType();
-        //             DeclaringObject = drawer.Property.GetDeclaringObject(); // TODO: IProperty.DeclaringObject
-        //             var targetDeclaringType = TargetType.DeclaringType;
-        //             Type fieldDeclaringType = null;
-        //             
-        //             if (drawer is PropertyDrawer propertyDrawer)
-        //             {
-        //                 fieldDeclaringType = propertyDrawer.fieldInfo.DeclaringType;
-        //                 
-        //             }
-        //             
-        //             Debug.Log($"<color=#000000ff><b>// ANALYZING :: InstanceID = {InstanceID}; " +
-        //                       $"TargetType = {TargetType.Name}; TargetDeclaringType = {targetDeclaringType?.Name}; " +
-        //                       $"FieldDeclaringType = {fieldDeclaringType?.Name}; </b></color>");
-        //
-        //             IsValid = true;
-        //         }
-        //     }
-        // }
-        
         protected EditorObjectProvider(SerializedProperty property)
         {
             var serializedObject = property.serializedObject;
             if (serializedObject != null)
             {
-                Debug.Log($"  [PATH]: {property.propertyPath}");
                 SerializedObject = serializedObject;
                 ParentPath = property.GetParentPath();
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
@@ -85,11 +49,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     InstanceID = TargetObject.GetInstanceID();
                     TargetType = TargetObject.GetType();
                     DeclaringObject = property.GetDeclaringObject(); // TODO: IProperty.DeclaringObject
-                    var targetDeclaringType = TargetType.DeclaringType;
-                    Debug.Log($"<color=#000000ff><b>// ANALYZING :: InstanceID = {InstanceID}; " +
-                              $"TargetType = {TargetType.Name}; TargetDeclaringType = {targetDeclaringType?.Name}; " +
-                              $"</b></color>");
-
                     IsValid = true;
                 }
             }

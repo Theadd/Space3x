@@ -31,10 +31,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                 return null;
 
             SetupActiveSelection();
-            Debug.Log($"[PAC]  * Requesting {prop.GetParentPath()} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.name}</u> SerializedProperty...");
+            // Debug.Log($"[PAC]  * Requesting {prop.GetParentPath()} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.name}</u> SerializedProperty...");
             if (!s_Instances.TryGetValue(instanceId, out var value))
             {
-                Debug.Log($"[PAC] <b>!! Creating NEW Controller FOR:</b> {prop.GetParentPath()} @{prop.GetParentObjectHash()}");
+                // Debug.Log($"[PAC] <b>!! Creating NEW Controller FOR:</b> {prop.GetParentPath()} @{prop.GetParentObjectHash()}");
                 value = new PropertyAttributeController(prop);
                 value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType);
                 value.Properties = new RuntimeTypeProperties(value);
@@ -55,7 +55,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                 return null;
 
             SetupActiveSelection();
-            Debug.Log($"[PAC]  * Requesting {prop.ParentPath} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.Name}</u> IProperty...");
+            // Debug.Log($"[PAC]  * Requesting {prop.ParentPath} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.Name}</u> IProperty...");
             if (!s_Instances.TryGetValue(instanceId, out var value))
             {
                 throw new ArgumentException(
@@ -69,8 +69,34 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             s_Instances.Remove(controller.InstanceID);
 
         public IProperty GetProperty(string propertyName) => 
-            Properties.GetValue(propertyName.GetHashCode() ^ ParentPath.GetHashCode());
+            Properties.GetValue(propertyName); // Properties.GetValue(propertyName.GetHashCode() ^ ParentPath.GetHashCode());
         
+        public IProperty GetProperty(string propertyName, int arrayIndex)
+        {
+            IProperty indexer = Properties.GetValue(propertyName);
+            IProperty prop = null;
+            if (indexer is ISerializedPropertyNode serializedIndexer)
+            {
+                prop = new SerializedPropertyNodeIndex()
+                {
+                    Indexer = serializedIndexer,
+                    Index = arrayIndex
+                };
+            }
+            else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
+            {
+                prop = new NonSerializedPropertyNodeIndex()
+                {
+                    Indexer = nonSerializedIndexer,
+                    Index = arrayIndex
+                };
+            }
+            else
+                throw new ArgumentException("Unexpected value.");
+
+            return prop;
+        }
+
         static PropertyAttributeController() => RegisterCallbacks(true);
         
         private static int GetActiveSelectionHash() =>

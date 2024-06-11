@@ -23,26 +23,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private Button m_Button;
 
-        // private bool m_IsReady;
+        private bool m_IsReady;
 
-        public override void OnAttachedAndReady(VisualElement element)
+        private void PopulateNonSerializedProperties()
         {
-            // if (m_IsReady) return;
-            GhostContainer.WithClasses("dev-ui3x-on-ready");
-            Container.WithClasses("dev-ui3x-on-ready");
-            Field.WithClasses("dev-ui3x-on-ready");
-            ((IDrawer)this).InspectorElement.WithClasses("dev-ui3x-on-ready");
-            
-            Controller = PropertyAttributeController.GetInstance(Property);
-            element.WithClasses($"{this.GetType().Name}--{this.GetHashCode()}");
-            Debug.Log("PropertyAttributeController DONE! OnAttachedAndReady " + element.AsString());
-            if (m_Button == null)
-            {
-                m_Button = new Button(OnClick) { text = "Breakpoint! #" + UpdateCount };
-                element.Add(m_Button);
-            }
-
-            var parentElement = element.hierarchy.parent;
+            var parentElement = Container.hierarchy.parent;
             var allFields = new Dictionary<string, VisualElement>();
             foreach (var child in parentElement.hierarchy.Children())
             {
@@ -53,13 +38,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         allFields.Add(childProp.name, childField);
                 }
             }
-            
-            foreach (var k in allFields.Keys)
-            {
-                Debug.Log("      K: " + k);
-            }
-
-            // object declaringObject = null;
             VisualElement previousField = null;
             for (var i = 0; i < Controller.Properties.Values.Count; i++)
             {
@@ -91,6 +69,34 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     previousField = bindableField;
                 }
             }
+        }
+        
+        public override void OnAttachedAndReady(VisualElement element)
+        {
+            // if (m_IsReady) return;
+            GhostContainer.WithClasses("dev-ui3x-on-ready");
+            Container.WithClasses("dev-ui3x-on-ready");
+            Field.WithClasses("dev-ui3x-on-ready");
+            ((IDrawer)this).InspectorElement.WithClasses("dev-ui3x-on-ready");
+            
+            Controller = PropertyAttributeController.GetInstance(Property);
+            element.WithClasses($"{this.GetType().Name}--{this.GetHashCode()}");
+            // Debug.Log("PropertyAttributeController DONE! OnAttachedAndReady " + element.AsString());
+            if (m_Button == null)
+            {
+                m_Button = new Button(OnClick) { text = "Breakpoint! #" + UpdateCount };
+                element.Add(m_Button);
+            }
+
+            
+            
+            // foreach (var k in allFields.Keys)
+            // {
+            //     Debug.Log("      K: " + k);
+            // }
+
+            // object declaringObject = null;
+            
             // m_IsReady = true;
         }
 
@@ -116,6 +122,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnUpdate()
         {
+            if (!m_IsReady)
+            {
+                m_IsReady = true;
+                PopulateNonSerializedProperties();
+            }
             UpdateCount++;
             
             if (m_Button != null)

@@ -31,17 +31,27 @@ namespace Space3x.InspectorAttributes.Editor
         
         public Type ValueType { get; }
     }
-
-    public interface ISerializedPropertyNode : IPropertyNode, IPropertyWithSerializedObject
+    
+    public interface IBindablePropertyNode : IPropertyNode, IPropertyWithSerializedObject
     {
         public VisualElement Field { get; }
+    }
+
+    public interface ISerializedPropertyNode : IBindablePropertyNode { }
+    
+    public interface INonSerializedPropertyNode : IBindablePropertyNode { }
+
+    public interface IPropertyNodeIndex
+    {
+        public IBindablePropertyNode Indexer { get; set; }
+
+        public int Index { get; set; }
     }
     
-    public interface INonSerializedPropertyNode : IPropertyNode, IPropertyWithSerializedObject
-    {
-        public VisualElement Field { get; }
-    }
-
+    public interface ISerializedPropertyNodeIndex : ISerializedPropertyNode, IPropertyNodeIndex { }
+    
+    public interface INonSerializedPropertyNodeIndex : INonSerializedPropertyNode, IPropertyNodeIndex { }
+    
     // TODO
     public interface INodeArray : IProperty
     {

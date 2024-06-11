@@ -1,6 +1,7 @@
 ﻿using System;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -14,6 +15,30 @@ namespace Space3x.InspectorAttributes.Editor
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;
         public string ParentPath { get; set; }
+        public object Value { get; }
+        public Type ValueType { get; }
+        public VisualElement Field { get; set; }
+        public int Hash => this.GetHashCode();
+    }
+    
+    public class SerializedPropertyNodeIndex : ISerializedPropertyNodeIndex
+    {
+        public IBindablePropertyNode Indexer { get; set; }
+        public int Index { get; set; }
+        public VTypeFlags Flags => Indexer.Flags;
+        public string Name => "Array.data[" + Index + "]";
+        public SerializedObject SerializedObject => Indexer.SerializedObject;
+        public string PropertyPath
+        {
+            get
+            {
+                Debug.Log($"Indexer.Hash: {Indexer.GetHashCode()}, Indexer.PropertyPath: {Indexer.PropertyPath}, Indexer.Name: {Indexer.Name}, Indexer.ParentPath: {Indexer.ParentPath}");
+                return ParentPath + "." + Name;
+            }
+        }
+
+        public string ParentPath => Indexer.PropertyPath;
+        // TODO: everything below
         public object Value { get; }
         public Type ValueType { get; }
         public VisualElement Field { get; set; }
