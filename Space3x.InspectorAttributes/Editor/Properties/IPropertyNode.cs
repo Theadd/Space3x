@@ -34,12 +34,16 @@ namespace Space3x.InspectorAttributes.Editor
     
     public interface IBindablePropertyNode : IPropertyNode, IPropertyWithSerializedObject
     {
-        public VisualElement Field { get; }
+        public VisualElement Field { get; set; }
     }
 
     public interface ISerializedPropertyNode : IBindablePropertyNode { }
-    
-    public interface INonSerializedPropertyNode : IBindablePropertyNode { }
+
+    public interface INonSerializedPropertyNode : IBindablePropertyNode
+    {
+        public event Action<IProperty> ValueChanged;
+        public void NotifyValueChanged();
+    }
 
     public interface IPropertyNodeIndex
     {

@@ -140,18 +140,52 @@ namespace Space3x.InspectorAttributes.Editor
 
         public static void BindProperty<TValue>(this BaseField<TValue> field, IProperty property)
         {
-            if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
-            {
+            if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
                 field.BindProperty(serializedProperty);
-            }
             else
             {
-                field.dataSource = new BindableDataSource<TValue>(property.GetDeclaringObject(), property.Name);
+                field.dataSource = new BindableDataSource<TValue>(property);
                 field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
                 {
                     dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
                     bindingMode = BindingMode.TwoWay
                 });
+            }
+        }
+        
+        // public static void BindProperty<TValue>(this VisualElement element, IProperty property)
+        // {
+        //     if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
+        //         BindingExtensions.BindProperty((IBindable)element, serializedProperty);
+        //     else
+        //     {
+        //         element.dataSource = new BindableDataSource<TValue>(property);
+        //         element.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
+        //         {
+        //             dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
+        //             bindingMode = BindingMode.TwoWay
+        //         });
+        //     }
+        // }
+
+        public static void Unbind<TValue>(this BaseField<TValue> field)
+        {
+            if (field.HasBinding(nameof(BaseField<TValue>.value)))
+                field.ClearBinding(nameof(BaseField<TValue>.value));
+            BindingExtensions.Unbind((VisualElement)field);
+        }
+        
+        public static void TrackPropertyValue(this VisualElement element, IProperty property, Action<IProperty> callback = null)
+        {
+            if (property.HasSerializedProperty())
+                element.TrackPropertyValue(property.GetSerializedProperty(), callback == null ? null : _ => callback(property));
+            else
+            {
+                if (callback != null && property is INonSerializedPropertyNode bindableProperty)
+                {
+                    bindableProperty.ValueChanged -= callback;
+                    bindableProperty.ValueChanged += callback;
+                }
             }
         }
         

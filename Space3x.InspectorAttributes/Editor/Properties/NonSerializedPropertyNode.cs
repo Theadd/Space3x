@@ -7,6 +7,8 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public class NonSerializedPropertyNode : INonSerializedPropertyNode
     {
+        public event Action<IProperty> ValueChanged;
+        public void NotifyValueChanged() => ValueChanged?.Invoke(this); 
         public VTypeFlags Flags { get; set; }
         public string Name { get; set; }
         public SerializedObject SerializedObject { get; set; }
@@ -23,6 +25,12 @@ namespace Space3x.InspectorAttributes.Editor
     {
         public IBindablePropertyNode Indexer { get; set; }
         public int Index { get; set; }
+        public event Action<IProperty> ValueChanged
+        {
+            add => ((INonSerializedPropertyNode)Indexer).ValueChanged += value;
+            remove => ((INonSerializedPropertyNode)Indexer).ValueChanged -= value;
+        }
+        public void NotifyValueChanged() => ((INonSerializedPropertyNode)Indexer).NotifyValueChanged();
         public VTypeFlags Flags => Indexer.Flags;
         public string Name => "Array.data[" + Index + "]";
         public SerializedObject SerializedObject => Indexer.SerializedObject;

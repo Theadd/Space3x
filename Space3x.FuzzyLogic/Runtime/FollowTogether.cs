@@ -1,10 +1,12 @@
 ﻿using System;
+using Space3x.Attributes.Types;
 using UnityEngine;
 
 namespace Space3x.FuzzyLogic
 {
     public class FollowTogether : MonoBehaviour
     {
+        [Inline]
         public FollowTargetTogetherSO FuzzyLogicData;
         
         public float SpeedMultiplier = 1f;

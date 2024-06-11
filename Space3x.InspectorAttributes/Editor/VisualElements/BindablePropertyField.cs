@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Extensions;
@@ -27,7 +28,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
         private VisualElement m_DecoratorDrawersContainer;
         private PropertyAttributeController m_Controller;
-        private Type m_PropertyDrawerOnCollectionItems;
+        private Type m_PropertyDrawerOnCollectionItems = null;
         private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
         private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
 
@@ -39,6 +40,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             }
         }
 
+        public BindablePropertyField(IProperty property) : this()
+        {
+            BindProperty(property);
+        }
+
         private VisualElement CreateDecoratorDrawersContainer()
         {
             var element = new VisualElement();
@@ -47,11 +53,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             return element;
         }
 
-        public void BindProperty(IProperty property)
+        public void BindProperty(IProperty property, bool applyCustomDrawers = false)
         {
-            if (!(property is NonSerializedPropertyNode nonSerializedPropertyNode))
-                throw new ArgumentException("Invalid IProperty.");
-            nonSerializedPropertyNode.Field = this;
+            if (!(property is INonSerializedPropertyNode nonSerializedPropertyNode))
+                throw new ArgumentException($"Invalid IProperty, it must be a non serialized property in order to bind it to a {nameof(BindablePropertyField)}, for serialized properties, just use {nameof(PropertyField)} instead.");
+            // nonSerializedPropertyNode.Field = this;
             Property = nonSerializedPropertyNode;
             m_Controller = PropertyAttributeController.GetInstance(Property);
             if (m_Controller == null)
@@ -61,37 +67,38 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 throw new ArgumentException("Unexpected value.");
 
             PropertyDrawer drawer = null;
-            var propertyDrawer = vType.PropertyDrawer;
-            if (propertyDrawer != null && typeof(IDrawer).IsAssignableFrom(propertyDrawer))
+            if (applyCustomDrawers)
             {
-                try
+                var propertyDrawer = vType.PropertyDrawer;
+                if (propertyDrawer != null && typeof(IDrawer).IsAssignableFrom(propertyDrawer))
                 {
-                    drawer = (PropertyDrawer)Activator.CreateInstance(propertyDrawer);
-                    drawer.SetAttribute(vType.PropertyDrawerAttribute);
-                    drawer.SetFieldInfo(vType.RuntimeField);
-                    drawer.SetPreferredLabel(Property.DisplayName());
+                    try
+                    {
+                        drawer = (PropertyDrawer)Activator.CreateInstance(propertyDrawer);
+                        drawer.SetAttribute(vType.PropertyDrawerAttribute);
+                        drawer.SetFieldInfo(vType.RuntimeField);
+                        drawer.SetPreferredLabel(Property.DisplayName());
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogException(e);
+                        drawer = null;
+                    }
                 }
-                catch (Exception e)
+
+                m_PropertyDrawerOnCollectionItems = vType.PropertyDrawerOnCollectionItems;
+                if (m_PropertyDrawerOnCollectionItems != null &&
+                    typeof(IDrawer).IsAssignableFrom(m_PropertyDrawerOnCollectionItems))
                 {
-                    Debug.LogException(e);
-                    drawer = null;
+                    m_PropertyDrawerOnCollectionItemsAttribute = vType.PropertyDrawerOnCollectionItemsAttribute;
+                    m_RuntimeField = vType.RuntimeField;
                 }
+                else
+                    m_PropertyDrawerOnCollectionItems = null;
             }
 
-            m_PropertyDrawerOnCollectionItems = vType.PropertyDrawerOnCollectionItems;
-            if (m_PropertyDrawerOnCollectionItems != null &&
-                typeof(IDrawer).IsAssignableFrom(m_PropertyDrawerOnCollectionItems))
-            {
-                m_PropertyDrawerOnCollectionItemsAttribute = vType.PropertyDrawerOnCollectionItemsAttribute;
-                m_RuntimeField = vType.RuntimeField;
-            }
-            else 
-                m_PropertyDrawerOnCollectionItems = null;
-            
             if (drawer == null)
-            {
                 BindToBuiltInField();
-            }
             else
             {
                 var customDrawer = drawer as ICreateDrawerOnPropertyNode;
@@ -195,33 +202,62 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
                 };
             }
-            else 
+            else
             {
-                field = propertyValue switch
+                var propertyType = propertyValue?.GetType() ?? propertyInfo.FieldType;
+                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(ExposedReference<>))
                 {
-                    long _ => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
-                    ulong _ => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
-                    uint _ => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
-                    int _ => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
-                    double _ => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
-                    float _ => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
-                    bool _ => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
-                    string _ => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
-                    Color _ => ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName())),
-                    Vector2 _ => ConfigureField<Vector2Field, Vector2>(Field as Vector2Field, () => new Vector2Field(label: Property.DisplayName())),
-                    Vector3 _ => ConfigureField<Vector3Field, Vector3>(Field as Vector3Field, () => new Vector3Field(label: Property.DisplayName())),
-                    Vector4 _ => ConfigureField<Vector4Field, Vector4>(Field as Vector4Field, () => new Vector4Field(label: Property.DisplayName())),
-                    Rect _ => ConfigureField<RectField, Rect>(Field as RectField, () => new RectField(label: Property.DisplayName())),
-                    Bounds _ => ConfigureField<BoundsField, Bounds>(Field as BoundsField, () => new BoundsField(label: Property.DisplayName())),
-                    Vector2Int _ => ConfigureField<Vector2IntField, Vector2Int>(Field as Vector2IntField, () => new Vector2IntField(label: Property.DisplayName())),
-                    Vector3Int _ => ConfigureField<Vector3IntField, Vector3Int>(Field as Vector3IntField, () => new Vector3IntField(label: Property.DisplayName())),
-                    RectInt _ => ConfigureField<RectIntField, RectInt>(Field as RectIntField, () => new RectIntField(label: Property.DisplayName())),
-                    BoundsInt _ => ConfigureField<BoundsIntField, BoundsInt>(Field as BoundsIntField, () => new BoundsIntField(label: Property.DisplayName())),
-                    AnimationCurve _ => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
-                    Gradient _ => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
-                    Hash128 _ => ConfigureField<Hash128Field, Hash128>(Field as Hash128Field, () => new Hash128Field(label: Property.DisplayName())),
-                    _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
-                };
+                    field = new Label("Not implemented: ExposedReference<>");
+                }
+                if (typeof(UnityEngine.Object).IsAssignableFrom(propertyType))
+                {
+                    // TODO
+                    Debug.Log($"<b>Assignable TO UnityEngine.Object; propertyType: {propertyType.Name}; propertyValue IS null?: {(propertyValue == null)}</b>");
+                }
+
+                if (propertyValue == null)
+                {
+                    if (typeof(UnityEngine.Object).IsAssignableFrom(propertyType))
+                        field = ConfigureField<ObjectField, UnityEngine.Object>(Field as ObjectField,
+                            () => new ObjectField(label: Property.DisplayName())
+                            {
+                                objectType = propertyInfo.FieldType,
+                                allowSceneObjects = true
+                            });
+                    else
+                        field = new Label("Not implemented: " + propertyType.Name);
+                }
+                else 
+                    field = propertyValue switch
+                    {
+                        long _ => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
+                        ulong _ => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
+                        uint _ => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
+                        int _ => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
+                        double _ => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
+                        float _ => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
+                        bool _ => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
+                        string _ => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
+                        Color _ => ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName())),
+                        Vector2 _ => ConfigureField<Vector2Field, Vector2>(Field as Vector2Field, () => new Vector2Field(label: Property.DisplayName())),
+                        Vector3 _ => ConfigureField<Vector3Field, Vector3>(Field as Vector3Field, () => new Vector3Field(label: Property.DisplayName())),
+                        Vector4 _ => ConfigureField<Vector4Field, Vector4>(Field as Vector4Field, () => new Vector4Field(label: Property.DisplayName())),
+                        Rect _ => ConfigureField<RectField, Rect>(Field as RectField, () => new RectField(label: Property.DisplayName())),
+                        Bounds _ => ConfigureField<BoundsField, Bounds>(Field as BoundsField, () => new BoundsField(label: Property.DisplayName())),
+                        Vector2Int _ => ConfigureField<Vector2IntField, Vector2Int>(Field as Vector2IntField, () => new Vector2IntField(label: Property.DisplayName())),
+                        Vector3Int _ => ConfigureField<Vector3IntField, Vector3Int>(Field as Vector3IntField, () => new Vector3IntField(label: Property.DisplayName())),
+                        RectInt _ => ConfigureField<RectIntField, RectInt>(Field as RectIntField, () => new RectIntField(label: Property.DisplayName())),
+                        BoundsInt _ => ConfigureField<BoundsIntField, BoundsInt>(Field as BoundsIntField, () => new BoundsIntField(label: Property.DisplayName())),
+                        AnimationCurve _ => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
+                        Gradient _ => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
+                        Hash128 _ => ConfigureField<Hash128Field, Hash128>(Field as Hash128Field, () => new Hash128Field(label: Property.DisplayName())),
+                        UnityEngine.Object _ => ConfigureField<ObjectField, UnityEngine.Object>(Field as ObjectField, () => new ObjectField(label: Property.DisplayName())
+                        {
+                            objectType = propertyInfo.FieldType,
+                            allowSceneObjects = true
+                        }),
+                        _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
+                    };
             }
             Field = field;
             if (!isAdded)
@@ -237,9 +273,17 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             if ((object) field == null)
             {
                 field = (TField) factory().WithClasses(BaseField<TValue>.alignedFieldUssClassName);
-                field.RegisterValueChangedCallback<TValue>((evt => 
-                    this.OnFieldValueChanged((EventBase) evt)));
-                this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
+                field.RegisterValueChangedCallback<TValue>((ev =>
+                {
+                    if (this.dataSource is BindableDataSource<TValue> bindableSource)
+                    {
+                        Debug.Log($"<color=#FFFF00FF><b>RuntimeEquals: {RuntimeHelpers.Equals(bindableSource.Value, ev.newValue)} & {RuntimeHelpers.Equals(ev.previousValue, ev.newValue)};</b></color>");
+                        if (RuntimeHelpers.Equals(bindableSource.Value, ev.newValue) && !RuntimeHelpers.Equals(ev.previousValue, ev.newValue))
+                            bindableSource.NotifyValueChanged();
+                    }
+                    this.OnFieldValueChanged((EventBase)ev);
+                }));
+                this.dataSource = new BindableDataSource<TValue>(Property);
             }
             field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
             {
@@ -251,7 +295,9 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 
         private void OnFieldValueChanged(EventBase evt)
         {
-            Debug.Log("  IN OnFieldValueChanged(ev);");
+            // TODO
+            
+            Debug.Log("  IN OnFieldValueChanged(ev); // TODO: Is it really required?");
         }
         
         private VisualElement ConfigureListView<TValue, TItemValue>(
@@ -284,11 +330,10 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             listView.bindItem = (element, i) =>
             {
                 // if (element is TItemField itemField)
-                element.dataSource = new BindableArrayDataSource<TValue, TItemValue>(
-                        m_Controller.DeclaringObject, Property.Name, i);
+                element.dataSource = new BindableDataSource<TItemValue>(Property, i);
                 element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
                 {
-                    dataSourcePath = new PropertyPath(nameof(BindableArrayDataSource<TValue, TItemValue>.Value)),
+                    dataSourcePath = new PropertyPath(nameof(BindableDataSource<TItemValue>.Value)),
                     bindingMode = BindingMode.TwoWay
                 });
                 if (element is BaseField<TItemValue> baseField)
@@ -315,7 +360,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     : (TValue)((IList<TItemValue>) newList.ToList());
                 list.itemsSource = ((BindableDataSource<TValue>)this.dataSource).Value;
             };
-            this.dataSource = new BindableDataSource<TValue>(m_Controller.DeclaringObject, Property.Name);
+            this.dataSource = new BindableDataSource<TValue>(Property);
             var str = listViewNamePrefix + Property.PropertyPath;
             listView.headerTitle = Property.DisplayName();
             listView.viewDataKey = str;

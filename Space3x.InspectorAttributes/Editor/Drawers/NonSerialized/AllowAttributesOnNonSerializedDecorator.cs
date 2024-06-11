@@ -61,7 +61,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     // {
                     //     Property = nonSerializedNode
                     // };
-                    bindableField.BindProperty(nonSerializedNode);
+                    nonSerializedNode.Field = bindableField;
+                    bindableField.BindProperty(nonSerializedNode, applyCustomDrawers: true);
                     // bindableField.BindTo(declaringObject, nonSerializedNode.Name);
                     // nonSerializedNode.Field = bindableField;
                     previousField.AddAfter(bindableField);

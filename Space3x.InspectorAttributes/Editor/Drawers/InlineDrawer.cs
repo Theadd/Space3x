@@ -1,4 +1,5 @@
 ﻿using Space3x.Attributes.Types;
+using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -12,21 +13,43 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         protected VisualElement InspectorContainer { get; private set; }
         
         public override InlineAttribute Target => (InlineAttribute) attribute;
+
+        private VisualElement m_InnerField;
+        
+        // protected override VisualElement OnCreatePropertyGUI(IProperty property)
+        // {
+        //     var container = new VisualElement();
+        //     if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
+        //     {
+        //         var field = new PropertyField(serializedProperty);
+        //         field.Unbind();
+        //         field.TrackPropertyValue(serializedProperty, CheckInline);
+        //         field.BindProperty(serializedProperty);
+        //         InspectorContainer = new VisualElement();
+        //         container.Add(field);
+        //         container.Add(InspectorContainer);
+        //         OnUpdate();
+        //     }
+        //     
+        //     return container;
+        // }
         
         protected override VisualElement OnCreatePropertyGUI(IProperty property)
         {
             var container = new VisualElement();
-            if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
-            {
-                var field = new PropertyField(serializedProperty);
-                field.Unbind();
-                field.TrackPropertyValue(serializedProperty, CheckInline);
-                field.BindProperty(serializedProperty);
-                InspectorContainer = new VisualElement();
-                container.Add(field);
-                container.Add(InspectorContainer);
-                OnUpdate();
-            }
+
+            if (m_InnerField != null)   // TODO: remove
+                Debug.LogError($"<color=#FF0000FF><b>Duplicate call on OnCreatePropertyGUI of InlineDrawer for \"{property.PropertyPath}\".");
+
+            if (property.HasSerializedProperty())
+                m_InnerField = new PropertyField(property.GetSerializedProperty());
+            else
+                m_InnerField = new BindablePropertyField(property);
+            InspectorContainer = new BindableElement();
+            InspectorContainer.TrackPropertyValue(property, CheckInline);
+            container.Add(m_InnerField);
+            container.Add(InspectorContainer);
+            OnUpdate();
             
             return container;
         }
@@ -35,42 +58,63 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             InspectorContainer.Clear();
             // TODO
-            var property = Property.GetSerializedProperty();
-            switch (property.propertyType)
+            if (Property.HasSerializedProperty())
             {
-                case SerializedPropertyType.ObjectReference:
-                    if (property.objectReferenceValue != null)
-                    {
-                        var inlineInspector = new InspectorElement(property.objectReferenceValue);
-                        inlineInspector.SetEnabled(Target.ContentEnabled);
-                        InspectorContainer.Add(inlineInspector);
-                    }
+                var property = Property.GetSerializedProperty();
+                switch (property.propertyType)
+                {
+                    case SerializedPropertyType.ObjectReference:
+                        if (property.objectReferenceValue != null)
+                        {
+                            var inlineInspector = new InspectorElement(property.objectReferenceValue);
+                            inlineInspector.SetEnabled(Target.ContentEnabled);
+                            InspectorContainer.Add(inlineInspector);
+                        }
 
-                    break;
-                case SerializedPropertyType.ManagedReference:
-                    if (property.managedReferenceValue != null)
-                    {
-                        var inlineManagedObject = new PropertyField(property);
-                        inlineManagedObject.SetEnabled(Target.ContentEnabled);
-                        InspectorContainer.Add(inlineManagedObject);
-                    }
+                        break;
+                    case SerializedPropertyType.ManagedReference:
+                        if (property.managedReferenceValue != null)
+                        {
+                            var inlineManagedObject = new PropertyField(property);
+                            inlineManagedObject.SetEnabled(Target.ContentEnabled);
+                            InspectorContainer.Add(inlineManagedObject);
+                        }
 
-                    break;
-                case SerializedPropertyType.ExposedReference:
-                    if (property.exposedReferenceValue != null)
-                    {
-                        var inlineInspector = new InspectorElement(property.exposedReferenceValue);
-                        inlineInspector.SetEnabled(Target.ContentEnabled);
-                        InspectorContainer.Add(inlineInspector);
-                    }
+                        break;
+                    case SerializedPropertyType.ExposedReference:
+                        if (property.exposedReferenceValue != null)
+                        {
+                            var inlineInspector = new InspectorElement(property.exposedReferenceValue);
+                            inlineInspector.SetEnabled(Target.ContentEnabled);
+                            InspectorContainer.Add(inlineInspector);
+                        }
 
-                    break;
-                default:
-                    Debug.LogWarning($"InlineAttribute can't handle a property of type {property.propertyType}. (Property: {property.name})");
-                    break;
+                        break;
+                    default:
+                        Debug.LogWarning(
+                            $"InlineAttribute can't handle a property of type {property.propertyType}. (Property: {property.name})");
+                        break;
+                }
+            }
+            else
+            {
+                Debug.Log("#1");
+                if (m_InnerField.dataSource is IBindableDataSource bindableDataSource)
+                {
+                    Debug.Log("#2");
+                    var boxedValue = bindableDataSource.BoxedValue;
+                    if (boxedValue is UnityEngine.Object unityObject)
+                    {
+                        Debug.Log("#3");
+                        var customInspector = new InspectorElement(unityObject);
+                        customInspector.SetEnabled(Target.ContentEnabled);
+                        InspectorContainer.Add(customInspector);
+                    }
+                }
+                Debug.Log("#1+2+3?? OK");
             }
         }
 
-        private void CheckInline(SerializedProperty property) => OnUpdate();
+        private void CheckInline(IProperty property) => OnUpdate();
     }
 }

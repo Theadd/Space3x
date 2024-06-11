@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using Space3x.Attributes.Types;
+using UnityEngine;
 
 namespace Space3x.Unclassified
 {
     public class RotateAroundTarget : MonoBehaviour
     {
+        [Inline]
         public GameObject Target;
         
         public int RotationSpeed = 20;
