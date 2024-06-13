@@ -22,7 +22,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public static readonly string ussClassName = "ui3x-bindable-property-field";
         public static readonly string decoratorDrawersContainerClassName = "unity-decorator-drawers-container";
         public static readonly string listViewNamePrefix = "unity-list-";
-        public static readonly string listViewBoundFieldProperty = "unity-list-view-property-field-bound";
         public VisualElement Field;
         public IProperty Property;
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
@@ -35,15 +34,10 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public BindablePropertyField()
         {
             if (DecoratorDrawersContainer != null)
-            {
                 this.WithClasses(ussClassName, "unity-property-field");
-            }
         }
 
-        public BindablePropertyField(IProperty property) : this()
-        {
-            BindProperty(property);
-        }
+        public BindablePropertyField(IProperty property) : this() => BindProperty(property);
 
         private VisualElement CreateDecoratorDrawersContainer()
         {
@@ -57,7 +51,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             if (!(property is INonSerializedPropertyNode nonSerializedPropertyNode))
                 throw new ArgumentException($"Invalid IProperty, it must be a non serialized property in order to bind it to a {nameof(BindablePropertyField)}, for serialized properties, just use {nameof(PropertyField)} instead.");
-            // nonSerializedPropertyNode.Field = this;
             Property = nonSerializedPropertyNode;
             m_Controller = PropertyAttributeController.GetInstance(Property);
             if (m_Controller == null)
@@ -172,7 +165,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                         drawer.SetAttribute(m_PropertyDrawerOnCollectionItemsAttribute);
                         drawer.SetFieldInfo(m_RuntimeField);
                         drawer.SetPreferredLabel(Property.DisplayName());
-                        // TODO: CreatePropertyNodeGUI on Property item instead of the Property array itself.
+
                         return ((ICreateDrawerOnPropertyNode)drawer).CreatePropertyNodeGUI(Property);
                     };
                 }
@@ -205,16 +198,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             else
             {
                 var propertyType = propertyValue?.GetType() ?? propertyInfo.FieldType;
-                if (propertyType.IsGenericType && propertyType.GetGenericTypeDefinition() == typeof(ExposedReference<>))
-                {
-                    field = new Label("Not implemented: ExposedReference<>");
-                }
-                if (typeof(UnityEngine.Object).IsAssignableFrom(propertyType))
-                {
-                    // TODO
-                    Debug.Log($"<b>Assignable TO UnityEngine.Object; propertyType: {propertyType.Name}; propertyValue IS null?: {(propertyValue == null)}</b>");
-                }
-
                 if (propertyValue == null)
                 {
                     if (typeof(UnityEngine.Object).IsAssignableFrom(propertyType))
@@ -266,7 +249,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         
         private TField ConfigureField<TField, TValue>(
             TField field,
-            // SerializedProperty property,
             Func<TField> factory)
             where TField : BaseField<TValue>
         {
@@ -276,12 +258,8 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 field.RegisterValueChangedCallback<TValue>((ev =>
                 {
                     if (this.dataSource is BindableDataSource<TValue> bindableSource)
-                    {
-                        Debug.Log($"<color=#FFFF00FF><b>RuntimeEquals: {RuntimeHelpers.Equals(bindableSource.Value, ev.newValue)} & {RuntimeHelpers.Equals(ev.previousValue, ev.newValue)};</b></color>");
                         if (RuntimeHelpers.Equals(bindableSource.Value, ev.newValue) && !RuntimeHelpers.Equals(ev.previousValue, ev.newValue))
                             bindableSource.NotifyValueChanged();
-                    }
-                    this.OnFieldValueChanged((EventBase)ev);
                 }));
                 this.dataSource = new BindableDataSource<TValue>(Property);
             }
@@ -293,20 +271,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             return field;
         }
 
-        private void OnFieldValueChanged(EventBase evt)
-        {
-            // TODO
-            
-            Debug.Log("  IN OnFieldValueChanged(ev); // TODO: Is it really required?");
-        }
-        
         private VisualElement ConfigureListView<TValue, TItemValue>(
             Func<VisualElement> itemFactory,
             ListView listView,
             Func<ListView> factory = null)
             where TValue : IList, IList<TItemValue>
-            // where TItemField : VisualElement
-            // where TItemField : BaseField<TItemValue>
         {
             if (listView == null)
             {
@@ -329,7 +298,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
             listView.bindItem = (element, i) =>
             {
-                // if (element is TItemField itemField)
                 element.dataSource = new BindableDataSource<TItemValue>(Property, i);
                 element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
                 {
