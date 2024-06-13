@@ -12,7 +12,6 @@ namespace Space3x.Attributes.Types
 
         public ButtonAttribute() : base(applyToCollection: false) { }
         
-        public ButtonAttribute(string methodName, bool applyToCollection = false)
-            : base(applyToCollection: applyToCollection) => MethodName = methodName;
+        public ButtonAttribute(string methodName) => MethodName = methodName;
     }
 }

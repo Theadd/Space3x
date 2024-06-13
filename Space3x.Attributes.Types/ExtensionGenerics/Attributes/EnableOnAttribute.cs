@@ -7,12 +7,13 @@ namespace Space3x.Attributes.Types
         AttributeTargets.Field | AttributeTargets.Property, 
         AllowMultiple = true, 
         Inherited = true)]
-    public class VisibleAttribute : 
+    public class EnableOnAttribute : 
         PropertyAttribute,
-        IVisibleEx<VisibleAttribute>
+        IEnableOnEx<EnableOnAttribute>
     {
-        public bool Visible { get; private set; }
+        public bool Enabled { get; set; } = true;
+        public string Condition { get; private set; }
         
-        public VisibleAttribute(bool visible = true) => Visible = visible;
+        public EnableOnAttribute(string condition) => Condition = condition;
     }
 }
