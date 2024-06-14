@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-using UnityEngine.UIElements;
+﻿using UnityEngine.UIElements;
 
 namespace Space3x.Attributes.Types.VisualElements
 {
@@ -11,7 +10,6 @@ namespace Space3x.Attributes.Types.VisualElements
         private bool m_FixedPanelCollapsedState;
         private bool m_Attached;
         public VisualElement ActivePanel { get; private set; }
-        public VisualElement OriginalContentContainer { get; private set; }
 
         public override VisualElement contentContainer => ActivePanel ?? base.contentContainer;
 
@@ -36,10 +34,8 @@ namespace Space3x.Attributes.Types.VisualElements
             }
         }
 
-
-        public SplitterContainer() : base()
+        public SplitterContainer()
         {
-            OriginalContentContainer = base.contentContainer;
             IsFixedPanelActive = false;
             AddToClassList("ui3x-splitter-setup");
             RegisterCallback<AttachToPanelEvent>(AddEventListeners);
