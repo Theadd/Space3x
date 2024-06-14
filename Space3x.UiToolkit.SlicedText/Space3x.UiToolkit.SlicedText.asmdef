@@ -4,13 +4,17 @@
     "references": [
         "Space3x.UiToolkit.Types"
     ],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [],
+    "defineConstraints": [
+        "!RUNTIME_INCLUDE_SLICEDTEXT"
+    ],
     "versionDefines": [],
     "noEngineReferences": false
 }

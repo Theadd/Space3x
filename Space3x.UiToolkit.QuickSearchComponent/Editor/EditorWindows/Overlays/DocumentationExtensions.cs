@@ -29,10 +29,7 @@ public static class DocumentationExtensions
         var parametersString = "";
         foreach (var parameterInfo in methodInfo.GetParameters())
         {
-            if (parametersString.Length > 0)
-            {
-                parametersString += ",";
-            }
+            if (parametersString.Length > 0) parametersString += ",";
 
             parametersString += parameterInfo.ParameterType.FullName;
         }
@@ -116,14 +113,11 @@ public static class DocumentationExtensions
     private static XmlElement XmlFromName(this Type type, char prefix, string name)
     {
         string fullName;
-
         if (string.IsNullOrEmpty(name))
             fullName = prefix + ":" + type.FullName;
         else
             fullName = prefix + ":" + type.FullName + "." + name;
-
         var xmlDocument = XmlFromAssembly(type.Assembly);
-
         var matchedElement = xmlDocument["doc"]["members"].SelectSingleNode("member[@name='" + fullName + "']") as XmlElement;
 
         return matchedElement;
@@ -148,8 +142,6 @@ public static class DocumentationExtensions
     /// the XML file is not loaded and parsed on every single lookup</remarks>
     public static XmlDocument XmlFromAssembly(this Assembly assembly)
     {
-//        Debug.LogWarning($"// TODO: REMOVE CALL TO RemoveAssemblyFromCache");
-//        RemoveAssemblyFromCache(assembly);
         if (FailCache.TryGetValue(assembly, out var value))
             throw value;
         try

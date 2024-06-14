@@ -1,7 +1,7 @@
-﻿using Space3x.Attributes.Types.VisualElements;
-using Space3x.UiToolkit.Types;
+﻿using Space3x.UiToolkit.Types;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
+using SplitterContainer = Space3x.UiToolkit.Types.SplitterContainer;
 using ToolbarSearchField = Space3x.UiToolkit.SlicedText.InputFields.ToolbarSearchField;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements

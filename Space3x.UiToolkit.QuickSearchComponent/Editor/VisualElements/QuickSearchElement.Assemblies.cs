@@ -16,21 +16,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         [UxmlAttribute]
         public bool ShowAllAssemblies;
 
-        private System.Diagnostics.Stopwatch m_Stopwatch;
-        
         [UxmlAttribute]
         public Type[] DataSource
         {
             get => m_Datasource.Select(t => t.Value).ToArray();
             set
             {
-                m_Stopwatch = new System.Diagnostics.Stopwatch();
-                m_Stopwatch.Start();
                 m_Datasource = value
                     .Select(t => new NamedSymbol(t))
                     .ToList();
-                m_Stopwatch.Stop();
-                Debug.Log($"[QuickSearchElement] DataSource: {m_Stopwatch.ElapsedMilliseconds}ms");
                 if (m_IsFullyLoaded)
                 {
                     if (!ShowAllAssemblies)

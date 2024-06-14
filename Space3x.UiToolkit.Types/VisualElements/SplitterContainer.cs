@@ -1,6 +1,6 @@
 ﻿using UnityEngine.UIElements;
 
-namespace Space3x.Attributes.Types.VisualElements
+namespace Space3x.UiToolkit.Types
 {
     [UxmlElement]
     public partial class SplitterContainer : TwoPaneSplitView

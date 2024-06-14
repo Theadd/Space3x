@@ -185,13 +185,6 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return self;
         }
 
-        [Obsolete("Use VisualElement.RemoveFromHierarchy instead.")]
-        public static VisualElement RemoveFromHierarchy(this VisualElement self)
-        {
-            self.hierarchy.parent?.hierarchy.Remove(self);
-            return self;
-        }
-        
         public static IEnumerable<T> GetChildren<T>(this VisualElement self) where T : VisualElement
         {
             foreach (var child in self.Children())

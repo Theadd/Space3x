@@ -53,10 +53,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
             UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), true);
             IsExpanded = Property.IsExpanded();
-            Debug.Log($"isExpanded: {IsExpanded}, " +
-                      $"PropertyPath: {Property.PropertyPath}, " +
-                      $"PropertyHash: {Property.GetHashCode()}, " +
-                      $"SerializedObjectHash: {Property.GetSerializedObject().GetHashCode()}");
             if (!m_IsTypeValue)
                 Property.SetExpanded(false);
 

@@ -37,41 +37,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
         }
     }
 
-//    public static class InterfaceAttributeExtensionsOnSerializedProperties
-//    {
-//        public static List<TValue> GetValues<TValue>(this IValues self, SerializedProperty property)
-//        {
-//            return null;
-//        }
-//    }
-    
     public static class DerivedTypeSearcherAttributeExtensions
     {
-//        
-//        
-//        private static List<Type> Extended<TAttributeExtension>(this IReadOnlyList<Type> types)
-//            where TAttributeExtension : IAttributeExtension, IDerivedType
-//        {
-//            
-//            
-//            return null;
-//        }
-//        
-//        private static List<Type> GetDerivedTypesAll(this IDerivedType self) =>
-//            self.BaseType
-//                .GetAllTypes(self.GenericParameterTypes)
-//                .Where(t => (t.MemberType & MemberTypes.NestedType) != MemberTypes.NestedType || IsAllowedTypeName(t.Name))
-//                .ToList();
-//        
-//        public static List<Type> GetAllTypesV2(this BaseSearchableTypeAttribute self, SerializedProperty property)
-//        {
-//            // self.ReloadCache();
-//            IList<Type> allValues = new List<Type>();
-//            if (self is IDerivedType selfWithDerivedType) allValues = selfWithDerivedType.GetDerivedTypesAll();
-//            
-//            return self.CachedTypes ??= self.GetDerivedTypes(property);
-//        }
-//        
         public static List<Type> GetAllTypes(this DerivedTypeSearcherAttribute self, SerializedProperty property)
         {
             // self.ReloadCache();
@@ -108,7 +75,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
         private static List<Type> GetAllDerivedTypes(this DerivedTypeSearcherAttribute self) =>
             self.BaseType
                 .GetAllTypes(self.GenericParameterTypes)
-                // .Where(t => (t.MemberType & MemberTypes.NestedType) != MemberTypes.NestedType || (0 > t.Name.LastIndexOf(badName, StringComparison.Ordinal)))
                 .Where(t => (t.MemberType & MemberTypes.NestedType) != MemberTypes.NestedType || IsAllowedTypeName(t.Name))
                 .ToList();
 

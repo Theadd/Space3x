@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor
 {
@@ -56,8 +55,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
             Value = value;
             Active = true;
             RawValue = (int) (object) value;
-            // var allValues = ((T[])Enum.GetValues(typeof(T))).ToList<T>().Select(v => new EnumFlagsFilter<T>((T) v)).ToList();
-            // var allValuesX = Enum.GetNames(typeof(T)).To
         }
 
         public override string ToString() => Enum.GetName(typeof(T), Value);

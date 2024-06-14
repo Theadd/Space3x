@@ -11,10 +11,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
 {
     public static class TypeUndoRedoController
     {
-//        private static Dictionary<int, VisualElement> s_Values = new Dictionary<int, VisualElement>();
         private static Dictionary<int, UnityObject> s_Targets = new Dictionary<int, UnityObject>();
-//        private static Dictionary<SerializedProperty, VisualElement> s_Properties = new Dictionary<SerializedProperty, VisualElement>();
-//        private static Dictionary<int, SerializedProperty> s_TargetProperties = new Dictionary<int, SerializedProperty>();
         private static Dictionary<int, string> s_PropertyPaths = new Dictionary<int, string>();
         private static Dictionary<UnityObject, Dictionary<string, VisualElement>> s_Elements = new Dictionary<UnityObject, Dictionary<string, VisualElement>>();
         private static Dictionary<int, Type> s_UndoValues = new Dictionary<int, Type>();
@@ -24,17 +21,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
         public static void AddValue(int id, SerializedProperty property, VisualElement value = null)
         {
             Initialize();
-//            s_Values.Add(id, value);
             s_Targets[id] = property.serializedObject.targetObject;
-//            s_TargetProperties[id] = property;
-//            s_Properties[property] = value;
             s_PropertyPaths[id] = property.propertyPath;
             if (value != null)
                 Bind(property, value);
         }
         
-//        public static void RemoveValue(int id) => s_Values.Remove(id);
-
         private static void Initialize()
         {
             if (s_Registered) return;
@@ -46,8 +38,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
         public static void Bind(SerializedProperty property, VisualElement value)
         {
             Initialize();
-//            s_Properties[property] = value;
-            // s_Targets[property.serializedObject.targetObject] = value;
             if (s_Elements.TryGetValue(property.serializedObject.targetObject, out var elements))
             {
                 elements[property.propertyPath] = value;

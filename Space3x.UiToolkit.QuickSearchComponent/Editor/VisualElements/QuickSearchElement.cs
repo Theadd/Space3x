@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Space3x.Attributes.Types.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
+using SplitterContainer = Space3x.UiToolkit.Types.SplitterContainer;
 using ToolbarSearchField = Space3x.UiToolkit.SlicedText.InputFields.ToolbarSearchField;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
@@ -71,8 +70,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         public void Refresh()
         {
-            m_Stopwatch = new System.Diagnostics.Stopwatch();
-            m_Stopwatch.Start();
             var filterAssemblies = m_ActiveAssemblies.Length != m_Assemblies.Length;
             var searchFilter = m_SearchString != string.Empty;
             var typeFilter = m_ActiveAttributeTypeFilters.Count != m_AttributeTypeFilters.Count;
@@ -126,17 +123,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                     .ToList(),
                 _ => throw new ArgumentOutOfRangeException()
             };
-            m_Stopwatch.Stop();
-            Debug.Log($"[QuickSearchElement.Refresh()] Time elapsed: {m_Stopwatch.ElapsedMilliseconds} ms");
-            m_Stopwatch.Restart();
             m_ListView.SetDatasource(m_FilteredDatasource.Select(t => t.DisplayName).ToList());
-            m_Stopwatch.Stop();
-            Debug.Log($"[QuickSearchElement.RefreshSetDatasource()] Time elapsed: {m_Stopwatch.ElapsedMilliseconds} ms");
-            m_Stopwatch.Restart();
             UpdateSelectedIndicesInFilteredDatasource();
-            m_Stopwatch.Stop();
-            Debug.Log($"[QuickSearchElement.RefreshUpdateSelectedIndicesInFilteredDatasource()] Time elapsed: {m_Stopwatch.ElapsedMilliseconds} ms");
         }
     }
 }
-
