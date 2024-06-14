@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
@@ -9,13 +8,11 @@ namespace Space3x.Attributes.Types
     /// Allows to select a type from a list of types deriving from a base type
     /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
-    public class DerivedTypeSearcherAttribute : TypeSearcherAttribute //, IDerivedType, IConditional
+    public class DerivedTypeSearcherAttribute : TypeSearcherAttribute
     {
         public Type BaseType { get; internal set; }
         public List<Type> GenericParameterTypes { get; internal set; }
-//        public bool Value { get; set; } = true;
-//        public string OnCondition { get; set; } = string.Empty;
-        
+
         public DerivedTypeSearcherAttribute(Type baseType)
         {
             BaseType = baseType;

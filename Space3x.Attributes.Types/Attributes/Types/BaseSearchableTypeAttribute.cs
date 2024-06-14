@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true, Inherited = false)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
     public abstract class BaseSearchableTypeAttribute : PropertyAttribute
     {
         internal List<Type> CachedTypes { get; set; }
