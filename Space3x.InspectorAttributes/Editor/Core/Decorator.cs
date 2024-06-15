@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using Space3x.Attributes.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -58,8 +55,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private bool m_Detached;
         private bool m_Ready;
-        private bool m_GeometryChangePending;
-        private bool m_GeometryChangeCompleted;
         private bool m_Disposed = false;
         
         private IVisualElementScheduledItem m_DelayedTask;
@@ -219,7 +214,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnGeometryChanged(GeometryChangedEvent ev)
         {
-            m_GeometryChangeCompleted = true;
             if (((IDrawer) this).InspectorElement is InspectorElement inspectorElement)
             {
                 inspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
@@ -238,8 +232,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             Container = null;
             m_Detached = false;
             m_Ready = false;
-            m_GeometryChangePending = false;
-            m_GeometryChangeCompleted = false;
             if (disposing)
             {
                 GhostContainer?.RemoveFromHierarchy();

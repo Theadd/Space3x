@@ -44,12 +44,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return Container;
         }
         
-        public sealed override VisualElement CreatePropertyGUI(SerializedProperty property)
-        {
-            var pNode = property.GetPropertyNode();
-            Debug.Log($"// TODO: remove; @CreatePropertyGUI: {(property?.propertyPath ?? "--NONE--")}; pNode.PropertyPath: {(pNode?.PropertyPath ?? "--NONE--")}");
-            return CreatePropertyNodeGUI(property.GetPropertyNode());
-        }
+        public sealed override VisualElement CreatePropertyGUI(SerializedProperty property) =>
+            CreatePropertyNodeGUI(property.GetPropertyNode());
 
         private void OnAttachToPanel(AttachToPanelEvent evt) => 
             ((IDrawer)this).AddDefaultStyles();
