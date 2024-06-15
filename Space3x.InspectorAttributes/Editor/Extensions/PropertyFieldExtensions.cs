@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
@@ -116,23 +116,18 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                                 childField.MarkDirtyRepaint();
                             }
                             else
-                            {
-                                Debug.Log($"                      !!!! FAILED TO REBIND WITH RELATIVE PATH: {childRelativePath}");
-                            }
+                                DebugLog.Info($"FAILED TO REBIND WITH RELATIVE PATH: {childRelativePath}");
                         }
                         else
-                        {
-                            Debug.Log($"                      !!!! FAILED TO REBIND FIELD AT: {childProperty.propertyPath}");
-                        }
+                            DebugLog.Info($"FAILED TO REBIND FIELD AT: {childProperty.propertyPath}");
                     }
                 }
                 else
                 {
                     if (childProperty.propertyPath != parentPath)
-                        Debug.Log($"Not found: {childProperty.propertyPath} ON {parentPath}");
+                        DebugLog.Info($"Not found: {childProperty.propertyPath} ON {parentPath}");
                 }
             } while (property.Next(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
-            // } while (property.NextVisible(visitChild) && !SerializedProperty.EqualContents(property, endProperty));
             endProperty = (SerializedProperty) null;
         }
     }

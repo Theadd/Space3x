@@ -1,7 +1,7 @@
-﻿using Space3x.InspectorAttributes.Editor.Drawers;
+﻿using Space3x.Attributes.Types;
+using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
@@ -85,7 +85,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 }
 
             if (!isValid)
-                Debug.Log("<color=#000000CC>  Marker REBUILT from <b>#" + prevContainerName + "</b> as: </color>" + decorator.Container.AsString());
+                DebugLog.Info("<color=#000000CC>  Marker REBUILT from <b>#" + prevContainerName + "</b> as: </color>" + decorator.Container.AsString());
             
             return !isValid;
         }

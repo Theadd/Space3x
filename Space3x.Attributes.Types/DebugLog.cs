@@ -10,5 +10,12 @@ namespace Space3x.Attributes.Types
             Debug.LogError(msg);
             #endif
         }
+        
+        public static void Info(string msg)
+        {
+            #if SPACE3X_DEBUG
+            Debug.Log(msg);
+            #endif
+        }
     }
 }
