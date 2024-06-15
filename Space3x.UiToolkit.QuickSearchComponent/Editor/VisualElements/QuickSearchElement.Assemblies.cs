@@ -19,7 +19,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         [UxmlAttribute]
         public Type[] DataSource
         {
-            get => m_Datasource.Select(t => t.Value).ToArray();
+            get => m_Datasource?.Select(t => t.Value).ToArray() ?? Type.EmptyTypes;
             set
             {
                 m_Datasource = value

@@ -70,7 +70,9 @@ namespace Space3x.InspectorAttributes.Editor
 
         private void OnSelectionChanged(IEnumerable<object> obj)
         {
-            m_Content.text = s_Texts[m_List.selectedIndex];
+            var index = m_List.selectedIndex;
+            if (index >= 0 && index < s_Texts.Count)
+                m_Content.text = s_Texts[m_List.selectedIndex];
         }
     }
 }

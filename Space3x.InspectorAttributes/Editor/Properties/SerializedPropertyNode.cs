@@ -28,14 +28,7 @@ namespace Space3x.InspectorAttributes.Editor
         public VTypeFlags Flags => Indexer.Flags;
         public string Name => "Array.data[" + Index + "]";
         public SerializedObject SerializedObject => Indexer.SerializedObject;
-        public string PropertyPath
-        {
-            get
-            {
-                Debug.Log($"Indexer.Hash: {Indexer.GetHashCode()}, Indexer.PropertyPath: {Indexer.PropertyPath}, Indexer.Name: {Indexer.Name}, Indexer.ParentPath: {Indexer.ParentPath}");
-                return ParentPath + "." + Name;
-            }
-        }
+        public string PropertyPath => ParentPath + "." + Name;
 
         public string ParentPath => Indexer.PropertyPath;
         // TODO: everything below

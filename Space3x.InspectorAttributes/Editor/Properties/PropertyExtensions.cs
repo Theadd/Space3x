@@ -43,10 +43,8 @@ namespace Space3x.InspectorAttributes.Editor
                 if (iStart >= 0)
                 {
                     var sIndex = propertyPart.Substring(iStart + 1, propertyPart.Length - (iStart + 2));
-                    Debug.Log("sIndex: " + sIndex);
                     index = int.Parse(sIndex);
                     fieldName = propertyPart[..iStart];
-                    Debug.Log($"fieldName: #{fieldName}#, index: #{index}#");
                     return true;
                 }
             }
@@ -112,7 +110,6 @@ namespace Space3x.InspectorAttributes.Editor
 
         public static string DisplayName(this IProperty self)
         {
-            Debug.Log($"Name: {self.Name}");
             if (self.HasSerializedProperty())
                 return self.GetSerializedProperty().displayName;
             else
@@ -152,21 +149,6 @@ namespace Space3x.InspectorAttributes.Editor
                 });
             }
         }
-        
-        // public static void BindProperty<TValue>(this VisualElement element, IProperty property)
-        // {
-        //     if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
-        //         BindingExtensions.BindProperty((IBindable)element, serializedProperty);
-        //     else
-        //     {
-        //         element.dataSource = new BindableDataSource<TValue>(property);
-        //         element.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
-        //         {
-        //             dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
-        //             bindingMode = BindingMode.TwoWay
-        //         });
-        //     }
-        // }
 
         public static void Unbind<TValue>(this BaseField<TValue> field)
         {
@@ -188,41 +170,5 @@ namespace Space3x.InspectorAttributes.Editor
                 }
             }
         }
-        
-        // private TField ConfigureField<TField, TValue>(
-        //     TField field,
-        //     // SerializedProperty property,
-        //     Func<TField> factory)
-        //     where TField : BaseField<TValue>
-        // {
-        //     if ((object) field == null)
-        //     {
-        //         field = factory();
-        //         field.RegisterValueChangedCallback<TValue>((evt => 
-        //             this.OnFieldValueChanged((EventBase) evt)));
-        //         this.dataSource = new BindableDataSource<TValue>(DeclaringObject, PropertyName);
-        //     }
-        //     // string str = this.label ?? property.localizedDisplayName;
-        //     // field.bindingPath = property.propertyPath;
-        //     // field.SetProperty(BaseField<TValue>.serializedPropertyCopyName, (object) property.Copy());
-        //     // field.name = "unity-input-" + property.propertyPath;
-        //     // field.label = str;
-        //     field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
-        //     {
-        //         dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
-        //         bindingMode = BindingMode.TwoWay
-        //     });
-        //     // PropertyField.ConfigureFieldStyles<TField, TValue>(field);
-        //     return field;
-        // }
-        
-        
-        // private static Type GetUnderlyingElementType(this IProperty self)  // SerializedProperty property
-        // {
-        //     SerializedPropertyUtility.
-        //     var type = property.GetUnderlyingType();
-        //     if (property.isArray) type = type.GetElementType() ?? type.GetGenericArguments().FirstOrDefault();
-        //     return type;
-        // }
     }
 }
