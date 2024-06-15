@@ -15,7 +15,8 @@
     margin-top: 1px;
     margin-bottom: 1px;
     margin-left: 3px;
-    margin-right: -2px;
+    margin-right: -1px;
+    padding-top: 0;
 }
 
 .ui3x-property-group-field--with-label.ui3x-group-type--row > .ui3x-property-group {
@@ -71,6 +72,7 @@
 .ui3x-property-group > .ui3x-group--column > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
+    overflow: visible;
 }
 
 .ui3x-property-group > .ui3x-group--none {
@@ -94,3 +96,52 @@
 .ui3x-no-toggle > .unity-foldout > .unity-toggle {
     display: none;
 }
+
+.ui3x-auto-decorator > .unity-help-box > .unity-help-box__icon {
+    max-height: 20px;
+    min-height: 20px;
+    max-width: 22px;
+    min-width: 22px;
+    margin: 4px 4px 4px 4px;
+}
+
+.ui3x-auto-decorator > .unity-help-box > .unity-label {
+    font-size: 12px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.ui3x-auto-decorator > .unity-help-box {
+    align-items: flex-start;
+}
+
+.ui3x-header {
+    font-size: 13px;
+    margin-top: 13px;
+    padding-left: 1px;
+    padding-right: 2px;
+    flex-grow: 1;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+/* Toggle within a BeginRow/EndRow group. */
+.ui3x-group--row > .unity-toggle > .unity-label {
+    flex-shrink: 0;
+    white-space: normal;
+}
+
+.ui3x-group--row > .unity-toggle > .unity-toggle__input {
+    flex-grow: 0;
+    flex-shrink: 1;
+    align-self: flex-start;
+    margin-bottom: 1px;
+    margin-left: 0;
+    margin-right: 4px;
+    margin-top: 1px;
+}
+
+.ui3x-group--row > .unity-toggle {
+    flex-direction: row-reverse;
+}
+/* --- */
