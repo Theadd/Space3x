@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
-using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 {
@@ -17,8 +16,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         
         public RuntimeTypeProperties Properties { get; private set; }
 
-        // private PropertyAttributeController(IDrawer drawer) : base(drawer) { }
-        
         private PropertyAttributeController(SerializedProperty property) : base(property) { }
 
         public static PropertyAttributeController GetInstance(SerializedProperty prop)
@@ -31,16 +28,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                 return null;
 
             SetupActiveSelection();
-            // Debug.Log($"[PAC]  * Requesting {prop.GetParentPath()} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.name}</u> SerializedProperty...");
             if (!s_Instances.TryGetValue(instanceId, out var value))
             {
-                // Debug.Log($"[PAC] <b>!! Creating NEW Controller FOR:</b> {prop.GetParentPath()} @{prop.GetParentObjectHash()}");
                 value = new PropertyAttributeController(prop);
                 value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType);
                 value.Properties = new RuntimeTypeProperties(value);
                 s_Instances.Add(instanceId, value);
             }
-            // Debug.LogWarning($"  <b>[PATH_ZERO]: {prop.propertyPath} --{prop.name} ({instanceId}):</b> {value.ParentPath}");
             
             return value;
         }
@@ -55,7 +49,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                 return null;
 
             SetupActiveSelection();
-            // Debug.Log($"[PAC]  * Requesting {prop.ParentPath} @{prop.GetParentObjectHash()} from PropertyAttributeController's cache using the <u>{prop.Name}</u> IProperty...");
             if (!s_Instances.TryGetValue(instanceId, out var value))
             {
                 throw new ArgumentException(
@@ -124,7 +117,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 
         private static void ClearCache()
         {
-            Debug.LogWarning($"[PAC] <color=#FFFF00FF><b>Clearing PropertyAttributeController cache...</b></color>");
             s_Instances.Clear();
         }
     }

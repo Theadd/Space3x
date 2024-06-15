@@ -14,7 +14,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         public RuntimeTypeProperties(PropertyAttributeController controller)
         {
             Controller = controller;
-            Debug.Log($"<color=#FF00FFFF><b>CREATING PROPERTIES FOR:</b> {controller.ParentPath}</color>");
             Values = new List<IProperty>();
             Keys = new List<string>();
             Bind();

@@ -12,7 +12,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
     {
         public List<string> Keys;
         public List<VTypeMember> Values;
-        public List<CustomAttributeData> CustomAttributes;
 
         private static Dictionary<Type, AnnotatedRuntimeType> s_Instances;
         private static Comparer<PropertyAttribute> s_Comparer;
@@ -43,14 +42,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
         
         private void Bind(Type declaringType)
         {
-            Debug.LogWarning($"<b>AnnotatedRuntimeType.Bind({declaringType.FullName})</b>");
             Keys = new List<string>();
             Values = new List<VTypeMember>();
-            CustomAttributes = new List<CustomAttributeData>();
             var allProperties = new Dictionary<string, PropertyInfo>();
-            // var allSpecialMethods = new Dictionary<string, MethodInfo>();
-            var attributeNames = "";
-            VTypeMember item = null;
             var allMembers = declaringType.GetMembers(
                 BindingFlags.Instance | BindingFlags.Static | 
                 BindingFlags.Public | BindingFlags.NonPublic);
@@ -58,31 +52,24 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             for (var i = 0; i < allMembers.Length; i++)
             {
                 var memberInfo = allMembers[i];
-                // var customAttributes = memberInfo.CustomAttributes?
-                //     .Where(data => typeof(PropertyAttribute).IsAssignableFrom(data.AttributeType))
-                //     .ToList();
-
                 switch (memberInfo.MemberType)
                 {
                     case MemberTypes.Method:
                         if (memberInfo is MethodInfo methodInfo)
                         {
-                            // if (methodInfo.IsSpecialName)
-                            //     allSpecialMethods.Add(methodInfo.Name, methodInfo);
-                            attributeNames = string.Join(", ", memberInfo
+                            var attributeNames = string.Join(", ", memberInfo
                                 .GetCustomAttributes<PropertyAttribute>(true)
                                 .Select(attr => attr.GetType().Name)
                                 .ToList());
                             if (!string.IsNullOrEmpty(attributeNames))
                                 Debug.LogWarning($"<color=#FF0000FF><b>// TODO: Valid PropertyAttribute are assigned to an unhandled MethodInfo ({memberInfo.Name}):</b> {attributeNames}.</color>");
                         }
-                        // if (customAttributes.Count > 0)
-                        //     Debug.LogWarning("// TODO: A valid PropertyAttribute is assigned to an unhandled MemberInfo.");
                         continue;
                     
                     case MemberTypes.Field:
                         if (memberInfo is FieldInfo fieldInfo)
                         {
+                            VTypeMember item = null;
                             if (fieldInfo.Name.EndsWith("k__BackingField"))
                             {
                                 if (allProperties.TryGetValue(fieldInfo.Name, out var propInfo))
@@ -97,25 +84,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                                     {
                                         FieldType = fieldInfo.FieldType,
                                         Name = fieldInfo.Name,
-                                        // RuntimeProperty = propInfo,
                                         RuntimeField = fieldInfo,
-                                        // PropertyGetter =
-                                        //     allSpecialMethods.GetValueOrDefault("get_" + propInfo.Name, null),
-                                        // PropertySetter =
-                                        //     allSpecialMethods.GetValueOrDefault("set_" + propInfo.Name, null),
-                                        // CustomAttributes = customAttributes,
                                         PropertyAttributes = GetSortedCustomPropertyAttributes(propInfo)
                                             .Concat(GetSortedCustomPropertyAttributes(fieldInfo))
                                             .ToList(),
-                                        // Flags = (HasHideInInspectorAttribute(fieldInfo)
-                                        //             ? VTypeFlags.HideInInspector
-                                        //             : VTypeFlags.None)
-                                        //         | (HasShowInInspectorAttribute(fieldInfo)
-                                        //             ? VTypeFlags.ShowInInspector
-                                        //             : VTypeFlags.None)
-                                        //         | (IsSerializableField(fieldInfo)
-                                        //             ? VTypeFlags.Serializable
-                                        //             : VTypeFlags.None)
                                     };
                                     item.Flags = ComputeFlags(item);
                                     Values.Add(item);
@@ -133,12 +105,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                                 {
                                     FieldType = fieldInfo.FieldType,
                                     Name = fieldInfo.Name,
-                                    // CustomAttributes = customAttributes,
                                     PropertyAttributes = GetSortedCustomPropertyAttributes(fieldInfo),
                                     RuntimeField = fieldInfo,
-                                    // Flags = (HasHideInInspectorAttribute(fieldInfo) ? VTypeFlags.HideInInspector : VTypeFlags.None)
-                                    //         | (HasShowInInspectorAttribute(fieldInfo) ? VTypeFlags.ShowInInspector : VTypeFlags.None)
-                                    //         | (IsSerializableField(fieldInfo) ? VTypeFlags.Serializable : VTypeFlags.None)
                                 };
                                 item.Flags = ComputeFlags(item);
                                 Values.Add(item);
@@ -150,23 +118,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     case MemberTypes.Property:
                         if (memberInfo is PropertyInfo propertyInfo)
                             allProperties.Add($"<{propertyInfo.Name}>k__BackingField", propertyInfo);
-                        // allAttributesOnProperties.Add($"<{memberInfo.Name}>k__BackingField", GetSortedCustomPropertyAttributes(memberInfo));
-                        // attributeNames = string.Join(", ", memberInfo
-                        //     .GetCustomAttributes<PropertyAttribute>(true)
-                        //     .Select(attr => attr.GetType().Name)
-                        //     .ToList());
-                        // if (!string.IsNullOrEmpty(attributeNames))
-                        //     Debug.LogWarning($"<color=#FF0000FF><b>// TODO: Valid PropertyAttribute are assigned to an unhandled PropertyInfo ({memberInfo.Name}):</b> {attributeNames}.</color>");
                         continue;
                     
                     default:
-                        // Debug.LogWarning($"<b>[NO HANDLER IMPLEMENTED FOR THIS MEMBER TYPE, YET]</b> {memberInfo.MemberType.ToString()}, {memberInfo}");
-                        // if (customAttributes.Count > 0)
-                        //     Debug.LogWarning("<b>// TODO: A valid PropertyAttribute is assigned to an unhandled MemberInfo.</b>");
                         continue;
                 }
-                // if (customAttributes.Count > 0)
-                //     CustomAttributes = CustomAttributes.Concat(customAttributes).ToList();
             }
         }
 

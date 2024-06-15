@@ -7,25 +7,10 @@ using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
 {
-    [Flags]
-    public enum VTypeFlags
-    {
-        None = 0,
-        HideInInspector = 1,
-        ShowInInspector = 2,
-        Serializable = 4,
-        NonReorderable = 8,
-    }
-    
     public class VTypeMember : IProperty, IPropertyFlags
     {
-        // public string Name;
         public FieldInfo RuntimeField;
-        // public PropertyInfo RuntimeProperty;
-        // public MethodInfo PropertyGetter;
-        // public MethodInfo PropertySetter;
         public Type FieldType;
-        // public List<CustomAttributeData> CustomAttributes;
         public List<PropertyAttribute> PropertyAttributes;
         
         public VTypeFlags Flags { get; set; }
@@ -71,37 +56,24 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             for (var i = 0; i < PropertyAttributes.Count; i++)
             {
                 var attr = PropertyAttributes[i];
-                // var drawer = CachedDrawers.GetCustomDrawer(attr.GetType());
                 // TODO: ContextMenuItemAttribute, @see: PropertyHandler.HandleAttribute
                 var drawer = attr switch
                 {
                     TooltipAttribute _ => null,
-                    // HideInInspector _ => null,
                     NonReorderableAttribute _ => null,
                     ShowInInspectorAttribute _ => null,
                     _ => CachedDrawers.GetCustomDrawer(attr.GetType())
                 };
                 if (drawer == null)
                 {
-                    Debug.LogWarning($"CachedDrawers.GetCustomDrawer({attr.GetType().Name}) is null in {RuntimeField?.Name}.");
                     m_DecoratorDrawers.Add(null);
                     continue;
                 }
-                // if (typeof (DecoratorDrawer).IsAssignableFrom(forPropertyAndType) && (!(field != (FieldInfo) null) || !field.FieldType.IsArrayOrList() || propertyType.IsArrayOrList()))
-                if (typeof(DecoratorDrawer).IsAssignableFrom(drawer)) /* && (
-                        !(RuntimeField != null)
-                        || !isArray 
-                        || (isArray && attr.applyToCollection)*/
-                        /* || propertyType.IsArrayOrList()) */
-                {
+                if (typeof(DecoratorDrawer).IsAssignableFrom(drawer))
                     m_DecoratorDrawers.Add(drawer);
-                }
-                // if (typeof (PropertyDrawer).IsAssignableFrom(forPropertyAndType))
                 else if (typeof(PropertyDrawer).IsAssignableFrom(drawer))
                 {
                     m_DecoratorDrawers.Add(null);
-                    // if (propertyType != (System.Type) null && propertyType.IsArrayOrList() && !attribute.applyToCollection)
-                    //     return;
                     if (isArray && !attr.applyToCollection)
                     {
                         m_PropertyDrawerOnCollectionItems = drawer;
@@ -112,11 +84,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     PropertyDrawerAttribute = attr;
                 }
                 else
-                {
                     m_DecoratorDrawers.Add(null);
-                }
             }
-
             m_PropertyDrawer ??= CachedDrawers.GetCustomDrawer(FieldType);
 
             return true;

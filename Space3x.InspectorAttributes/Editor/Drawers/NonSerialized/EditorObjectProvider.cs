@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
@@ -29,7 +30,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
             ActiveEditorTracker.sharedTracker.activeEditors.FirstOrDefault(
                 e => e.target.GetInstanceID() == InstanceID);
 
-        public bool IsValid { get; private set; } = false;
+        public bool IsValid { get; private set; } = false;  // TODO: use
 
         public bool IsEditingMultipleObjects { get; private set; }
 
@@ -41,9 +42,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                 SerializedObject = serializedObject;
                 ParentPath = property.GetParentPath();
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
-                if (!IsEditingMultipleObjects || (IsEditingMultipleObjects &&
-                                                  PropertyHandlingExtensions.AllObjectTypesAreTheSame(
-                                                      serializedObject.targetObjects)))
+                if (!IsEditingMultipleObjects || (IsEditingMultipleObjects && AllObjectTypesAreTheSame(serializedObject.targetObjects)))
                 {
                     TargetObject = serializedObject.targetObject;
                     InstanceID = TargetObject.GetInstanceID();
@@ -52,6 +51,19 @@ namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
                     IsValid = true;
                 }
             }
+        }
+        
+        private static bool AllObjectTypesAreTheSame(IReadOnlyList<Object> targetObjects)
+        {
+            if (targetObjects == null || targetObjects.Count == 0)
+                return false;
+
+            var type = targetObjects[0].GetType();
+            for (var i = 1; i < targetObjects.Count; i++)
+                if (targetObjects[i].GetType() != type)
+                    return false;
+
+            return true;
         }
     }
 }
