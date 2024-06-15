@@ -20,8 +20,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             var container = new VisualElement();
 
-            if (m_InnerField != null)   // TODO: remove
-                Debug.LogError($"<color=#FF0000FF><b>Duplicate call on OnCreatePropertyGUI of InlineDrawer for \"{property.PropertyPath}\".");
+            if (m_InnerField != null)
+                DebugLog.Error($"<color=#FF0000FF><b>Duplicate call on OnCreatePropertyGUI of InlineDrawer for \"{property.PropertyPath}\".");
 
             if (property.HasSerializedProperty())
                 m_InnerField = new PropertyField(property.GetSerializedProperty());
