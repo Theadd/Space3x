@@ -194,22 +194,5 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             }
             yield break;
         }
-        
-        // TODO: remove
-        public static string CreateRichTextReport(this VisualElement element, string titlePrefix = "")
-        {
-            var parentInspector = element.GetClosestParentOfType<InspectorElement>();
-            var title = string.IsNullOrEmpty(titlePrefix) ? element.AsString() : titlePrefix + " " + element.AsString();
-            if (parentInspector == null)
-            {
-                Debug.LogError($"<color=#FF0000CC><b>No matching parent InspectorElement found for {element.name}</b></color>\n{title}");
-                return title;
-            }
-            var allText = parentInspector.AsHierarchyString();
-            var count = RichTextViewer.Count();
-            title = $"{count}: {title}";
-            RichTextViewer.AddText(title, allText);
-            return title;
-        }
     }
 }
