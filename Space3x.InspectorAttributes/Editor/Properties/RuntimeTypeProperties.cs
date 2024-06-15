@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
+namespace Space3x.InspectorAttributes.Editor
 {
     public class RuntimeTypeProperties
     {

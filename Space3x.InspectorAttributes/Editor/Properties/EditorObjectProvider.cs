@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
+namespace Space3x.InspectorAttributes.Editor
 {
     public abstract class EditorObjectProvider
     {

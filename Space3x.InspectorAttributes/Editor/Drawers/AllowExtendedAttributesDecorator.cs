@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEditor;

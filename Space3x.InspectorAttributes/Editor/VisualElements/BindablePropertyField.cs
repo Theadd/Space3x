@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Drawers.NonSerialized;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using Unity.Properties;

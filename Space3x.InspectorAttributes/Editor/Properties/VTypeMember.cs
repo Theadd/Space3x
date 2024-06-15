@@ -5,7 +5,7 @@ using Space3x.Attributes.Types;
 using UnityEditor;
 using UnityEngine;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
+namespace Space3x.InspectorAttributes.Editor
 {
     public class VTypeMember : IProperty, IPropertyFlags
     {

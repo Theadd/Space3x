@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
+namespace Space3x.InspectorAttributes.Editor
 {
     [InitializeOnLoad]
     public class PropertyAttributeController : EditorObjectProvider

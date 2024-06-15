@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine.Rendering;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers.NonSerialized
+namespace Space3x.InspectorAttributes.Editor
 {
     public static class CachedDrawers
     {
