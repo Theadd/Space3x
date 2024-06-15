@@ -15,25 +15,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override InlineAttribute Target => (InlineAttribute) attribute;
 
         private VisualElement m_InnerField;
-        
-        // protected override VisualElement OnCreatePropertyGUI(IProperty property)
-        // {
-        //     var container = new VisualElement();
-        //     if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
-        //     {
-        //         var field = new PropertyField(serializedProperty);
-        //         field.Unbind();
-        //         field.TrackPropertyValue(serializedProperty, CheckInline);
-        //         field.BindProperty(serializedProperty);
-        //         InspectorContainer = new VisualElement();
-        //         container.Add(field);
-        //         container.Add(InspectorContainer);
-        //         OnUpdate();
-        //     }
-        //     
-        //     return container;
-        // }
-        
+
         protected override VisualElement OnCreatePropertyGUI(IProperty property)
         {
             var container = new VisualElement();
@@ -57,7 +39,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnUpdate()
         {
             InspectorContainer.Clear();
-            // TODO
             if (Property.HasSerializedProperty())
             {
                 var property = Property.GetSerializedProperty();
@@ -98,20 +79,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             else
             {
-                Debug.Log("#1");
                 if (m_InnerField.dataSource is IBindableDataSource bindableDataSource)
                 {
-                    Debug.Log("#2");
                     var boxedValue = bindableDataSource.BoxedValue;
                     if (boxedValue is UnityEngine.Object unityObject)
                     {
-                        Debug.Log("#3");
                         var customInspector = new InspectorElement(unityObject);
                         customInspector.SetEnabled(Target.ContentEnabled);
                         InspectorContainer.Add(customInspector);
                     }
                 }
-                Debug.Log("#1+2+3?? OK");
             }
         }
 

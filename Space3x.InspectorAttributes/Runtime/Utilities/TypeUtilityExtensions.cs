@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
-using Microsoft.CSharp;
 
 namespace Space3x.InspectorAttributes.Utilities
 {
@@ -16,9 +14,6 @@ namespace Space3x.InspectorAttributes.Utilities
     /// </summary>
     public static class TypeUtilityExtensions
     {
-        [Obsolete("It'll be removed in future versions, only kept for development purposes. Please use FullTypeName instead.", false)]
-        public static string FullTypeNameAsReturnedByFieldsOfSerializedProperties(this Type type) => type.Assembly.GetName().Name + " " + type.FullName?.Replace("+", "/");
-        
         /// <summary>
         /// Returns a simplified version of the full type name for the given type.
         /// <seealso cref="TypeName.Parse"/>
@@ -26,8 +21,6 @@ namespace Space3x.InspectorAttributes.Utilities
         /// <param name="type"></param>
         /// <returns></returns>
         public static string FullTypeName(this Type type) => TypeName.SimplifyFast(type.AssemblyQualifiedName);
-        
-        public static TypeName AsTypeName(this Type type) => TypeName.Parse(type.FullTypeName());
         
         private static Assembly GetAssemblyByName(string name) => AppDomain.CurrentDomain
             .GetAssemblies()
@@ -45,7 +38,6 @@ namespace Space3x.InspectorAttributes.Utilities
         {
             if (string.IsNullOrEmpty(typeName)) return null;
             var (assemblyName, fullName) = GetTypeNameParts(typeName);
-            // Debug.Log($"assemblyName = {assemblyName}, fullName = {fullName}");
             var assembly = GetAssemblyByName(assemblyName);
             return assembly.GetType(fullName);
         }

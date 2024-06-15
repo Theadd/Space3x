@@ -5,7 +5,7 @@ using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.VisualElements
+namespace Space3x.InspectorAttributes.Editor
 {
     public interface IBindableDataSource
     {
