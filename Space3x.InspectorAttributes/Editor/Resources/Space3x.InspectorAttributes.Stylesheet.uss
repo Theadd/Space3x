@@ -126,6 +126,7 @@
 }
 
 /* Toggle within a BeginRow/EndRow group. */
+
 .ui3x-group--row > .unity-toggle > .unity-label {
     flex-shrink: 0;
     white-space: normal;
@@ -144,4 +145,65 @@
 .ui3x-group--row > .unity-toggle {
     flex-direction: row-reverse;
 }
-/* --- */
+
+/* Colors */
+
+.ui3x-color--yellow .unity-text-element {
+    color: rgba(255, 255, 0, 0.72);
+}
+
+.ui3x-color--yellow .unity-text-element:focus:enabled {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow .unity-text-element:hover:enabled {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow *:focus:enabled > .unity-text-element {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow:focus:enabled > .unity-text-element {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--red .unity-text-element {
+    color: rgba(255, 0, 0, 0.72);
+}
+
+.ui3x-color--red .unity-text-element:focus:enabled {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red .unity-text-element:hover:enabled {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red *:focus:enabled > .unity-text-element {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red:focus:enabled > .unity-text-element {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--green .unity-text-element {
+    color: rgba(0, 255, 0, 0.72);
+}
+
+.ui3x-color--green .unity-text-element:focus:enabled {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green .unity-text-element:hover:enabled {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green *:focus:enabled > .unity-text-element {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green:focus:enabled > .unity-text-element {
+    color: rgba(0, 255, 0, 1.0);
+}
