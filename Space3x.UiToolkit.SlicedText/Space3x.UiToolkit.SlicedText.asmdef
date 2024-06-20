@@ -13,7 +13,8 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "!RUNTIME_INCLUDE_SLICEDTEXT"
+        "!SPACE3X_SLICEDTEXT_RUNTIME",
+        "!NO_SPACE3X_INSPECTOR_EXTRAS || SPACE3X_SLICEDTEXT_EDITOR"
     ],
     "versionDefines": [],
     "noEngineReferences": false

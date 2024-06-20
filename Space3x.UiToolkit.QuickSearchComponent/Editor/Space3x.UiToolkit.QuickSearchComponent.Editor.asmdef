@@ -21,7 +21,7 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [
-        "INCLUDE_UITK_QUICKSEARCHCOMPONENT"
+        "!NO_SPACE3X_INSPECTOR_EXTRAS"
     ],
     "versionDefines": [],
     "noEngineReferences": false
