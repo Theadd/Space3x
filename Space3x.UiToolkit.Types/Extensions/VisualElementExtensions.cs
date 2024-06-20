@@ -1,8 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Space3x.Attributes.Types;
 
 namespace Space3x.UiToolkit.Types
 {
@@ -122,7 +122,7 @@ namespace Space3x.UiToolkit.Types
             var content = string.Join("", Enumerable.Repeat("  ", indentLevel)) + "\u21e8 " 
                           + Prefix("", Prefix("<b>", message, "</b>"), " ‣ ") 
                           + self.AsString() + "\n" + self.AsSimplifiedParentHierarchyString();
-            Debug.Log(content);
+            DebugLog.Info(content);
             
             return self;
         }

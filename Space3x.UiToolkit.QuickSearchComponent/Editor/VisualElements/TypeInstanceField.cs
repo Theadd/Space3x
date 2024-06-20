@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Utilities;
-using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using Unity.VisualScripting;
 using UnityEditor;
@@ -44,31 +42,19 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             textInput.WithClasses(false, "unity-base-text-field__input", "unity-base-text-field__input--single-line");
             textElement.style.unityTextAlign = TextAnchor.MiddleCenter;
 
-            Debug.Log("1: Foldout.RegisterValueChangedCallback(OnFoldoutToggle);");
             Foldout.RegisterValueChangedCallback(OnFoldoutToggle);
             textElement.AddManipulator(new Clickable(() => OnShowPopup?.Invoke(this, TextField, ShowWindowMode.Popup)));
         }
 
-        private void OnFoldoutToggle(ChangeEvent<bool> ev)
-        {
-            Debug.Log($"3V: OnFoldoutToggle: {ev.newValue}");
+        private void OnFoldoutToggle(ChangeEvent<bool> ev) =>
             SetFoldoutValue(ev.newValue);
-            // if (ContentFoldout != null) ContentFoldout.value = ev.newValue;
-            // Container.SetVisible(ev.newValue && Property.managedReferenceValue != null);
-            // Property.isExpanded = ev.newValue;
-            // ExpandablePropertyContent.IsExpanded = ev.newValue;
-        }
-        
+
         public void SetFoldoutValue(bool isOpen)
         {
-            Debug.Log($"3U: SetFoldoutValue: {Foldout.value} => {isOpen}");
             if (Foldout.value != isOpen)
-            {
                 Foldout.value = isOpen;
-            }
             else
             {
-                Debug.Log($"4: ApplyFoldoutValue: {isOpen}");
                 if (ContentFoldout != null) ContentFoldout.value = isOpen;
                 Container.SetVisible(isOpen && Property.managedReferenceValue != null);
                 Property.isExpanded = isOpen;
@@ -167,24 +153,13 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             var wasExpanded = Property.isExpanded;
 
             TypeUndoRedoController.RecordObject(Property.serializedObject.targetObject, UndoGroupName);
-
-            // if (PropertyIndex == -1)
-            // {
-                if (Property.managedReferenceValue != null && newValue == null)
-                {
-                    SetPropertyValue(null);
-                }
-                else if (Property.managedReferenceValue == null && newValue != null)
-                {
-                    SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
-                }
-                else
-                {
-                    SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
-                }
-            // }
-            // else
-            //     throw new NotImplementedException("TODO: HERE!");
+            
+            if (Property.managedReferenceValue != null && newValue == null)
+                SetPropertyValue(null);
+            else if (Property.managedReferenceValue == null && newValue != null)
+                SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
+            else
+                SetPropertyValue(null, newValue?.GetConstructor(Type.EmptyTypes)?.Invoke(null) ?? null);
 
             SetValue(newValue);
             Property.isExpanded = false;
@@ -195,9 +170,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
             BindPropertyToContent();
             Content.MarkDirtyRepaint();
-
-//            if (newValue != null)
-//                Property.isExpanded = true;
+            
             Container.SetVisible(Property.managedReferenceValue != null);
 
             EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -210,14 +183,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             });
         }
 
-        protected override void SetPropertyValue(Type newValue, object newValueInstance = null)
-        {
-            // if (PropertyIndex == -1)
-                Property.managedReferenceValue = newValueInstance;
-            // else
-            //     throw new NotImplementedException("TODO: HERE!");
-        }
-        
+        protected override void SetPropertyValue(Type newValue, object newValueInstance = null) =>
+            Property.managedReferenceValue = newValueInstance;
+
         public override void OnUndoRedoCallback(in UndoRedoInfo undo)
         {
             if (!undo.undoName.Equals(UndoGroupName))

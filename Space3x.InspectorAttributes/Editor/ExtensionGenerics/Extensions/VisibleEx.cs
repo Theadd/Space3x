@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Space3x.InspectorAttributes.Editor
 {
     [UsedImplicitly]
-    public class VisibleEx : Extension<IVisible>
+    public class VisibleEx : Extension<IVisibleEx>
     {
         public override bool TryApply<TValue, TContent>(IExtensionContext context, TContent content, out TValue outValue, TValue defaultValue)
         {

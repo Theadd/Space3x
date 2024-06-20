@@ -3,10 +3,8 @@ using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Unity.Properties;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -88,8 +86,7 @@ namespace Space3x.InspectorAttributes.Editor
                 return bindablePropertyField.Property;
 
             throw new ArgumentException(
-                $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.",
-                nameof(element));
+                $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.", nameof(element));
         }
         
         public static bool IsArray(this IProperty self) => 
@@ -120,14 +117,11 @@ namespace Space3x.InspectorAttributes.Editor
             string memberName, 
             out Invokable<TIn, TOut> invokableMember)
         {
-            if (self.GetSerializedProperty() is SerializedProperty property)
-            {
-                invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, property);
-            }
+            if (self.HasSerializedProperty())
+                invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self.GetSerializedProperty());
             else
-            {
                 invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self);
-            }
+            
             return invokableMember != null;
         }
         

@@ -169,7 +169,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual VisualElement CreateContainerGUI()
         {
             Container = new BindableElement() { viewDataKey = "vdk-ct-" + Property.GetSerializedObject().targetObject.GetInstanceID() + "-" + Property.PropertyPath };
-            Context.WithExtension<TrackChangesOnEx, ITrackChangesOn, BindableElement>((BindableElement) Container, out var success);
+            Context.WithExtension<TrackChangesOnEx, ITrackChangesOnEx, BindableElement>((BindableElement) Container, out var success);
             if (!success) 
                 OnUpdate();
 
@@ -241,7 +241,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             if (SelectorField is TypeInstanceField instanceField)
             {
                 Property.SetExpanded(true);
-                // ContentContainer.SetVisible(true);
                 ContentContainer.SetVisible(false);
                 Content.MarkDirtyRepaint();
                 EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -258,17 +257,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
                     EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                     {
-                        // ContentContainer.SetVisible(true);
                         ContentContainer.SetVisible(false);
                         BindPropertyToTypeField(SelectorField);
-
-                        // Property.isExpanded = IsExpanded;
-                        // if (!IsExpanded)
-                        //     ContentContainer.SetVisible(false);
-                        // else
-                        //     ContentContainer.SetVisible(instanceField.Property.managedReferenceValue != null);
-                        Debug.Log($"2: instanceField.Foldout.value = {IsExpanded};");
-                        // instanceField.Foldout.value = IsExpanded;
                         instanceField.SetFoldoutValue(IsExpanded);
                         Content.MarkDirtyRepaint();
                     });
@@ -304,19 +294,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 }
             }
         }
-
-        // private IVisualElementScheduledItem m_DelayedUpdateTask;
-        //
-        // public void ExecuteDelayedUpdate()
-        // {
-        //     m_DelayedUpdateTask = Container.schedule.Execute(() =>
-        //     {
-        //         m_DelayedUpdateTask?.Pause();
-        //         OnUpdate();
-        //         m_DelayedUpdateTask = null;
-        //     });
-        //     m_DelayedUpdateTask.ExecuteLater(1);
-        // }
 
         public override void OnUpdate()
         {
