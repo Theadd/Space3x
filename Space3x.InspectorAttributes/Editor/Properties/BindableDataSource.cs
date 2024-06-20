@@ -67,10 +67,8 @@ namespace Space3x.InspectorAttributes.Editor
                 }
                 else
                 {
-                    Debug.Log($"typeof(t)={typeof(T).FullName}; typeof(value)={value?.GetType().Name}; value={value}; FieldType.Name={PropertyInfo.FieldType.Name}");
                     try
                     {
-                        // RuntimeHelpers.Equals() // TODO
                         PropertyInfo.SetValue(DeclaringObject, (T)value);
                     }
                     catch (Exception e)
@@ -87,11 +85,7 @@ namespace Space3x.InspectorAttributes.Editor
         public object BoxedValue
         {
             get => (object) (T) Value;
-            set
-            {
-                Debug.Log($"<b><color=#000000FF>// TODO: Uncomment BoxedValue setter of BindableDataSource.</color></b>");
-                // Value = (T)value;
-            }
+            set => Value = (T)value;
         }
 
         internal void NotifyValueChanged() => (m_Property as INonSerializedPropertyNode)?.NotifyValueChanged();

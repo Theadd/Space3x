@@ -14,7 +14,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         public PropertyAttributeController Controller;
 
-        protected override bool RedrawOnAnyValueChange => true;
+        protected override bool UpdateOnAnyValueChange => true;
 
         private bool m_IsReady;
 

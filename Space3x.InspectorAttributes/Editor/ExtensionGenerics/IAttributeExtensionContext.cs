@@ -1,7 +1,5 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using UnityEngine;
-using UnityEditor;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -21,16 +19,11 @@ namespace Space3x.InspectorAttributes.Editor
                 TValue defaultValue)
         {
             if (Target is ISealedExtension<TExtensionType> extension)
-            {
                 extension
                     .GetExtension<TExtension>()
                     .TryApply<TValue, TExtensionType>(this, Target as TExtensionType, out outValue, defaultValue);
-            }
             else
-            {
-                Debug.Log("Extension not found");
                 outValue = defaultValue;
-            }
 
             return this;
         }

@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 namespace Space3x.InspectorAttributes.Editor
 {
     [UsedImplicitly]
-    public class TrackChangesOnEx : Extension<ITrackChangesOn>
+    public class TrackChangesOnEx : Extension<ITrackChangesOnEx>
     {
         public override bool TryApply<TTarget, TContent>(IExtensionContext context, TContent content, TTarget target)
         {

@@ -59,7 +59,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private IVisualElementScheduledItem m_DelayedTask;
 
-        protected virtual bool RedrawOnAnyValueChange => false;
+        /// <summary>
+        /// Override this in order to make the decorator call OnUpdate() on any value change on the serialized object
+        /// being inspected. Defaults to false.
+        /// </summary>
+        protected virtual bool UpdateOnAnyValueChange => false;
 
         protected virtual void OnCreatePropertyGUI(VisualElement container) {}
 
@@ -68,6 +72,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// </summary>
         public virtual void OnUpdate() {}
         
+        /// <summary>
+        /// Override this method to perform any custom logic when the decorator is created.
+        /// </summary>
         public virtual void OnAttachedAndReady(VisualElement element) { }
         
         public sealed override VisualElement CreatePropertyGUI()
@@ -249,7 +256,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
 
             Property = Field.GetPropertyNode();
-            if (RedrawOnAnyValueChange)
+            if (UpdateOnAnyValueChange)
                 TrackAllChangesOnInspectorElement();
         }
 

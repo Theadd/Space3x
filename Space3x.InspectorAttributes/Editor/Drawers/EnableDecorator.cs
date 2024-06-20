@@ -10,7 +10,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override EnableAttribute Target => (EnableAttribute) attribute;
         public IAttributeExtensionContext<EnableAttribute> Context => this;
 
-        protected override bool RedrawOnAnyValueChange => false;
+        protected override bool UpdateOnAnyValueChange => false;
         
         public override void OnUpdate()
         {

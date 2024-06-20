@@ -8,7 +8,7 @@ using UnityEngine;
 namespace Space3x.InspectorAttributes.Editor
 {
     [UsedImplicitly]
-    public class ConditionEx : Extension<ICondition>
+    public class ConditionEx : Extension<IConditionEx>
     {
         public static bool TryCreateInvokable<TIn, TOut, TContent>(IExtensionContext context, TContent content, out Invokable<TIn, TOut> invokable)
             where TContent : ICondition
