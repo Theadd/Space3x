@@ -143,8 +143,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             {
                 Debug.Log($"// TODO: RebuildChildDecoratorDrawersIfNecessary is correctly dealing with collection items?");
                 propertyField.RebuildChildDecoratorDrawersIfNecessary(Property);
-                altDecoratorsCache.TryRebuildAll();
-                DecoratorsCache.TryRebuildAll();
+                altDecoratorsCache.RebuildAll();
+                DecoratorsCache.RebuildAll();
                 altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                 DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                 altDecoratorsCache.HandlePendingDecorators();

@@ -334,8 +334,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                     altDecoratorsCache.PrintCachedInstances();
                     
                     propertyField.RebuildChildDecoratorDrawersIfNecessary(Property.GetSerializedProperty());
-                    altDecoratorsCache.TryRebuildAll();
-                    DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
+                    altDecoratorsCache.RebuildAll();
+                    DecoratorsCache.RebuildAll();  // TODO: remove redundant call
                     
                     DebugLog.Info("MIDDLE altDecoratorsCache.PrintCachedInstances()");
                     altDecoratorsCache.PrintCachedInstances();

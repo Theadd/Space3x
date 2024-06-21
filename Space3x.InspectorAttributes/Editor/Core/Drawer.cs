@@ -28,12 +28,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public MarkerDecoratorsCache DecoratorsCache => 
             m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(this);
         
-        // public MarkerDecoratorsCache DecoratorsCache => 
-        //     m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-        //         Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
-        //         ?? Property.GetSerializedObject().GetHashCode(),
-        //         Property.GetSerializedObject().GetHashCode());
-
         private MarkerDecoratorsCache m_DecoratorsCache;
         
         private bool m_Disposed;
