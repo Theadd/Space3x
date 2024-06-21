@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -46,6 +47,47 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             
             if (s_DecoratorDrawerAttribute != null)
                 s_DecoratorDrawerAttribute.SetValue(decoratorDrawer, attribute);
+        }
+
+        /// <summary>
+        /// Creates an empty copy of the given decorator drawer targeting the same attribute.
+        /// </summary>
+        /// <returns>A clean copy.</returns>
+        public static DecoratorDrawer CreateCopy(this DecoratorDrawer decoratorDrawer)
+        {
+            DecoratorDrawer drawer = (DecoratorDrawer) Activator.CreateInstance(decoratorDrawer.GetType());
+            drawer.SetAttribute(decoratorDrawer.attribute);
+            return drawer;
+        }
+        
+        /// <summary>
+        /// Creates an empty copy of the given property drawer sharing the same initial values.
+        /// </summary>
+        /// <returns>A clean copy.</returns>
+        public static PropertyDrawer CreateCopy(this PropertyDrawer propertyDrawer)
+        {
+            PropertyDrawer drawer = (PropertyDrawer) Activator.CreateInstance(propertyDrawer.GetType());
+            drawer.SetAttribute(propertyDrawer.attribute);
+            drawer.SetFieldInfo(propertyDrawer.fieldInfo);
+            drawer.SetPreferredLabel(propertyDrawer.preferredLabel);
+            return drawer;
+        }
+
+        public static DecoratorDrawer CreateDecoratorDrawer(Type decoratorType, PropertyAttribute attribute)
+        {
+            var drawer = (DecoratorDrawer)Activator.CreateInstance(decoratorType);
+            drawer.SetAttribute(attribute);
+            return drawer;
+        }
+        
+        public static PropertyDrawer CreatePropertyDrawer(Type propertyDrawerType, PropertyAttribute attribute,
+            FieldInfo fieldInfo, string preferredLabel)
+        {
+            var drawer = (PropertyDrawer)Activator.CreateInstance(propertyDrawerType);
+            drawer.SetAttribute(attribute);
+            drawer.SetFieldInfo(fieldInfo);
+            drawer.SetPreferredLabel(preferredLabel);
+            return drawer;
         }
     }
 }

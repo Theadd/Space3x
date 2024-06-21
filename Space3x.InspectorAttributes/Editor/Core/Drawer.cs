@@ -1,4 +1,5 @@
 ﻿using System;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
@@ -25,10 +26,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         private VisualElement m_Field;
 
         public MarkerDecoratorsCache DecoratorsCache => 
-            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
-                ?? Property.GetSerializedObject().GetHashCode(),
-                Property.GetSerializedObject().GetHashCode());
+            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(this);
+        
+        // public MarkerDecoratorsCache DecoratorsCache => 
+        //     m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+        //         Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() 
+        //         ?? Property.GetSerializedObject().GetHashCode(),
+        //         Property.GetSerializedObject().GetHashCode());
 
         private MarkerDecoratorsCache m_DecoratorsCache;
         
@@ -38,6 +42,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public VisualElement CreatePropertyNodeGUI(IProperty property)
         {
+            if (Property != null)
+            {
+                DebugLog.Error($"<b><color=#FF0000FF>Property {Property.PropertyPath} already created</color></b>");
+                var copy = (ICreateDrawerOnPropertyNode) this.CreateCopy();
+                return copy.CreatePropertyNodeGUI(property);
+            }
             Property = property;
             Container = OnCreatePropertyGUI(Property);
             Container.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);

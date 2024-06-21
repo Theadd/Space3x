@@ -60,16 +60,21 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnUpdate()
         {
             var isPending = true;
+            DebugLog.Info("#1");
             if (!DecoratorsCache.IsAutoGroupingDisabled())
             {
-                this.RebuildGroupMarkerIfRequired();
+                DebugLog.Info("#2");
+                var didRebuild = this.RebuildGroupMarkerIfRequired();
+                DebugLog.Info("#2.Rebuild: " + didRebuild);
                 if (this.TryLinkToMatchingGroupMarkerDecorator())
                 {
+                    DebugLog.Info("#3");
                     if (Target.IsOpen)
-                        Debug.LogWarning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
+                        DebugLog.Warning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
                     
                     if (!Target.IsOpen && !this.IsGroupMarkerUsed())
                     {
+                        DebugLog.Info("#4");
                         Marker.PopulateGroupMarker();
                         isPending = false;
                         DecoratorsCache.Remove(this);
@@ -78,8 +83,15 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 }
             }
             if (isPending)
+            {
+                DebugLog.Info("#-5");
                 DecoratorsCache.MarkPending(this);
+                DecoratorsCache.PrintCachedInstances();
+                DebugLog.Info("#-5 END");
+            }
+            DebugLog.Info("#-6");
             DecoratorsCache.HandlePendingDecorators();
+            DebugLog.Info("#-7");
         }
 
         public override void OnAttachedAndReady(VisualElement element)
@@ -206,6 +218,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 if (this.IsGroupMarkerUsed())
                 {
                     Debug.LogError($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
+                    // ((IDrawer) this).ForceRebuild();
+                    // return; // TODO: FIXME: this is a hack, should be fixed in the next release
                     UndoAllHierarchyGrouping();
                 }
 
@@ -218,7 +232,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 }
                 
                 RemoveGroupMarker();
-                if (LinkedMarkerDecorator != null) LinkedMarkerDecorator.RemoveGroupMarker(); // TODO: is this needed?
+                LinkedMarkerDecorator?.RemoveGroupMarker(); // TODO: is this needed?
+                DebugLog.Error("<color=#FF0000FF>// TODO: FIXME: this is a hack, should be fixed in the next release</color>");
+                // HACK COMMENTED OUT: return; // TODO: FIXME: this is a hack, should be fixed in the next release
             }
             else
             {

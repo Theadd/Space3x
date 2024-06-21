@@ -35,9 +35,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         //         Property.serializedObject.GetHashCode());
         
         public MarkerDecoratorsCache DecoratorsCache => 
-            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-                Property.serializedObject.GetHashCode(),
-                Property.serializedObject.GetHashCode());
+            m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(Property.serializedObject, ContentContainer.panel);
+        
+        // public MarkerDecoratorsCache DecoratorsCache => 
+        //     m_DecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+        //         Property.serializedObject.GetHashCode(),
+        //         Property.serializedObject.GetHashCode());
 
         private MarkerDecoratorsCache m_DecoratorsCache;
 
@@ -105,14 +108,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                 Content.MarkDirtyRepaint();
                 EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                 {
-                    var attachedContentHashCode = ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
-                    if (attachedContentHashCode != 0)
-                    {
-                        var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(attachedContentHashCode);
+                    if (UngroupedMarkerDecorators.GetInstance((PropertyField) Content) is MarkerDecoratorsCache altDecoratorsCache)
                         altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                    }
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject.GetHashCode(), false);
+                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.serializedObject, ContentContainer.panel, false);
                     Content.MarkDirtyRepaint();
 
                     EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -121,7 +120,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                         // ContentContainer.SetVisible(false);
                         BindPropertyToTypeField(SelectorField);
 
-                        Debug.Log($"2: instanceField.Foldout.value = {IsExpanded};");
                         // instanceField.Foldout.value = IsExpanded;
                         instanceField.SetFoldoutValue(IsExpanded);
                         Content.MarkDirtyRepaint();
@@ -135,8 +133,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         
         private void BindPropertyToTypeField(TypeInstanceField instanceField)
         {
-            var delayedContentHashCode = ((PropertyField) Content).GetSerializedProperty()?.GetHashCode() ?? Property.GetHashCode();
-            var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(delayedContentHashCode);
+            // var delayedContentHashCode = ((PropertyField) Content).GetSerializedProperty()?.GetHashCode() ?? Property.GetHashCode();
+            // var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(delayedContentHashCode);
+            var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance((PropertyField) Content, Property);
             altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
             instanceField.BindProperty(CollectionProperty, PropertyIndex);
             instanceField.BindPropertyToContent();

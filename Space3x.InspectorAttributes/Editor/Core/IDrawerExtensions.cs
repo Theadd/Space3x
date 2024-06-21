@@ -1,5 +1,6 @@
 ﻿using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
@@ -30,6 +31,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                           $"{editor.serializedObject.GetType().Name} - {editor.GetType().Name} - {editor.serializedObject.GetHashCode()}");
             }
         }
+
+        public static IPanel GetPanel(this IDrawer drawer) => drawer is IDecorator decorator
+            ? decorator.GhostContainer.panel
+            : drawer.Container.panel;
 
         // public static string GetParentPath(this IDrawer drawer)
         // {

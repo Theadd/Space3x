@@ -39,8 +39,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         protected override VisualElement OnCreatePropertyGUI(IProperty property)
         {
+            DebugLog.Info($"IN {this.GetType().Name}.OnCreatePropertyGUI: {property.PropertyPath}");
             if (!(property.GetSerializedProperty() is SerializedProperty serializedProperty))
+            {
+                DebugLog.Error($"Property {property.Name} is not a SerializedProperty");
                 return null;
+            }
             m_ElementType = GetUnderlyingElementType(serializedProperty);
             m_IsTypeValue = IsTypeValue(m_ElementType);
             Validate();
@@ -50,8 +54,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                     Debug.LogError($"Collection property {Property.Name} is not an array", serializedProperty.serializedObject.targetObject);
                 return CreatePropertyCollectionGUI(serializedProperty);
             }
-
-            UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), true);
+            
+            // UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, true);
             IsExpanded = Property.IsExpanded();
             if (!m_IsTypeValue)
                 Property.SetExpanded(false);
@@ -222,6 +226,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         private void OnAttachSelectorFieldToPanel(AttachToPanelEvent evt)
         {
             m_SelectorFieldAttached = true;
+            if (!m_ContentAttached)
+                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), evt.destinationPanel, true);
             if (m_SelectorFieldAttached && m_ContentAttached)
                 OnContainerFullyAttached();
         }
@@ -229,13 +235,42 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         private void OnAttachContentToPanel()
         {
             m_ContentAttached = true;
+            if (!m_SelectorFieldAttached)
+                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, true);
             if (m_SelectorFieldAttached && m_ContentAttached)
                 OnContainerFullyAttached();
         }
 
-        private int m_AttachedContentHashCode;
-        private int m_DelayedContentHashCode;
+        private MarkerDecoratorsCache m_ContentDecoratorsCache;
 
+        private void AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode(PropertyField propertyField, IProperty propertyNode)
+        {
+            var pNodeA = propertyField.GetPropertyNode();
+            var pNodeB = propertyNode;
+            DebugLog.Info("pNodeA: " + pNodeA.PropertyPath + $" (Name: {pNodeA.Name}, ParentPath: {pNodeA.ParentPath})");
+            DebugLog.Info("pNodeB: " + pNodeB.PropertyPath + $" (Name: {pNodeB.Name}, ParentPath: {pNodeB.ParentPath})");
+            DebugLog.Info($"pNodeA == pNodeB: {object.ReferenceEquals(pNodeA, pNodeB)}");
+        }
+
+        /// <summary>
+        /// Checks if propertyField is bound to the correct property and returns true if it is.
+        /// Otherwise, attempts to properly bind it and returns false.
+        /// </summary>
+        /// <param name="propertyField">Target PropertyField to check.</param>
+        /// <param name="propertyNode">The IProperty that the PropertyField should be bound to.</param>
+        /// <returns>Whether propertyField was bound to the correct property or not.</returns>
+        private bool EnsurePropertyFieldIsBoundToTheCorrectProperty(PropertyField propertyField, IProperty propertyNode)
+        {
+            if (!object.ReferenceEquals(propertyField.GetPropertyNode(), propertyNode))
+            {
+                propertyField.Unbind();
+                propertyField.BindProperty(propertyNode.GetSerializedProperty());
+                return false;
+            }
+
+            return true;
+        }
+        
         private void OnContainerFullyAttached()
         {
             if (SelectorField is TypeInstanceField instanceField)
@@ -243,16 +278,22 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 Property.SetExpanded(true);
                 ContentContainer.SetVisible(false);
                 Content.MarkDirtyRepaint();
+                m_ContentDecoratorsCache = null;
                 EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                 {
-                    m_AttachedContentHashCode = ((PropertyField) Content)?.GetSerializedProperty()?.GetHashCode() ?? 0;
-                    if (m_AttachedContentHashCode != 0)
+                    AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode((PropertyField) Content, Property);
+                    var wasBound = EnsurePropertyFieldIsBoundToTheCorrectProperty((PropertyField) Content, Property);
+                    DebugLog.Info($"Was it correctly bound? {wasBound}");
+                    AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode((PropertyField) Content, Property);
+                    
+                    if (UngroupedMarkerDecorators.GetInstance((PropertyField) Content, propertyContainsChildrenProperties: true) is MarkerDecoratorsCache cache)
                     {
-                        var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_AttachedContentHashCode);
-                        altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
+                        m_ContentDecoratorsCache = cache;
+                        m_ContentDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
+                        DebugLog.Info($"ContentDecoratorsCache EQUALS TO DecoratorsCache ??? {(object.ReferenceEquals(DecoratorsCache, m_ContentDecoratorsCache))}");
                     }
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), false);
+                    UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, false);
                     Content.MarkDirtyRepaint();
 
                     EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
@@ -268,7 +309,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             else if (SelectorField is TypeField typeField)
             {
                 typeField.BindProperty(Property.GetSerializedProperty(), -1);
-                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject().GetHashCode(), false);
+                UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, false);
             }
             else
                 throw new NotImplementedException("Missing code path");
@@ -278,19 +319,41 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             if (selectorField is TypeInstanceField instanceField)
             {
-                m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
-                var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
+                // m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
+                // var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
+                if (Content is not PropertyField)
+                    Content.LogThis("<color=#ff0000ff><b>Content is not PropertyField!</b></color>");
+                var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance((PropertyField) Content, propertyContainsChildrenProperties: true);
+                if (altDecoratorsCache == null)
+                    DebugLog.Error($"Failed to get MarkerDecoratorsCache for {Content.AsString()}");
                 altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
                 instanceField.BindProperty(Property.GetSerializedProperty(), -1);
                 if (Content is PropertyField propertyField)
                 {
+                    DebugLog.Info("BEFORE altDecoratorsCache.PrintCachedInstances()");
+                    altDecoratorsCache.PrintCachedInstances();
+                    
                     propertyField.RebuildChildDecoratorDrawersIfNecessary(Property.GetSerializedProperty());
                     altDecoratorsCache.TryRebuildAll();
                     DecoratorsCache.TryRebuildAll();  // TODO: remove redundant call
+                    
+                    DebugLog.Info("MIDDLE altDecoratorsCache.PrintCachedInstances()");
+                    altDecoratorsCache.PrintCachedInstances();
+                    
                     altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                    DebugLog.Info("altDecoratorsCache.PrintCachedInstances()");
+                    altDecoratorsCache.PrintCachedInstances();
                     altDecoratorsCache.HandlePendingDecorators();
+                    DebugLog.Info("DecoratorsCache.PrintCachedInstances()");
+                    DecoratorsCache.PrintCachedInstances();
                     DecoratorsCache.HandlePendingDecorators();
+                    if (m_ContentDecoratorsCache != null)
+                    {
+                        DebugLog.Info("m_ContentDecoratorsCache.PrintCachedInstances()");
+                        m_ContentDecoratorsCache.PrintCachedInstances();
+                        m_ContentDecoratorsCache.HandlePendingDecorators();
+                    }
                 }
             }
         }

@@ -80,7 +80,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (element is PropertyField propertyField)
             {
                 var prop = propertyField.GetSerializedProperty();
-                return PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
+                return prop == null ? null : PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
             }
             if (element is BindablePropertyField bindablePropertyField)
                 return bindablePropertyField.Property;

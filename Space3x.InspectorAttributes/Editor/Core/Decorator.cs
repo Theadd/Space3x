@@ -1,4 +1,5 @@
 ﻿using System;
+using Space3x.Attributes.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -45,11 +46,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         VisualElement IDrawer.Container => Container;
         
         public T Container { get; private set; }
+
+        public MarkerDecoratorsCache DecoratorsCache =>
+            CachedDecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(this);
         
-        public MarkerDecoratorsCache DecoratorsCache => 
-            CachedDecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
-                Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() ?? Property.GetSerializedObject().GetHashCode(),
-                Property.GetSerializedObject().GetHashCode());
+        // public MarkerDecoratorsCache DecoratorsCache => 
+        //     CachedDecoratorsCache ??= UngroupedMarkerDecorators.GetInstance(
+        //         Field?.GetParentPropertyField()?.GetSerializedProperty()?.GetHashCode() ?? Property.GetSerializedObject().GetHashCode(),
+        //         Property.GetSerializedObject().GetHashCode());
 
         protected MarkerDecoratorsCache CachedDecoratorsCache;
         
@@ -76,9 +80,23 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// Override this method to perform any custom logic when the decorator is created.
         /// </summary>
         public virtual void OnAttachedAndReady(VisualElement element) { }
+
+        private int m_Counter = 0;
         
         public sealed override VisualElement CreatePropertyGUI()
         {
+            m_Counter++;
+            if (Container != null && Property != null)
+            {
+                var copy = this.CreateCopy();
+                DebugLog.Warning($"    <color=#000000FF><b>[WARNING]</b></color> (#{m_Counter}) => {this.GetType().Name} on {Property.Name} @`{Property.ParentPath}`. " +
+                                 $"instanceHash: {this.GetHashCode()}, copyHash: {{copy.GetHashCode()}}, detached: {m_Detached}, ready: {m_Ready}");
+                // GhostContainer.RemoveFromHierarchy();
+                return copy.CreatePropertyGUI();
+                // GhostContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachGhostToPanelWorkaround);
+                // return GhostContainer;
+            }
+            
             if (Container != null)
                 OnReset(disposing: false);
 
@@ -96,10 +114,24 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             return GhostContainer;
         }
 
+        /* TODO: BEGIN REMOVE */
+        private void OnAttachGhostToPanelWorkaround(AttachToPanelEvent ev)
+        {
+            DebugLog.Info($"      <color=#92FF00FF><b>Workaround attached! PanelHash: {GetPanelContentHash(ev.destinationPanel)} for {attribute.GetType().Name} on {this.GetType().Name}</b></color>");
+        }
+        
+        private static int GetPanelContentHash(IPanel panel) =>
+            panel?.visualTree is VisualElement { childCount: >= 2 } vPanel
+                ? vPanel[1].GetHashCode()
+                : 0;
+        /* END REMOVE */
+        
         private void OnAttachGhostToPanel(AttachToPanelEvent ev)
         {
             if ((VisualElement)ev.target != GhostContainer)
                 Debug.LogError($"Target {((VisualElement)ev.target).name} is not the same as {GhostContainer.name}");
+            
+            DebugLog.Info($"    <color=#FF00D4FF><b>Original AttachToPanel, PanelHash: {GetPanelContentHash(ev.destinationPanel)} on {attribute.GetType().Name} for: {this.GetType().Name}</b></color>");
             
             if (m_Detached)
                 Debug.LogError($"GhostContainer already attached: {((VisualElement)ev.target).name}");
@@ -282,8 +314,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         protected virtual void Dispose(bool disposing)
         {
-            if (m_Disposed) 
+            if (m_Disposed)
+            {
+                DebugLog.Error("<b><color=#FF0000FF>Calling Dispose on a decorator already disposed!</color></b>");
                 return;
+            }
             if (disposing)
                 m_Disposed = true;
 
@@ -291,5 +326,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         }
         
         #endregion
+        
+        #if !UNITY_2023_2_OR_NEWER
+        public override bool CanCacheInspectorGUI() => false;
+        #endif
     }
 }
