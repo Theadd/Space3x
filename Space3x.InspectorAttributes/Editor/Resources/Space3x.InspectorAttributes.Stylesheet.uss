@@ -97,7 +97,7 @@
     display: none;
 }
 
-.ui3x-auto-decorator > .unity-help-box > .unity-help-box__icon {
+.ui3x-decorator > .unity-help-box > .unity-help-box__icon {
     max-height: 20px;
     min-height: 20px;
     max-width: 22px;
@@ -105,13 +105,13 @@
     margin: 4px 4px 4px 4px;
 }
 
-.ui3x-auto-decorator > .unity-help-box > .unity-label {
+.ui3x-decorator > .unity-help-box > .unity-label {
     font-size: 12px;
     margin-top: 4px;
     margin-bottom: 4px;
 }
 
-.ui3x-auto-decorator > .unity-help-box {
+.ui3x-decorator > .unity-help-box {
     align-items: flex-start;
 }
 
@@ -206,4 +206,10 @@
 
 .ui3x-color--green:focus:enabled > .unity-text-element {
     color: rgba(0, 255, 0, 1.0);
+}
+
+/* Misc */
+
+.ui3x-hidden {
+    display: none;
 }

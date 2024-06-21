@@ -1,9 +1,7 @@
-﻿using System;
-using JetBrains.Annotations;
+﻿using JetBrains.Annotations;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using UnityEngine;
+using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -14,7 +12,8 @@ namespace Space3x.InspectorAttributes.Editor
         {
             if (context is IDrawer drawer)
             {
-                drawer.VisualTarget.SetVisible(content.Visible);
+                // drawer.VisualTarget.SetVisible(content.Visible);
+                drawer.VisualTarget.WithClasses(!content.Visible, UssConstants.UssHidden);
                 if (!(content.Visible is TValue value))
                     value = defaultValue;
                 
