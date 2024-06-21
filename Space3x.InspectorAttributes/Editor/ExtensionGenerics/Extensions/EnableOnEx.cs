@@ -2,7 +2,6 @@
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
 
 namespace Space3x.InspectorAttributes.Editor
 {

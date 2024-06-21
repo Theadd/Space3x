@@ -2,6 +2,7 @@
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
@@ -53,6 +54,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                     var beginMarker = endDecorator.Marker.GetMatchingGroupMarker();
                     if (beginMarker != null)
                     {
+                        DebugLog.Info($"<color=#FF0092FF>Linking</color> END: {endDecorator.Container.AsString()} to BEGIN: {beginMarker.MarkerDecorator.Container.AsString()}");
                         endDecorator.Marker.LinkTo(beginMarker);
                         beginDecorator = beginMarker.MarkerDecorator;
                     }

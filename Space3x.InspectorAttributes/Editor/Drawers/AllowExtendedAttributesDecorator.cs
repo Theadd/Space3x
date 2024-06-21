@@ -60,6 +60,32 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnAttachedAndReady(VisualElement element)
         {
             Controller = PropertyAttributeController.GetInstance(Property);
+            #if SPACE3X_DEBUG
+            element.Add(new Button(() => OnClick()) { text = "DEBUG ME!" });
+            element.SetVisible(true);
+            #endif
+        }
+        
+        public int GetPanelVisualTreeHashCode() =>
+            Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel
+                ? vPanel[1].GetHashCode()
+                : 0;
+
+        private void OnClick()
+        {
+
+            if (Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel)
+            {
+                var vRoot = vPanel[1];
+                DebugLog.Info($"<b>vRoot: {vRoot.GetHashCode()} ({vRoot.name})</b>");
+            }
+                
+            var vTree = this.Container.panel.visualTree;
+            var hierarchyChilds = vTree.hierarchy.childCount;
+            var contContainer = vTree.contentContainer;
+            var contContainerChilds = contContainer.childCount;
+            DebugLog.Info($"Hierarchy: {hierarchyChilds}, ContentContainer: {contContainerChilds}, contContainerName: {contContainer.name}");
+            DebugLog.Info($"Panel: {this.Container.panel.GetHashCode()}, VisualTree: {this.Container.panel.visualTree.GetHashCode()} ({this.Container.panel.visualTree.name})");
         }
 
         public override void OnUpdate()

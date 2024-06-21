@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
@@ -56,7 +57,10 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 throw new ArgumentException("Unexpected, value for PropertyAttributeController is null.");
             var vType = m_Controller.AnnotatedType.GetValue(Property.Name);
             if (vType == null)
-                throw new ArgumentException("Unexpected value.");
+            {
+                DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
+                return;
+            }
 
             PropertyDrawer drawer = null;
             if (applyCustomDrawers)
@@ -66,10 +70,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 {
                     try
                     {
-                        drawer = (PropertyDrawer)Activator.CreateInstance(propertyDrawer);
-                        drawer.SetAttribute(vType.PropertyDrawerAttribute);
-                        drawer.SetFieldInfo(vType.RuntimeField);
-                        drawer.SetPreferredLabel(Property.DisplayName());
+                        drawer = PropertyDrawerExtensions.CreatePropertyDrawer(
+                            propertyDrawer,
+                            vType.PropertyDrawerAttribute, 
+                            vType.RuntimeField, 
+                            Property.DisplayName());
                     }
                     catch (Exception e)
                     {
@@ -93,12 +98,14 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 BindToBuiltInField();
             else
             {
-                var customDrawer = drawer as ICreateDrawerOnPropertyNode;
-                var field = customDrawer.CreatePropertyNodeGUI(Property);
-                if (Field != null && Field != field)
-                    Field.RemoveFromHierarchy();
-                Field = field;
-                Add(Field);
+                if (drawer is ICreateDrawerOnPropertyNode customDrawer)
+                {
+                    var field = customDrawer.CreatePropertyNodeGUI(Property);
+                    if (Field != null && Field != field)
+                        Field.RemoveFromHierarchy();
+                    Field = field;
+                    Add(Field);
+                }
             }
 
             if (Field != null)
@@ -110,34 +117,23 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             DecoratorDrawersContainer.Clear();
             var vType = m_Controller.AnnotatedType.GetValue(Property.Name);
             if (vType == null)
-                throw new ArgumentException("Unexpected value.");
+            {
+                DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
+                return;
+            }
             for (var i = 0; i < vType.DecoratorDrawers.Count; i++)
             {
-                DecoratorDrawer drawer = null;
                 var decorator = vType.DecoratorDrawers[i];
-                if (decorator != null)
+                if (decorator == null) continue;
+                try
                 {
-                    try
-                    {
-                        drawer = (DecoratorDrawer)Activator.CreateInstance(decorator);
-                        drawer.SetAttribute(vType.PropertyAttributes[i]);
-                    }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                        drawer = null;
-                    }
-                    if (drawer != null)
-                    {
-                        var decoratorElement = drawer.CreatePropertyGUI();
-                        if (decoratorElement == null)
-                        {
-                            Debug.LogError("Custom DecoratorDrawer is not compatible with UI Toolkit. " + drawer.GetType().Name);
-                            continue;
-                        }
-
+                    var drawer = PropertyDrawerExtensions.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
+                    if (drawer.CreatePropertyGUI() is VisualElement decoratorElement)
                         DecoratorDrawersContainer.Add(decoratorElement);
-                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
                 }
             }
         }

@@ -28,8 +28,9 @@ namespace Space3x.UiToolkit.Types
         /// <returns>self</returns>
         public static VisualElement WithClasses(this VisualElement self, params string[] classes)
         {
-            foreach (var @class in classes) 
-                self.EnableInClassList(@class, true);
+            foreach (var @class in classes)
+                if (!string.IsNullOrEmpty(@class))
+                    self.EnableInClassList(@class, true);
 
             return self;
         }
@@ -44,7 +45,8 @@ namespace Space3x.UiToolkit.Types
         public static VisualElement WithClasses(this VisualElement self, bool asEnabled, params string[] classes)
         {
             foreach (var @class in classes) 
-                self.EnableInClassList(@class, asEnabled);
+                if (!string.IsNullOrEmpty(@class))
+                    self.EnableInClassList(@class, asEnabled);
 
             return self;
         }
