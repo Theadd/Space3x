@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using JetBrains.Annotations;
 using Space3x.InspectorAttributes.Types;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor

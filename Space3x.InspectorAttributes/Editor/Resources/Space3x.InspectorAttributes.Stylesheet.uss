@@ -5,6 +5,7 @@
     flex-grow: 1;
     flex-shrink: 1;
     margin: 0;
+    flex-direction: row;
 }
 
 .ui3x-property-group {
@@ -22,6 +23,18 @@
 .ui3x-property-group-field--with-label.ui3x-group-type--row > .ui3x-property-group {
     margin-top: 1px;
     margin-bottom: 1px;
+}
+
+.ui3x-group-type--row > .ui3x-property-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: row;
+}
+
+.ui3x-group-type--column > .ui3x-property-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
 }
 
 .ui3x-block-decorator {
@@ -212,4 +225,16 @@
 
 .ui3x-hidden {
     display: none;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .ui3x-block-decorator {
+    flex-basis: 90%;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .unity-property-field {
+    flex-basis: 90%;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .unity-base-field {
+    flex-basis: 90%;
 }

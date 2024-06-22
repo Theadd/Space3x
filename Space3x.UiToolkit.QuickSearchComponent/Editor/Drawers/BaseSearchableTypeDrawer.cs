@@ -39,7 +39,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         protected override VisualElement OnCreatePropertyGUI(IProperty property)
         {
-            DebugLog.Info($"IN {this.GetType().Name}.OnCreatePropertyGUI: {property.PropertyPath}");
             if (!(property.GetSerializedProperty() is SerializedProperty serializedProperty))
             {
                 DebugLog.Error($"Property {property.Name} is not a SerializedProperty");
@@ -55,7 +54,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 return CreatePropertyCollectionGUI(serializedProperty);
             }
             
-            // UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, true);
             IsExpanded = Property.IsExpanded();
             if (!m_IsTypeValue)
                 Property.SetExpanded(false);
@@ -130,9 +128,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual void Validate()
         {
-            // TODO
             if (!m_IsTypeValue && (Property.GetSerializedProperty().propertyType != SerializedPropertyType.ManagedReference && !attribute.applyToCollection))
-                throw new Exception(nameof(TAttribute) 
+                throw new Exception(attribute.GetType().Name
                                     + " can be used only with a ManagedReference. Add a [SerializedReference] attribute"
                                     + " to the property you want to use this attribute on.");
         }
@@ -191,20 +188,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         public void OnShowPopup(TypeField target, VisualElement selectorField, ShowWindowMode mode)
         {
-            Debug.Log($"OnShowPopup!");
             PopupContent ??= new QuickSearchElement() { };
-//            var swatch = new System.Diagnostics.Stopwatch();
-//            swatch.Start();
             PopupContent.DataSource = GetAllTypes().ToArray();
-//            swatch.Stop();
-//            Debug.Log($"OnShowPopup (PopupContent.DataSource = GetAllTypes().ToArray()): {swatch.ElapsedMilliseconds}ms");
-//            var sType = GetSelectedType();
-//            if (sType == null)
-//                PopupContent.SetValueWithoutNotify(new List<Type>() {});
-//            else
-//                PopupContent.SetValueWithoutNotify(new List<Type>() { sType });
             Popup ??= (new QuickSearchPopup() { }).WithContent(PopupContent);
-//            Popup.Show(SelectorField);
             Popup.WithSearchable(target).Show(selectorField, mode);
         }
 
@@ -243,15 +229,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         private MarkerDecoratorsCache m_ContentDecoratorsCache;
 
-        private void AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode(PropertyField propertyField, IProperty propertyNode)
-        {
-            var pNodeA = propertyField.GetPropertyNode();
-            var pNodeB = propertyNode;
-            DebugLog.Info("pNodeA: " + pNodeA.PropertyPath + $" (Name: {pNodeA.Name}, ParentPath: {pNodeA.ParentPath})");
-            DebugLog.Info("pNodeB: " + pNodeB.PropertyPath + $" (Name: {pNodeB.Name}, ParentPath: {pNodeB.ParentPath})");
-            DebugLog.Info($"pNodeA == pNodeB: {object.ReferenceEquals(pNodeA, pNodeB)}");
-        }
-
         /// <summary>
         /// Checks if propertyField is bound to the correct property and returns true if it is.
         /// Otherwise, attempts to properly bind it and returns false.
@@ -261,14 +238,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         /// <returns>Whether propertyField was bound to the correct property or not.</returns>
         private bool EnsurePropertyFieldIsBoundToTheCorrectProperty(PropertyField propertyField, IProperty propertyNode)
         {
-            if (!object.ReferenceEquals(propertyField.GetPropertyNode(), propertyNode))
-            {
-                propertyField.Unbind();
-                propertyField.BindProperty(propertyNode.GetSerializedProperty());
-                return false;
-            }
-
-            return true;
+            if (ReferenceEquals(propertyField.GetPropertyNode(), propertyNode)) return true;
+            propertyField.Unbind();
+            propertyField.BindProperty(propertyNode.GetSerializedProperty());
+            return false;
         }
         
         private void OnContainerFullyAttached()
@@ -281,16 +254,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 m_ContentDecoratorsCache = null;
                 EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
                 {
-                    AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode((PropertyField) Content, Property);
-                    var wasBound = EnsurePropertyFieldIsBoundToTheCorrectProperty((PropertyField) Content, Property);
-                    DebugLog.Info($"Was it correctly bound? {wasBound}");
-                    AnalyzeAndCompareBoundPropertyOnFieldWithPropertyNode((PropertyField) Content, Property);
-                    
+                    EnsurePropertyFieldIsBoundToTheCorrectProperty((PropertyField) Content, Property);
                     if (UngroupedMarkerDecorators.GetInstance((PropertyField) Content, propertyContainsChildrenProperties: true) is MarkerDecoratorsCache cache)
                     {
                         m_ContentDecoratorsCache = cache;
                         m_ContentDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
-                        DebugLog.Info($"ContentDecoratorsCache EQUALS TO DecoratorsCache ??? {(object.ReferenceEquals(DecoratorsCache, m_ContentDecoratorsCache))}");
                     }
                     DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
                     UngroupedMarkerDecorators.SetAutoDisableGroupingWhenCreatingCachesInGroup(Property.GetSerializedObject(), ContentContainer.panel, false);
@@ -319,8 +287,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             if (selectorField is TypeInstanceField instanceField)
             {
-                // m_DelayedContentHashCode = ((PropertyField) Content).GetSerializedProperty().GetHashCode();
-                // var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance(m_DelayedContentHashCode);
                 if (Content is not PropertyField)
                     Content.LogThis("<color=#ff0000ff><b>Content is not PropertyField!</b></color>");
                 var altDecoratorsCache = UngroupedMarkerDecorators.GetInstance((PropertyField) Content, propertyContainsChildrenProperties: true);
@@ -330,30 +296,24 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 instanceField.BindProperty(Property.GetSerializedProperty(), -1);
                 if (Content is PropertyField propertyField)
                 {
-                    DebugLog.Info("BEFORE altDecoratorsCache.PrintCachedInstances()");
-                    altDecoratorsCache.PrintCachedInstances();
-                    
                     propertyField.RebuildChildDecoratorDrawersIfNecessary(Property.GetSerializedProperty());
-                    altDecoratorsCache.RebuildAll();
-                    DecoratorsCache.RebuildAll();  // TODO: remove redundant call
-                    
-                    DebugLog.Info("MIDDLE altDecoratorsCache.PrintCachedInstances()");
-                    altDecoratorsCache.PrintCachedInstances();
-                    
-                    altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
-                    DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
-                    DebugLog.Info("altDecoratorsCache.PrintCachedInstances()");
-                    altDecoratorsCache.PrintCachedInstances();
-                    altDecoratorsCache.HandlePendingDecorators();
-                    DebugLog.Info("DecoratorsCache.PrintCachedInstances()");
-                    DecoratorsCache.PrintCachedInstances();
-                    DecoratorsCache.HandlePendingDecorators();
-                    if (m_ContentDecoratorsCache != null)
+                    if (!ReferenceEquals(altDecoratorsCache, DecoratorsCache))
                     {
-                        DebugLog.Info("m_ContentDecoratorsCache.PrintCachedInstances()");
-                        m_ContentDecoratorsCache.PrintCachedInstances();
-                        m_ContentDecoratorsCache.HandlePendingDecorators();
+                        altDecoratorsCache.RebuildAll();
+                        DecoratorsCache.RebuildAll();
+                        altDecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                        DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                        altDecoratorsCache.HandlePendingDecorators();
+                        DecoratorsCache.HandlePendingDecorators();
                     }
+                    else
+                    {
+                        DecoratorsCache.RebuildAll();
+                        DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                        DecoratorsCache.HandlePendingDecorators();
+                    }
+                    if (m_ContentDecoratorsCache != null && !ReferenceEquals(m_ContentDecoratorsCache, DecoratorsCache))
+                        m_ContentDecoratorsCache.HandlePendingDecorators();
                 }
             }
         }

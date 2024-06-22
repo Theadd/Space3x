@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions;
 using Space3x.UiToolkit.Types;
-using Unity.VisualScripting;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor
 {
@@ -30,8 +30,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
                 Primary = other.Primary;
                 Secondary = other.Secondary;
                 Highlight = other.Highlight;
-//                Alternative = other.Alternative;
-//                Dissolve = other.Dissolve;
             }
 
             public Styles(in StyleTag primary, in StyleTag secondary, in StyleTag highlight)
@@ -152,7 +150,5 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
                 TypeAttributes.Interface => "interface ",
                 _ => Target.IsValueType ? "struct " : "class "
             };
-        
-        
     }
 }

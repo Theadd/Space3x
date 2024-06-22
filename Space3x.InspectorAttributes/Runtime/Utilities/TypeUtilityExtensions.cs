@@ -61,9 +61,6 @@ namespace Space3x.InspectorAttributes.Utilities
 
         private static IReadOnlyList<Type> GetDerivedTypes(Type baseType)
         {
-            // [FilteredDatasource] Count: 2492 / 2602; TypeCache Count: 1455
-            Debug.Log($"Getting Derived Types of {baseType.Name}");
-//            return TypeCache.GetTypesDerivedFrom(baseType).ToList();
             return AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(domainAssembly => domainAssembly.GetTypes())
                 .Where(t => t != baseType && baseType.IsAssignableFrom(t)).ToList();

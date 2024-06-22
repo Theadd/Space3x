@@ -1,5 +1,4 @@
-﻿using System;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
@@ -11,13 +10,13 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(GroupMarkerAttribute), true)]
-    public class GroupDecorator : GroupMarkerDecorator<AutoDecorator, GroupMarkerAttribute>
-    {
-        public override IGroupMarkerDecorator LinkedMarkerDecorator { get; set; } = null;
-        
-        public override GroupMarkerAttribute Target => (GroupMarkerAttribute) attribute;
-    }
+    // [CustomPropertyDrawer(typeof(GroupMarkerAttribute), true)]
+    // public class GroupDecorator : GroupMarkerDecorator<AutoDecorator, GroupMarkerAttribute>
+    // {
+    //     public override IGroupMarkerDecorator LinkedMarkerDecorator { get; set; } = null;
+    //     
+    //     public override GroupMarkerAttribute Target => (GroupMarkerAttribute) attribute;
+    // }
 
     public interface IGroupMarkerDecorator : IDecorator, IDrawer
     {
@@ -60,21 +59,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnUpdate()
         {
             var isPending = true;
-            DebugLog.Info("#1");
             if (!DecoratorsCache.IsAutoGroupingDisabled())
             {
-                DebugLog.Info("#2");
-                var didRebuild = this.RebuildGroupMarkerIfRequired();
-                DebugLog.Info("#2.Rebuild: " + didRebuild);
+                this.RebuildGroupMarkerIfRequired();
                 if (this.TryLinkToMatchingGroupMarkerDecorator())
                 {
-                    DebugLog.Info("#3");
                     if (Target.IsOpen)
                         DebugLog.Warning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
                     
                     if (!Target.IsOpen && !this.IsGroupMarkerUsed())
                     {
-                        DebugLog.Info("#4");
                         Marker.PopulateGroupMarker();
                         isPending = false;
                         DecoratorsCache.Remove(this);
@@ -84,14 +78,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             if (isPending)
             {
-                DebugLog.Info("#-5");
                 DecoratorsCache.MarkPending(this);
                 DecoratorsCache.PrintCachedInstances();
-                DebugLog.Info("#-5 END");
             }
-            DebugLog.Info("#-6");
             DecoratorsCache.HandlePendingDecorators();
-            DebugLog.Info("#-7");
         }
 
         public override void OnAttachedAndReady(VisualElement element)

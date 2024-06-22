@@ -311,8 +311,6 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 		
 		public static MemberInfo GetValidMemberInfo(string memberName, IProperty property, out object targetObj)
 		{
-			// var initialTarget = (object)serializedProperty.serializedObject.targetObject;
-			// var targetObject = (object)serializedProperty.serializedObject.targetObject;
 			var initialTarget = (object)property.GetDeclaringObject();
 			var targetObject = (object)property.GetDeclaringObject();
 

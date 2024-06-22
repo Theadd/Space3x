@@ -1,10 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-//using System.Collections;
-using System.Reflection;
-using Unity.VisualScripting;
-using UnityEngine;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor
 {
@@ -52,10 +48,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
         public static string SimpleName(this Type type)
         {
             if (type == null) return "";
+            if (type.IsGenericType && type.Name.IndexOf('`') < 0) return type.Name;
             
-            if (type.IsGenericType && type.Name.IndexOf('`') < 0)
-                // Debug.Log($"  [SimpleName] Inconsistent type: {type}\n{type.Assembly.Location}");
-                return type.Name;
             return (type.IsGenericType) ? type.Name[..type.Name.IndexOf('`')] : type.Name;
         }
         
@@ -70,12 +64,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
                 return Nullable.GetUnderlyingType(type).GetTypeNameWithGenericParameters() + "?";
 
             var name = type.Name;
-
             if (type.IsGenericType && name.Contains('`'))
                 name = name[..name.IndexOf('`')];
 
             var genericArguments = (IEnumerable<Type>) type.GetGenericArguments();
-
             if (type.IsNested)
             {
                 name = type.DeclaringType.GetTypeNameWithGenericParameters() + "." + name;

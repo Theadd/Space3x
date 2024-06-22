@@ -3,20 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor;
 using Space3x.InspectorAttributes.Utilities;
-using UnityEditor;
 using UnityEngine;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
 {
     public static class TypeSearcherAttributeExtensions
     {
-        public static List<Type> GetAllTypes(this TypeSearcherAttribute self)
-        {
-            return self.CachedTypes ??= new List<Type>(self.RawTypes ?? Type.EmptyTypes.ToList());
-        }
-        
+        public static List<Type> GetAllTypes(this TypeSearcherAttribute self) =>
+            self.CachedTypes ??= new List<Type>(self.RawTypes ?? Type.EmptyTypes.ToList());
+
         public static void ReloadCache(this TypeSearcherAttribute self)
         {
             self.CachedTypes?.Clear();
@@ -26,20 +23,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
     
     public static class BaseSearchableTypeAttributeExtensions
     {
-        public static List<Type> GetAllTypes(this BaseSearchableTypeAttribute self)
-        {
-            return self.CachedTypes ??= Type.EmptyTypes.ToList();
-        }
+        public static List<Type> GetAllTypes(this BaseSearchableTypeAttribute self) =>
+            self.CachedTypes ??= Type.EmptyTypes.ToList();
 
-        public static void ReloadCache(this BaseSearchableTypeAttribute self)
-        {
-            
-        }
+        public static void ReloadCache(this BaseSearchableTypeAttribute self) { }
     }
 
     public static class DerivedTypeSearcherAttributeExtensions
     {
-        public static List<Type> GetAllTypes(this DerivedTypeSearcherAttribute self, SerializedProperty property)
+        public static List<Type> GetAllTypes(this DerivedTypeSearcherAttribute self, IProperty property)
         {
             // self.ReloadCache();
             return self.CachedTypes ??= self.GetDerivedTypes(property);
@@ -47,13 +39,14 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
         
         public static void ReloadCache(this DerivedTypeSearcherAttribute self)
         {
+            DebugLog.Info("<b><color=#0000FFFF>Reloading derived types cache.</color></b>");
             self.CachedTypes?.Clear();
             self.CachedTypes = null;
             self.RawTypes?.Clear();
             self.RawTypes = null;
         }
 
-        private static List<Type> GetDerivedTypes(this DerivedTypeSearcherAttribute self, SerializedProperty property)
+        private static List<Type> GetDerivedTypes(this DerivedTypeSearcherAttribute self, IProperty property)
         {
             var allDerivedTypes = self.RawTypes ??= self.GetAllDerivedTypes();
             if (self is ISealedExtension<ICondition> and ICondition selfWithConditional)
@@ -65,7 +58,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
                             .Where(t => predicate.Invoke(t))
                             .ToList();
 
-                    Debug.LogError($"Could not find method {selfWithConditional.Condition} on {property.serializedObject.targetObject}");
+                    Debug.LogError($"Could not find method {selfWithConditional.Condition} on {property.GetDeclaringObject()}");
                 }
             }
                 

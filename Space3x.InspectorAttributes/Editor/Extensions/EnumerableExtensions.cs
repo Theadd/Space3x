@@ -8,23 +8,19 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         /// <summary>
         /// For each item in the enumerable, execute the action.
         /// </summary>
-        /// <param name="self"></param>
-        /// <param name="action"></param>
-        /// <typeparam name="T"></typeparam>
         public static void ForEach<T>(this IEnumerable<T> self, Action<T> action)
         {
             foreach (var item in self)
-            {
                 action(item);
-            }
         }
         
+        /// <summary>
+        /// For each item in the enumerable, execute the action.
+        /// </summary>
         public static void ForEach<T>(this IEnumerable<T> self, Func<T, T> action)
         {
             foreach (var item in self)
-            {
                 action(item);
-            }
         }
         
         public static void AddSorted<T>(this List<T> list, T item, IComparer<T> comparer = null)

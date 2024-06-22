@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
-    public static class IGroupMarkerDecoratorExtensions
+    public static class GroupMarkerDecoratorExtensions
     {
         public static bool IsGroupMarkerUsed(this IGroupMarkerDecorator self) => 
             self.GetGroupBeginMarkerDecorator()?.GroupContainer is PropertyGroupField group && group.IsUsed;
