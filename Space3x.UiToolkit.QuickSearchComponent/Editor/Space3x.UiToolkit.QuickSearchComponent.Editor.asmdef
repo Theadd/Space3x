@@ -8,6 +8,7 @@
         "Space3x.InspectorAttributes",
         "Space3x.InspectorAttributes.Editor",
         "Space3x.UiToolkit.Types",
+        "Space3x.UiToolkit.Types.Editor",
         "Space3x.UiToolkit.SlicedText",
         "Space3x.UiToolkit.SlicedText.Runtime",
         "Space3x.Unstable"

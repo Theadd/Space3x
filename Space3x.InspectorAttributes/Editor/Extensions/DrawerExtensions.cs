@@ -1,18 +1,21 @@
 ﻿using System;
 using System.Reflection;
+using Space3x.InspectorAttributes.Editor.Drawers;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
-    public static class PropertyDrawerExtensions
+    public static class DrawerExtensions
     {
+        #region PIVATE REFLECTION STUFF
         private static FieldInfo s_PropertyDrawerAttribute = null;
         private static FieldInfo s_PropertyDrawerFieldInfo = null;
         private static FieldInfo s_PropertyDrawerPreferredLabel = null;
         private static FieldInfo s_DecoratorDrawerAttribute = null;
 
-        public static void SetAttribute(this PropertyDrawer propertyDrawer, PropertyAttribute attribute)
+        private static void SetAttribute(this PropertyDrawer propertyDrawer, PropertyAttribute attribute)
         {
             s_PropertyDrawerAttribute ??= typeof(PropertyDrawer).GetField(
                 "m_Attribute",
@@ -22,7 +25,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 s_PropertyDrawerAttribute.SetValue(propertyDrawer, attribute);
         }
         
-        public static void SetFieldInfo(this PropertyDrawer propertyDrawer, FieldInfo fieldInfo)
+        private static void SetFieldInfo(this PropertyDrawer propertyDrawer, FieldInfo fieldInfo)
         {
             s_PropertyDrawerFieldInfo ??= typeof(PropertyDrawer).GetField(
                 "m_FieldInfo", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -31,7 +34,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 s_PropertyDrawerFieldInfo.SetValue(propertyDrawer, fieldInfo);
         }
         
-        public static void SetPreferredLabel(this PropertyDrawer propertyDrawer, string preferredLabel)
+        private static void SetPreferredLabel(this PropertyDrawer propertyDrawer, string preferredLabel)
         {
             s_PropertyDrawerPreferredLabel ??= typeof(PropertyDrawer).GetField(
                 "m_PreferredLabel", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -40,7 +43,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 s_PropertyDrawerPreferredLabel.SetValue(propertyDrawer, preferredLabel);
         }
         
-        public static void SetAttribute(this DecoratorDrawer decoratorDrawer, PropertyAttribute attribute)
+        private static void SetAttribute(this DecoratorDrawer decoratorDrawer, PropertyAttribute attribute)
         {
             s_DecoratorDrawerAttribute ??= typeof(DecoratorDrawer).GetField(
                 "m_Attribute", BindingFlags.NonPublic | BindingFlags.Instance);
@@ -48,6 +51,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             if (s_DecoratorDrawerAttribute != null)
                 s_DecoratorDrawerAttribute.SetValue(decoratorDrawer, attribute);
         }
+        #endregion
 
         /// <summary>
         /// Creates an empty copy of the given decorator drawer targeting the same attribute.
@@ -89,5 +93,9 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             drawer.SetPreferredLabel(preferredLabel);
             return drawer;
         }
+        
+        public static IPanel GetPanel(this IDrawer drawer) => drawer is IDecorator decorator
+            ? decorator.GhostContainer.panel
+            : drawer.Container.panel;
     }
 }

@@ -14,9 +14,9 @@ namespace Space3x.InspectorAttributes.Editor
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;
         public string ParentPath { get; set; }
-        public object Value { get; }
-        public Type ValueType { get; }
-        public VisualElement Field { get; set; }
+        // public object Value { get; }
+        // public Type ValueType { get; }
+        // public VisualElement Field { get; set; }
         public int Hash => this.GetHashCode();
     }
     
@@ -31,8 +31,8 @@ namespace Space3x.InspectorAttributes.Editor
 
         public string ParentPath => Indexer.PropertyPath;
         // TODO: everything below
-        public object Value { get; }
-        public Type ValueType { get; }
-        public VisualElement Field { get; set; }
+        // public object Value { get; }
+        // public Type ValueType { get; }
+        // public VisualElement Field { get; set; }
     }
 }

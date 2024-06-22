@@ -27,14 +27,14 @@ namespace Space3x.InspectorAttributes.Editor
     
     public interface IPropertyNode : IProperty, IPropertyFlags
     {
-        public object Value { get; }
-        
-        public Type ValueType { get; }
+        // public object Value { get; }
+        //
+        // public Type ValueType { get; }
     }
     
     public interface IBindablePropertyNode : IPropertyNode, IPropertyWithSerializedObject
     {
-        public VisualElement Field { get; set; }
+        // public VisualElement Field { get; set; }
     }
 
     public interface ISerializedPropertyNode : IBindablePropertyNode { }

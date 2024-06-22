@@ -1,0 +1,21 @@
+{
+    "name": "Space3x.UiToolkit.Types.Editor",
+    "rootNamespace": "Space3x.UiToolkit.Types",
+    "references": [
+        "Space3x.Attributes.Types",
+        "Unity.VisualScripting.Core",
+        "Unity.VisualScripting.Core.Editor",
+        "Space3x.UiToolkit.Types"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

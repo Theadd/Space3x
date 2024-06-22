@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
 using UnityEngine;
@@ -163,13 +164,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public void PrintCachedInstances()
         {
-            Debug.Log($"_____ PrintCachedInstances _____ PENDING: {m_PendingInstances.Count} " +
+            DebugLog.Info($"_____ PrintCachedInstances _____ PENDING: {m_PendingInstances.Count} " +
                       $"CACHED: {m_CachedInstances.Count} FAILED: {m_FailedInstances.Count} CACHE_ID: {this.GetHashCode()}");
             foreach (var groupMarkerDecorator in m_CachedInstances)
             {
                 var isPending = m_PendingInstances.Contains(groupMarkerDecorator);
                 var isFailed = m_FailedInstances.Contains(groupMarkerDecorator);
-                Debug.Log($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")} {(isFailed ? " (<b>FAILED</b>)" : "")}</color>");
+                DebugLog.Info($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")} {(isFailed ? " (<b>FAILED</b>)" : "")}</color>");
             }
         }
     }

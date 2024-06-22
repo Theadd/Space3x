@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions;
-using Space3x.UiToolkit.Types;
 
-namespace Space3x.UiToolkit.QuickSearchComponent.Editor
+namespace Space3x.UiToolkit.Types
 {
     public class TypeRewriter
     {

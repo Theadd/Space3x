@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Xml;
 using UnityEditor;
 
-namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
+namespace Space3x.UiToolkit.Types
 {
     /// <summary>
     /// Utility class to provide documentation for various types where available with the assembly
@@ -222,6 +222,14 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
             {
                 throw new Exception("Could not ascertain assembly filename", null);
             }
+        }
+        
+        public static string SimpleName(this Type type)
+        {
+            if (type == null) return "";
+            if (type.IsGenericType && type.Name.IndexOf('`') < 0) return type.Name;
+            
+            return (type.IsGenericType) ? type.Name[..type.Name.IndexOf('`')] : type.Name;
         }
     
         /// <summary>

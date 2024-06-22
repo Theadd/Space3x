@@ -1,6 +1,7 @@
 ﻿using System;
 using Space3x.UiToolkit.QuickSearchComponent.Editor;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
+using Space3x.UiToolkit.Types;
 using UnityEditor.Overlays;
 using UnityEditor.Toolbars;
 using UnityEngine;

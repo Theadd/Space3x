@@ -77,10 +77,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 }
             }
             if (isPending)
-            {
                 DecoratorsCache.MarkPending(this);
-                DecoratorsCache.PrintCachedInstances();
-            }
             DecoratorsCache.HandlePendingDecorators();
         }
 

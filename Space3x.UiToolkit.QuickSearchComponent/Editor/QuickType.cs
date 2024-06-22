@@ -45,14 +45,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
             return "<voffset=0em><line-height=0px><alpha=#FF>" + name + " <br><voffset=0em><align=\"right\"><alpha=#7F>" + type.Assembly.GetName().Name + "<alpha=#FF>";
         }
         
-        public static string SimpleName(this Type type)
-        {
-            if (type == null) return "";
-            if (type.IsGenericType && type.Name.IndexOf('`') < 0) return type.Name;
-            
-            return (type.IsGenericType) ? type.Name[..type.Name.IndexOf('`')] : type.Name;
-        }
-        
         private static string GetTypeNameWithGenericParameters(this Type type)
         {
             if (type.IsPrimitive || type == typeof(decimal) || type == typeof(string) || type == typeof(void) || type == typeof(object))

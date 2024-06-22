@@ -40,7 +40,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     if (allFields.TryGetValue(serializedNode.Name, out VisualElement targetField))
                     {
                         previousField = targetField;
-                        serializedNode.Field = targetField;
+                        // serializedNode.Field = targetField;
                     }
                     else
                         Debug.LogWarning($"No PropertyField found for {serializedNode.Name}.");
@@ -48,7 +48,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 else if (prop is NonSerializedPropertyNode nonSerializedNode)
                 {
                     var bindableField = new BindablePropertyField();
-                    nonSerializedNode.Field = bindableField;
+                    // nonSerializedNode.Field = bindableField;
                     bindableField.BindProperty(nonSerializedNode, applyCustomDrawers: true);
                     previousField.AddAfter(bindableField);
                     bindableField.AttachDecoratorDrawers();

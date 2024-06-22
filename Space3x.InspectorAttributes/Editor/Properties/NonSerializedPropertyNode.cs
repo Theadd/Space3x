@@ -15,9 +15,9 @@ namespace Space3x.InspectorAttributes.Editor
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;
         public string ParentPath { get; set; }
-        public object Value { get; }
-        public Type ValueType { get; }
-        public VisualElement Field { get; set; }
+        // public object Value { get; }
+        // public Type ValueType { get; }
+        // public VisualElement Field { get; set; }
     }
     
     public class NonSerializedPropertyNodeIndex : INonSerializedPropertyNodeIndex
@@ -36,8 +36,8 @@ namespace Space3x.InspectorAttributes.Editor
         public string PropertyPath => ParentPath + "." + Name;
         public string ParentPath => Indexer.PropertyPath;
         // TODO: everything below
-        public object Value { get; }
-        public Type ValueType { get; }
-        public VisualElement Field { get; set; }
+        // public object Value { get; }
+        // public Type ValueType { get; }
+        // public VisualElement Field { get; set; }
     }
 }

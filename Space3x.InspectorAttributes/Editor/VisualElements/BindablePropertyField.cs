@@ -70,7 +70,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 {
                     try
                     {
-                        drawer = PropertyDrawerExtensions.CreatePropertyDrawer(
+                        drawer = DrawerExtensions.CreatePropertyDrawer(
                             propertyDrawer,
                             vType.PropertyDrawerAttribute, 
                             vType.RuntimeField, 
@@ -127,7 +127,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 if (decorator == null) continue;
                 try
                 {
-                    var drawer = PropertyDrawerExtensions.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
+                    var drawer = DrawerExtensions.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
                     if (drawer.CreatePropertyGUI() is VisualElement decoratorElement)
                         DecoratorDrawersContainer.Add(decoratorElement);
                 }
@@ -155,11 +155,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 {
                     itemFactory = () =>
                     {
-                        PropertyDrawer drawer = null;
-                        drawer = (PropertyDrawer)Activator.CreateInstance(m_PropertyDrawerOnCollectionItems);
-                        drawer.SetAttribute(m_PropertyDrawerOnCollectionItemsAttribute);
-                        drawer.SetFieldInfo(m_RuntimeField);
-                        drawer.SetPreferredLabel(Property.DisplayName());
+                        PropertyDrawer drawer = DrawerExtensions.CreatePropertyDrawer(
+                            m_PropertyDrawerOnCollectionItems, 
+                            m_PropertyDrawerOnCollectionItemsAttribute,
+                            m_RuntimeField,
+                            Property.DisplayName());
 
                         return ((ICreateDrawerOnPropertyNode)drawer).CreatePropertyNodeGUI(Property);
                     };

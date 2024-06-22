@@ -6,13 +6,12 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Xml.Linq;
-using Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions;
+using Space3x.Attributes.Types;
 using Unity.VisualScripting;
 using UnityEditor.Build;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 
-namespace Space3x.UiToolkit.QuickSearchComponent.Editor
+namespace Space3x.UiToolkit.Types
 {
     public static class XmlDocumentationGenerator
     {
@@ -120,7 +119,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
                     {
                         if (process.ExitCode != 0) 
                             throw new BuildFailedException($"Failed to build: {process.StartInfo.Arguments}\n{error}\n{output}");
-                        Debug.Log($"[DONE] {process.StartInfo.Arguments}\n{output}\n{error}");
+                        DebugLog.Info($"[DONE] {process.StartInfo.Arguments}\n{output}\n{error}");
                         return output.ToString();
                     }
                     else

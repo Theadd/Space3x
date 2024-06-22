@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Space3x.Attributes.Types;
 using Space3x.UiToolkit.Types;
 using Space3x.Unstable;
 using Unity.VisualScripting;
@@ -141,7 +142,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         private void OnPropertyChanged(SerializedPropertyChangeEvent ev)
         {
-            Debug.Log($"[TypeField] OnPropertyChanged");
+            DebugLog.Info($"[TypeField] OnPropertyChanged");
             var type = GetTypeFromSerializedPropertyValue(ev.changedProperty);
             SetValue(type);
         }
