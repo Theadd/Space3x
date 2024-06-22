@@ -22,6 +22,12 @@ namespace Space3x.Attributes.Types
         public bool IsOpen { get; set; }
 
         /// <summary>
+        /// By default, elements within the group will be sized proportionally to the size of their content.
+        /// Set to false in order to make all elements the same size regardless of their content.
+        /// </summary>
+        public bool ProportionalSize { get; set; } = true;
+
+        /// <summary>
         /// Group serialized members within this attribute marker to it's corresponding closing attribute.
         /// </summary>
         public GroupMarkerAttribute(GroupType groupType) => this.Type = groupType;

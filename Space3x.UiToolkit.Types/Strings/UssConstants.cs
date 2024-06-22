@@ -14,6 +14,7 @@
         public const string UssGhostDecorator = CustomPrefix + "ghost-decorator";
         public const string UssGroupMarker = CustomPrefix + "group-marker";
         public const string UssUsedGroupMarker = UssGroupMarker + "__used";
+        public const string UssNonProportional = CustomPrefix + "non-proportional";
         
     }
 }

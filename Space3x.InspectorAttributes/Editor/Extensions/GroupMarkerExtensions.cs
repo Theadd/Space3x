@@ -6,6 +6,7 @@ using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
+using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -96,27 +97,12 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             {
                 Text = beginMarker.GroupName,
                 GroupName = beginMarker.GroupName,
-                Type = beginMarker.Type,
-                style =
-                {
-                    flexDirection = FlexDirection.Row
-                },
-                contentContainer =
-                {
-                    style =
-                    {
-                        flexDirection = FlexDirection.Row,
-                        flexGrow = 1,
-                        flexShrink = 1
-                    }
-                }
+                Type = beginMarker.Type
             };
+            if (beginMarker.MarkerDecorator is DecoratorDrawer { attribute: GroupMarkerAttribute { ProportionalSize: false } })
+                group.WithClasses(UssConstants.UssNonProportional);
             group.WithClasses($"ui3x-group-type--{beginMarker.Type.ToString().ToLower()}");
             beginMarker.MarkerDecorator.GroupContainer = group;
-            if (beginMarker.Type == GroupType.Column)
-                group.contentContainer.ColumnGrowShrink();
-            else
-                group.contentContainer.RowGrowShrink();
             
             return group;
         }
