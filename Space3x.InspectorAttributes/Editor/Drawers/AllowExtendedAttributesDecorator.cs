@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
@@ -25,20 +26,42 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 DebugLog.Error($"Container is null, Property is null? {Property == null} {this.GetHashCode()}");
             var parentElement = Container.hierarchy.parent;
             var allFields = new Dictionary<string, VisualElement>();
-            foreach (var child in parentElement.hierarchy.Children())
+            var allChildren = parentElement.hierarchy.Children().ToList();
+            for (var i = 0; i < allChildren.Count; i++)
+            // foreach (var child in parentElement.hierarchy.Children())
             {
+                var child = allChildren.ElementAt(i);
                 if (child is PropertyField childField)
                 {
                     var childProp = childField.GetSerializedProperty();
+                    var shouldRebind = childProp == null;
+                    if (!shouldRebind)
+                    {
+                        try
+                        {
+                            shouldRebind = !childField.name.EndsWith(childProp.name);
+                        }
+                        catch (ObjectDisposedException _)
+                        {
+                            shouldRebind = true;
+                        }
+                    }
+                    if (shouldRebind)
+                    {
+                        childField.Unbind();
+                        childField.Bind(Property.GetSerializedObject());
+                        childProp = childField.GetSerializedProperty();
+                        DebugLog.Info($"<color=#FFFF00FF>{childField.name} REBOUND, success: {childProp != null}</color>");
+                    }
                     if (childProp != null)
                     {
                         try
                         {
                             allFields.Add(childProp.name, childField);
                         }
-                        catch (ObjectDisposedException objectDisposedException)
+                        catch (Exception ex)
                         {
-                            DebugLog.Error(objectDisposedException.ToString() + "\n\n" + objectDisposedException.StackTrace);
+                            DebugLog.Error(ex.ToString() + "\n\n" + ex.StackTrace);
                             DebugLog.Warning(string.Join("\n", allFields.Keys));
                         }
                     }

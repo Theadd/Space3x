@@ -82,7 +82,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         {
             var parentPath = prop.GetParentPath();
             if (string.IsNullOrEmpty(parentPath))
-                return prop.serializedObject.targetObject.GetInstanceID();
+                return prop.serializedObject.targetObject.GetInstanceID() * 397;
             else
                 return prop.serializedObject.targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
         }

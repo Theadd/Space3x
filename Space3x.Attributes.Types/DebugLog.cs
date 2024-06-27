@@ -2,13 +2,14 @@
 
 namespace Space3x.Attributes.Types
 {
-    public static class DebugLog
+    public class DebugLog
     {
         [HideInCallstack]
         public static void Error(string msg)
         {
             #if SPACE3X_DEBUG
-            Debug.LogError(msg);
+            Debug.unityLogger.Log(LogType.Error, "<color=#FF0000FF>" + msg + "</color>");
+            // Debug.LogError("<color=#FF0000FF>" + msg + "</color>");
             #endif
         }
         

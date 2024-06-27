@@ -1,7 +1,4 @@
-﻿using System;
-using UnityEditor;
-using UnityEngine;
-using UnityEngine.UIElements;
+﻿using UnityEditor;
 
 namespace Space3x.InspectorAttributes.Editor
 {
