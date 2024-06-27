@@ -42,6 +42,7 @@ namespace Space3x.InspectorAttributes.Editor
                 SerializedObject = serializedObject;
                 ParentPath = property.GetParentPath();
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
+                // TODO: get rid of AllObjectTypesAreTheSame, it's always true by design
                 if (!IsEditingMultipleObjects || (IsEditingMultipleObjects && AllObjectTypesAreTheSame(serializedObject.targetObjects)))
                 {
                     TargetObject = serializedObject.targetObject;

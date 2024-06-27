@@ -17,6 +17,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         protected override void OnCreatePropertyGUI(VisualElement container)
         {
+            DebugLog.Info($"ButtonDrawer OnCreatePropertyGUI: {this.GetHashCode()}");
             m_Button = new Button(OnClick)
             {
                 text = string.IsNullOrEmpty(Target.Text) ? ObjectNames.NicifyVariableName(Target.MethodName) : Target.Text,
@@ -36,12 +37,19 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private void OnClick()
         {
+            DebugLog.Info($"Clicked: {this.GetHashCode()}");
             if (m_ButtonMethod != null)
                 m_ButtonMethod.Invoke(Property.GetDeclaringObject(), null);
         }
-        
+
+        public override void OnAttachedAndReady(VisualElement element)
+        {
+            DebugLog.Info($"ButtonDrawer OnAttachedAndReady: {this.GetHashCode()}");
+        }
+
         public override void OnUpdate()
         {
+            DebugLog.Info($"ButtonDrawer OnUpdate: {this.GetHashCode()}");
             if (Property == null) return;
             var target = Property.GetDeclaringObject();
             m_ButtonMethod = ReflectionUtility.FindFunction(Target.MethodName, target);

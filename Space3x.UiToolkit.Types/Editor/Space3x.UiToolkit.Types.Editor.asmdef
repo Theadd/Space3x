@@ -3,8 +3,6 @@
     "rootNamespace": "Space3x.UiToolkit.Types",
     "references": [
         "Space3x.Attributes.Types",
-        "Unity.VisualScripting.Core",
-        "Unity.VisualScripting.Core.Editor",
         "Space3x.UiToolkit.Types"
     ],
     "includePlatforms": [

@@ -36,6 +36,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public VisualElement CreatePropertyNodeGUI(IProperty property)
         {
+            DebugLog.Info($"<color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name} on {property.PropertyPath}</color>");
             if (Property != null)
             {
                 DebugLog.Error($"<b><color=#FF0000FF>Property {Property.PropertyPath} already created</color></b>");

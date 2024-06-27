@@ -20,6 +20,7 @@ namespace Space3x.InspectorAttributes.Editor
         public SerializedObject SerializedObject { get; }
     }
 
+    // TODO: INodeTree is not implemented yet
     public interface INodeTree : IProperty
     {
         public IEnumerable<IPropertyNode> Children();
@@ -56,7 +57,7 @@ namespace Space3x.InspectorAttributes.Editor
     
     public interface INonSerializedPropertyNodeIndex : INonSerializedPropertyNode, IPropertyNodeIndex { }
     
-    // TODO
+    // TODO: INodeArray is not implemented yet
     public interface INodeArray : IProperty
     {
         public IEnumerable<IPropertyNode> Children();

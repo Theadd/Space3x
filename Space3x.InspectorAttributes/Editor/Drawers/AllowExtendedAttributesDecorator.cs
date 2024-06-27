@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
@@ -20,6 +21,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void PopulateNonSerializedProperties()
         {
+            if (Container == null)
+                DebugLog.Error($"Container is null, Property is null? {Property == null} {this.GetHashCode()}");
             var parentElement = Container.hierarchy.parent;
             var allFields = new Dictionary<string, VisualElement>();
             foreach (var child in parentElement.hierarchy.Children())
@@ -28,7 +31,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 {
                     var childProp = childField.GetSerializedProperty();
                     if (childProp != null)
-                        allFields.Add(childProp.name, childField);
+                    {
+                        try
+                        {
+                            allFields.Add(childProp.name, childField);
+                        }
+                        catch (ObjectDisposedException objectDisposedException)
+                        {
+                            DebugLog.Error(objectDisposedException.ToString() + "\n\n" + objectDisposedException.StackTrace);
+                            DebugLog.Warning(string.Join("\n", allFields.Keys));
+                        }
+                    }
                 }
             }
             VisualElement previousField = null;
@@ -73,19 +86,35 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnClick()
         {
+            LogActiveEditors();
+            // if (Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel)
+            // {
+            //     var vRoot = vPanel[1];
+            //     DebugLog.Info($"<b>vRoot: {vRoot.GetHashCode()} ({vRoot.name})</b>");
+            // }
+            //     
+            // var vTree = this.Container.panel.visualTree;
+            // var hierarchyChilds = vTree.hierarchy.childCount;
+            // var contContainer = vTree.contentContainer;
+            // var contContainerChilds = contContainer.childCount;
+            // DebugLog.Info($"Hierarchy: {hierarchyChilds}, ContentContainer: {contContainerChilds}, contContainerName: {contContainer.name}");
+            // DebugLog.Info($"Panel: {this.Container.panel.GetHashCode()}, VisualTree: {this.Container.panel.visualTree.GetHashCode()} ({this.Container.panel.visualTree.name})");
+        }
 
-            if (Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel)
+        private void LogActiveEditors()
+        {
+            var editors = ActiveEditorTracker.sharedTracker.activeEditors;
+            var instanceId = Controller.InstanceID;
+            var xProp = Controller.GetProperty(Property.Name);
+            
+            for (var index = 0; index < editors.Length; index++)
             {
-                var vRoot = vPanel[1];
-                DebugLog.Info($"<b>vRoot: {vRoot.GetHashCode()} ({vRoot.name})</b>");
+                var editor = editors[index];
+                var numTargets = editor.targets.Length;
+                var targetInstanceId = editor.target.GetInstanceID();
+                Debug.LogWarning($"#{index} (nºTargets: {numTargets}) - {editor.target.name} - InstanceID: {instanceId} - TargetInstanceID: {targetInstanceId} - " +
+                                 $"{editor.serializedObject.GetType().Name} - {editor.GetType().Name} - {editor.serializedObject.GetHashCode()}");
             }
-                
-            var vTree = this.Container.panel.visualTree;
-            var hierarchyChilds = vTree.hierarchy.childCount;
-            var contContainer = vTree.contentContainer;
-            var contContainerChilds = contContainer.childCount;
-            DebugLog.Info($"Hierarchy: {hierarchyChilds}, ContentContainer: {contContainerChilds}, contContainerName: {contContainer.name}");
-            DebugLog.Info($"Panel: {this.Container.panel.GetHashCode()}, VisualTree: {this.Container.panel.visualTree.GetHashCode()} ({this.Container.panel.visualTree.name})");
         }
 
         public override void OnUpdate()

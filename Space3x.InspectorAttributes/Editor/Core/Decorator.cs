@@ -77,15 +77,31 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public virtual void OnAttachedAndReady(VisualElement element) { }
 
         private int m_Counter = 0;
+        private bool m_IgnoreNextDetach = false;
+        private bool m_Removed = false;
+        private bool m_Added = false;
+        private bool m_OnUpdateCalled = false;
         
         public sealed override VisualElement CreatePropertyGUI()
         {
             m_Counter++;
-            if (Container != null && Property != null)
+            var ghostParent = GhostContainer?.hierarchy.parent;
+            var numGhosts = ghostParent?.hierarchy.childCount ?? -1;
+            DebugLog.Info($"<color=#0000FFFF><b>[CREATE]</b> {this.GetType().Name}, NºGh: {numGhosts}, NullGh: {GhostContainer == null}, " +
+                          $"NullCT: {Container == null}, NullP: {Property == null}, THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}</color>");
+            // if (GhostContainer != null && numGhosts > -1)
+            // {
+            //     m_IgnoreNextDetach = true;
+            //     GhostContainer.RemoveFromHierarchy();
+            //     GhostContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachGhostToPanelWorkaround);
+            //     return GhostContainer;
+            // }
+            /*else*/ if (Container != null || m_Removed /*&& Property != null*/)
             {
                 var copy = this.CreateCopy();
-                DebugLog.Warning($"    <color=#000000FF><b>[WARNING]</b></color> (#{m_Counter}) => {this.GetType().Name} on {Property.Name} @`{Property.ParentPath}`. " +
-                                 $"instanceHash: {this.GetHashCode()}, copyHash: {{copy.GetHashCode()}}, detached: {m_Detached}, ready: {m_Ready}");
+                DebugLog.Warning($"    <color=#000000FF><b>[WARNING]</b></color> (#{m_Counter}), ThisHash: {this.GetHashCode()} => {this.GetType().Name}, " +
+                                 $"Rem: {m_Removed}, Add: {m_Added}, NullCT: {Container == null}, " +
+                                 $"instanceHash: {this.GetHashCode()}, copyHash: {copy.GetHashCode()}, detached: {m_Detached}, ready: {m_Ready}");
                 // GhostContainer.RemoveFromHierarchy();
                 return copy.CreatePropertyGUI();
                 // GhostContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachGhostToPanelWorkaround);
@@ -93,26 +109,50 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
             
             if (Container != null)
-                OnReset(disposing: false);
-
-            if (Container == null)
             {
-                Container = new T();
-                OnCreatePropertyGUI(Container);
+                DebugLog.Info("#0");
+                OnReset(disposing: false);
+                // DebugLog.Info("#1");
+                // GhostContainer?.RemoveFromHierarchy();
+                // DebugLog.Info("#2");
+                // GhostContainer = null;
+                // DebugLog.Info("#3");
             }
             
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
+            GhostContainer.WithClasses($"ui3x-hash-{this.GetHashCode()}");
             m_Detached = false;
             m_Ready = false;
-            GhostContainer.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachGhostToPanel);
+            GhostContainer.RegisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
+            GhostContainer.RegisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
 
             return GhostContainer;
+        }
+
+        private void OnDetachGhostFromPanel(DetachFromPanelEvent evt)
+        {
+            if (m_IgnoreNextDetach)
+            {
+                m_IgnoreNextDetach = false;
+                DebugLog.Info($"    <color=#FFFF00FF>OnDetachGhostFromPanel: <b>[IGNORE]</b> {this.GetType().Name}, Removed: {m_Removed}, Added: {m_Added}, ThisHash: {this.GetHashCode()}</color>");
+                return;
+            }
+
+            var hasPanel = GhostContainer.hierarchy.parent?.hierarchy.parent != null;
+            GhostContainer?.LogThis($"REMOVING GHOST... HAS PANEL: {GhostContainer.hierarchy.parent?.hierarchy.parent != null}");
+            DebugLog.Info($"    <color=#FFFF00FF>OnDetachGhostFromPanel: <b>[REMOVE]</b> {this.GetType().Name}, Removed: {m_Removed}, Added: {m_Added}, ThisHash: {this.GetHashCode()}</color>");
+            m_Removed = true;
+            if (!hasPanel)
+            {
+                OnReset(disposing: false);
+                GhostContainer = null;
+            }
         }
 
         /* TODO: BEGIN REMOVE */
         private void OnAttachGhostToPanelWorkaround(AttachToPanelEvent ev)
         {
-            DebugLog.Info($"      <color=#92FF00FF><b>Workaround attached! PanelHash: {GetPanelContentHash(ev.destinationPanel)} for {attribute.GetType().Name} on {this.GetType().Name}</b></color>");
+            DebugLog.Info($"      <color=#92FF00FF><b>Workaround attached! PanelHash: {GetPanelContentHash(ev.destinationPanel)} for {attribute.GetType().Name} on {this.GetType().Name}, ThisHash: {this.GetHashCode()}</b></color>");
         }
         
         private static int GetPanelContentHash(IPanel panel) =>
@@ -123,25 +163,78 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         private void OnAttachGhostToPanel(AttachToPanelEvent ev)
         {
+            if (m_Added)
+            {
+                GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[SKIP???]</b> {this.GetType().Name}, Removed: {m_Removed}, ThisHash: {this.GetHashCode()}</color>");
+                return;
+            }
+
+            m_Added = true;
             if ((VisualElement)ev.target != GhostContainer)
                 Debug.LogError($"Target {((VisualElement)ev.target).name} is not the same as {GhostContainer.name}");
             
-            DebugLog.Info($"    <color=#FF00D4FF><b>Original AttachToPanel, PanelHash: {GetPanelContentHash(ev.destinationPanel)} on {attribute.GetType().Name} for: {this.GetType().Name}</b></color>");
+            DebugLog.Info($"    <color=#FF00D4FF><b>Original AttachToPanel, ThisHash: {this.GetHashCode()}, PanelHash: {GetPanelContentHash(ev.destinationPanel)} on {attribute.GetType().Name} for: {this.GetType().Name}</b></color>");
             
             if (m_Detached)
                 Debug.LogError($"GhostContainer already attached: {((VisualElement)ev.target).name}");
 
+            if (m_Removed)
+            {
+                DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #0");
+                return;
+            }
+            Field = null;
+            Container = null;
             BindToClosestParentPropertyFieldOf(GhostContainer);
             if (Field != null)
             {
                 ((IDrawer) this).AddDefaultStyles();
-                EnsureContainerIsProperlyAttached(OnAttachContainerToPanel);
+                if (Container == null)
+                {
+                    DebugLog.Info($"#4!, ThisHash: {this.GetHashCode()}");
+                    Container = new T();
+                    Container.WithClasses($"ui3x-hash-{this.GetHashCode()}");
+                    OnCreatePropertyGUI(Container);
+                }
+                EnsureContainerIsProperlyAttached(() =>
+                {
+                    if (m_Removed)
+                    {
+                        DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #1");
+                        return;
+                    }
+                    OnAttachContainerToPanel();
+                    EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+                    {
+                        DebugLog.Info("#ProperlyAttachedCallback + delayCallCallback " + this.GetHashCode());
+                    });
+                });
             }
             else
                 Debug.LogWarning($"Could not find parent PropertyField of {((VisualElement)ev.target).name} for {attribute.GetType().Name}");
-            GhostContainer.UnregisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
+            // GhostContainer.UnregisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
 
+            if (m_Removed)
+            {
+                DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #2");
+                return;
+            }
+            m_OnUpdateCalled = false;
             ((IDrawer) this).InspectorElement.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
+            {
+                if (!m_OnUpdateCalled)
+                {
+                    if (m_Removed)
+                    {
+                        DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #3");
+                        return;
+                    }
+                    DebugLog.Info("#last + delayCallCallback " + this.GetHashCode());
+                    m_OnUpdateCalled = true;
+                    OnUpdate();
+                }
+            });
         }
 
         /// <summary>
@@ -248,8 +341,20 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnGeometryChanged(GeometryChangedEvent ev)
         {
+            if (m_OnUpdateCalled)
+            {
+                DebugLog.Error($"<b><color=#FF0000FF>OnGeometryChanged called twice!</color></b> {this.GetType().Name}, ThisHash: {this.GetHashCode()}");
+                return;
+            }
+            if (m_Removed)
+            {
+                DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #4");
+                return;
+            }
+            DebugLog.Info("#OnGeometryChanged " + this.GetHashCode());
             if (((IDrawer) this).InspectorElement is InspectorElement inspectorElement)
             {
+                m_OnUpdateCalled = true;
                 inspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
                 OnUpdate();
             }
@@ -259,6 +364,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public virtual void OnReset(bool disposing = false)
         {
+            DebugLog.Warning($"<color=#FF0000FF>[RESET]</color> {this.GetType().Name}, ThisHash: {this.GetHashCode()}, " +
+                             $"Removed: {m_Removed}, Added: {m_Added}, Detached: {m_Detached}, Ready: {m_Ready}");
             ((IDrawer) this).InspectorElement?.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             Container?.RemoveFromHierarchy();
             Property = null;
@@ -289,7 +396,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void TrackAllChangesOnInspectorElement()
         {
-            ((IDrawer) this).InspectorElement.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
+            // ((IDrawer) this).InspectorElement.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
+            GhostContainer.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
         }
         
         private void OnSerializedObjectValueChanged(SerializedObject serializedObject) => OnUpdate();

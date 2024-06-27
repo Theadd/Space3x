@@ -84,7 +84,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             if (string.IsNullOrEmpty(parentPath))
                 return prop.serializedObject.targetObject.GetInstanceID();
             else
-                return prop.serializedObject.targetObject.GetInstanceID() ^ parentPath.GetHashCode();
+                return prop.serializedObject.targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
         }
 
         public static IProperty GetPropertyNode(this SerializedProperty prop)

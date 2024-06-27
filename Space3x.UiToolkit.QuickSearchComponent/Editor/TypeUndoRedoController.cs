@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
-using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -124,7 +123,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
              * SerializedProperty/SerializedObject, changes to the object are not recorded
              * in the undo system whether or not this method is called.
              */
-            if (uo.IsPrefabInstance())
+            if (PrefabUtility.IsPartOfPrefabInstance(uo))
             {
                 // One more catch: because we use RegisterCompleteObjectUndo
                 // instead of RecordObject, the object isn't added to the internal list
@@ -149,6 +148,13 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
                     PrefabUtility.RecordPrefabInstancePropertyModifications(uo);
                 };
             }
+        }
+        
+        private static bool IsSceneBound(this UnityObject uo)
+        {
+            return
+                (uo is GameObject go && !PrefabUtility.IsPartOfPrefabAsset(go)) ||
+                (uo is Component component && !PrefabUtility.IsPartOfPrefabAsset(component.gameObject));
         }
     }
 }

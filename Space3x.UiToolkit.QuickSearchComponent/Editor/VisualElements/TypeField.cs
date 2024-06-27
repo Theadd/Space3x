@@ -100,7 +100,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         {
             if (TextField == null) return;
             TextField.WithClasses("unity-base-text-field__input", "unity-base-text-field__input--single-line", "ui3x-text-link")
-                // .WithClasses(false, "unity-base-field__inspector-field")
+                .WithClasses(false, "unity-base-field")
                 .style.flexShrink = 0f;
             TextField.style.paddingRight = 0f;
             labelElement?.WithClasses("unity-base-field__label", "unity-base-text-field__label");
@@ -158,6 +158,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             if (property.GetUnderlyingValue() != null)
             {
                 dynamic sType = Convert.ChangeType(property.GetUnderlyingValue(), property.GetUnderlyingType());
+                DebugLog.Info($"<color=#00FF00FF><b>[UNDERLYING]</b> Type: {property.GetUnderlyingType()}, Value: {property.GetUnderlyingValue()}, sType: {sType}</color>");
                 return ((Type) sType);
             }
 

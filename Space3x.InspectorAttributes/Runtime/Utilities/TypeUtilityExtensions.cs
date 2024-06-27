@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Unity.VisualScripting;
 
 namespace Space3x.InspectorAttributes.Utilities
 {
@@ -19,7 +18,7 @@ namespace Space3x.InspectorAttributes.Utilities
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static string FullTypeName(this Type type) => TypeName.SimplifyFast(type.AssemblyQualifiedName);
+        public static string FullTypeName(this Type type) => SimplifyFast(type.AssemblyQualifiedName);
         
         private static Assembly GetAssemblyByName(string name) => AppDomain.CurrentDomain
             .GetAssemblies()
@@ -84,6 +83,39 @@ namespace Space3x.InspectorAttributes.Utilities
                                 (f, s) => s.IsAssignableFrom(f))
                             .All(z => z)))
                     .ToList();
+        }
+        
+        private static string SimplifyFast(string typeName)
+        {
+            // This assumes type strings are written with ', Version=' first, which
+            // is standard for Type.AssemblyQualifiedName but not technically spec guaranteed.
+            // It is however incredibly faster than parsing the type name and re-outputting it.
+
+            while (true)
+            {
+                var startIndex = typeName.IndexOf(", Version=", StringComparison.Ordinal);
+
+                if (startIndex >= 0)
+                {
+                    var endIndex = typeName.IndexOf(']', startIndex);
+
+                    if (endIndex >= 0)
+                    {
+                        typeName = typeName.Remove(startIndex, endIndex - startIndex);
+                    }
+                    else
+                    {
+                        typeName = typeName.Substring(0, startIndex);
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return typeName;
         }
     }
 }
