@@ -3,7 +3,7 @@ using UnityEditor;
 
 namespace Space3x.InspectorAttributes.Editor
 {
-    public class NonSerializedPropertyNode : INonSerializedPropertyNode
+    public abstract class NonSerializedPropertyNodeBase : INonSerializedPropertyNode
     {
         public event Action<IProperty> ValueChanged;
         public void NotifyValueChanged() => ValueChanged?.Invoke(this); 
@@ -14,12 +14,13 @@ namespace Space3x.InspectorAttributes.Editor
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;
         public string ParentPath { get; set; }
-        // public object Value { get; }
-        // public Type ValueType { get; }
-        // public VisualElement Field { get; set; }
     }
     
-    public class NonSerializedPropertyNodeIndex : INonSerializedPropertyNodeIndex
+    public class NonSerializedPropertyNode : NonSerializedPropertyNodeBase { }
+    
+    public class NonSerializedPropertyNodeTree : NonSerializedPropertyNodeBase, INodeTree { }
+    
+    public abstract class NonSerializedPropertyNodeIndexBase : INonSerializedPropertyNodeIndex
     {
         public IBindablePropertyNode Indexer { get; set; }
         public int Index { get; set; }
@@ -34,9 +35,8 @@ namespace Space3x.InspectorAttributes.Editor
         public SerializedObject SerializedObject => Indexer.SerializedObject;
         public string PropertyPath => ParentPath + "." + Name;
         public string ParentPath => Indexer.PropertyPath;
-        // TODO: everything below
-        // public object Value { get; }
-        // public Type ValueType { get; }
-        // public VisualElement Field { get; set; }
     }
+    
+    public class NonSerializedPropertyNodeIndex : NonSerializedPropertyNodeIndexBase { }
+    public class NonSerializedPropertyNodeIndexTree : NonSerializedPropertyNodeIndexBase, INodeTree { }
 }

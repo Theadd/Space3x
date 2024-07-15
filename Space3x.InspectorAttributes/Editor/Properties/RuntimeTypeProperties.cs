@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -30,16 +29,25 @@ namespace Space3x.InspectorAttributes.Editor
             for (var i = 0; i < Controller.AnnotatedType.Values.Count; i++)
             {
                 var entry = Controller.AnnotatedType.Values[i];
+                var isNodeTree = (entry.FieldType.IsClass || entry.FieldType.IsInterface) && entry.FieldType != typeof(string);
                 if (entry.IsSerializable)
                 {
-                    Values.Add(new SerializedPropertyNode()
-                    {
-                        Name = entry.Name,
-                        ParentPath = Controller.ParentPath,
-                        Flags = entry.Flags,
-                        SerializedObject = Controller.SerializedObject
-                    });
-                    // Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                    if (isNodeTree)
+                        Values.Add(new SerializedPropertyNodeTree()
+                        {
+                            Name = entry.Name,
+                            ParentPath = Controller.ParentPath,
+                            Flags = entry.Flags,
+                            SerializedObject = Controller.SerializedObject
+                        });
+                    else
+                        Values.Add(new SerializedPropertyNode()
+                        {
+                            Name = entry.Name,
+                            ParentPath = Controller.ParentPath,
+                            Flags = entry.Flags,
+                            SerializedObject = Controller.SerializedObject
+                        });
                     Keys.Add(entry.Name);
                 }
                 else
@@ -50,14 +58,22 @@ namespace Space3x.InspectorAttributes.Editor
                     }
                     else
                     {
-                        Values.Add(new NonSerializedPropertyNode()
-                        {
-                            Name = entry.Name,
-                            ParentPath = Controller.ParentPath,
-                            Flags = entry.Flags,
-                            SerializedObject = Controller.SerializedObject
-                        });
-                        // Keys.Add(entry.Name.GetHashCode() ^ Controller.ParentPath.GetHashCode());
+                        if (isNodeTree)
+                            Values.Add(new NonSerializedPropertyNodeTree()
+                            {
+                                Name = entry.Name,
+                                ParentPath = Controller.ParentPath,
+                                Flags = entry.Flags,
+                                SerializedObject = Controller.SerializedObject
+                            });
+                        else
+                            Values.Add(new NonSerializedPropertyNode()
+                            {
+                                Name = entry.Name,
+                                ParentPath = Controller.ParentPath,
+                                Flags = entry.Flags,
+                                SerializedObject = Controller.SerializedObject
+                            });
                         Keys.Add(entry.Name);
                     }
                 }

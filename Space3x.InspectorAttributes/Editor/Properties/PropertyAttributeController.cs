@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
+using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -52,10 +55,48 @@ namespace Space3x.InspectorAttributes.Editor
             if (!s_Instances.TryGetValue(instanceId, out var value))
             {
                 throw new ArgumentException(
-                    $"{nameof(PropertyAttributeController)} instance {instanceId} not found on {prop.PropertyPath}.");
+                    $"{nameof(PropertyAttributeController)} instance {instanceId} not found for property with path: {prop.PropertyPath}.");
             }
 
             return value;
+        }
+        
+        internal static PropertyAttributeController GetInstance(int instanceId)
+        {
+            if (s_Instances == null)
+                s_Instances = new Dictionary<int, PropertyAttributeController>();
+
+            SetupActiveSelection();
+            if (instanceId == 0) return null;
+            if (!s_Instances.TryGetValue(instanceId, out var value))
+            {
+                DebugLog.Error(new ArgumentException(
+                    $"{nameof(PropertyAttributeController)} instance {instanceId} not found.").ToString());
+                return null;
+            }
+
+            return value;
+        }
+
+        public static void OnPropertyValueChanged(IProperty prop)
+        {
+            if (!prop.HasChildren())
+            {
+                DebugLog.Error($"<b>IN OnPropertyValueChanged WITH NO CHILDREN</b>");
+                return;
+            }
+            GetInstance(prop.GetTargetObjectInstanceID() * 397 ^ prop.PropertyPath.GetHashCode())?.Rebuild(prop);
+        }
+
+        private void Rebuild(IProperty declaringProperty)
+        {
+            object declaringObject = declaringProperty.GetUnderlyingValue();
+            var areEqual = ReferenceEquals(declaringObject, DeclaringObject);
+            DebugLog.Info($"<color=#00FF00FF>{(areEqual ? "<b><u>NO</u></b> " : "")}Rebuild: {areEqual} {DeclaringObject?.GetType().Name} {declaringObject?.GetType().Name} {declaringProperty.PropertyPath}</color>");
+            if (areEqual) return;
+            DeclaringObject = declaringObject;
+            AnnotatedType = AnnotatedRuntimeType.GetInstance(DeclaringType);
+            Properties = new RuntimeTypeProperties(this);
         }
 
         public static void RemoveFromCache(PropertyAttributeController controller) => 
@@ -68,21 +109,37 @@ namespace Space3x.InspectorAttributes.Editor
         {
             IProperty indexer = Properties.GetValue(propertyName);
             IProperty prop = null;
+            Type elementType = indexer.GetUnderlyingElementType();
+            var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) && elementType != typeof(string);
             if (indexer is ISerializedPropertyNode serializedIndexer)
             {
-                prop = new SerializedPropertyNodeIndex()
-                {
-                    Indexer = serializedIndexer,
-                    Index = arrayIndex
-                };
+                if (isNodeTree)
+                    prop = new SerializedPropertyNodeIndexTree()
+                    {
+                        Indexer = serializedIndexer,
+                        Index = arrayIndex
+                    };
+                else
+                    prop = new SerializedPropertyNodeIndex()
+                    {
+                        Indexer = serializedIndexer,
+                        Index = arrayIndex
+                    };
             }
             else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
             {
-                prop = new NonSerializedPropertyNodeIndex()
-                {
-                    Indexer = nonSerializedIndexer,
-                    Index = arrayIndex
-                };
+                if (isNodeTree)
+                    prop = new NonSerializedPropertyNodeIndexTree()
+                    {
+                        Indexer = nonSerializedIndexer,
+                        Index = arrayIndex
+                    };
+                else
+                    prop = new NonSerializedPropertyNodeIndex()
+                    {
+                        Indexer = nonSerializedIndexer,
+                        Index = arrayIndex
+                    };
             }
             else
                 throw new ArgumentException("Unexpected value.");

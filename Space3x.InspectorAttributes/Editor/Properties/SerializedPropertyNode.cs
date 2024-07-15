@@ -2,7 +2,7 @@
 
 namespace Space3x.InspectorAttributes.Editor
 {
-    public class SerializedPropertyNode : ISerializedPropertyNode
+    public abstract class SerializedPropertyNodeBase : ISerializedPropertyNode
     {
         public VTypeFlags Flags { get; set; }
         public string Name { get; set; }
@@ -11,13 +11,13 @@ namespace Space3x.InspectorAttributes.Editor
             ? (ParentPath ?? "") + (Name ?? "")
             : ParentPath + "." + Name;
         public string ParentPath { get; set; }
-        // public object Value { get; }
-        // public Type ValueType { get; }
-        // public VisualElement Field { get; set; }
-        public int Hash => this.GetHashCode();
     }
     
-    public class SerializedPropertyNodeIndex : ISerializedPropertyNodeIndex
+    public class SerializedPropertyNode : SerializedPropertyNodeBase { }
+    
+    public class SerializedPropertyNodeTree : SerializedPropertyNodeBase, INodeTree { }
+    
+    public abstract class SerializedPropertyNodeIndexBase : ISerializedPropertyNodeIndex
     {
         public IBindablePropertyNode Indexer { get; set; }
         public int Index { get; set; }
@@ -25,11 +25,10 @@ namespace Space3x.InspectorAttributes.Editor
         public string Name => "Array.data[" + Index + "]";
         public SerializedObject SerializedObject => Indexer.SerializedObject;
         public string PropertyPath => ParentPath + "." + Name;
-
         public string ParentPath => Indexer.PropertyPath;
-        // TODO: everything below
-        // public object Value { get; }
-        // public Type ValueType { get; }
-        // public VisualElement Field { get; set; }
     }
+    
+    public class SerializedPropertyNodeIndex : SerializedPropertyNodeIndexBase { }
+    
+    public class SerializedPropertyNodeIndexTree : SerializedPropertyNodeIndexBase, INodeTree { }
 }
