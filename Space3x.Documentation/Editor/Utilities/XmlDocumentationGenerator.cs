@@ -7,8 +7,10 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using Space3x.Attributes.Types;
+using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 namespace Space3x.UiToolkit.Types
 {
@@ -16,15 +18,20 @@ namespace Space3x.UiToolkit.Types
     {
         public static string Project => Directory.GetParent(Application.dataPath)?.FullName;
         public static string XmlAssemblyDocs => CreatePath(Path.Combine(Project, "Library", "XmlAssemblyDocs"));
-        public static string IntermediateOutputPath => CreatePath(Path.Combine(Project, "Temp", "Bin", "Debug"));
+        public static string IntermediateOutputPath => CreatePath(s_IntermediateOutputPath);
         public static string MsBuildPath { get; set; } = Paths.projectBuilder;
+
+        private static string s_IntermediateOutputPath = Path.Combine(Project, "Temp", "Bin", "Debug");
         
         private static string CreatePath(string path) => 
             !Directory.Exists(path) ? Directory.CreateDirectory(path).FullName : path;
 
         private static IEnumerable<string> SolutionFiles => 
             Directory.EnumerateFiles(Project, "*.sln", SearchOption.TopDirectoryOnly);
-
+        
+        private static IEnumerable<string> ProjectFiles => 
+            Directory.EnumerateFiles(Project, "*.csproj", SearchOption.TopDirectoryOnly);
+        
         private static void Validate()
         {
             if (MsBuildPath == null || !File.Exists(MsBuildPath))
@@ -41,8 +48,10 @@ namespace Space3x.UiToolkit.Types
             Paths.SyncUnitySolution();
             Validate();
             // TODO: @see: EditorApplication.LockReloadAssemblies and EditorApplication.UnlockReloadAssemblies
+            EditorApplication.LockReloadAssemblies();
             await Awaitable.BackgroundThreadAsync();
-            var cleanAfterBuild = !Directory.Exists(IntermediateOutputPath);
+            var cleanAfterBuild = !Directory.Exists(s_IntermediateOutputPath);
+            Debug.Log($"CleanAfterBuild: {cleanAfterBuild}");
             foreach (var solutionFile in SolutionFiles)
             {
                 // Execute msbuild.exe to build the solution.
@@ -63,15 +72,22 @@ namespace Space3x.UiToolkit.Types
             DocumentationExtensions.ClearAssemblyCache();
             
             // Generate documentation for all csproj files in the project.
-            foreach (var csproj in Directory.EnumerateFiles(Project, "*.csproj", SearchOption.TopDirectoryOnly)) 
-                await Generate(csproj);
+            foreach (var csproj in ProjectFiles) 
+                await GenerateInternal(csproj);
+            
             await Awaitable.MainThreadAsync();
+            EditorApplication.UnlockReloadAssemblies();
         }
-        
+
+        public static IEnumerable<string> GetAllGenerationSources() =>
+            new List<string>()
+                .Concat(SolutionFiles)
+                .Concat(ProjectFiles);
+
         private static async Awaitable<string> ExecuteMsBuild(string arguments, string workingDirectory = null)
         {
             await Awaitable.BackgroundThreadAsync();
-            const int timeout = 300000;
+            const int timeout = 1800000;    // 300000;
             using (var process = new Process 
                    { StartInfo = new ProcessStartInfo
                        {
@@ -117,25 +133,30 @@ namespace Space3x.UiToolkit.Types
                         errorWaitHandle.WaitOne(timeout))
                     {
                         if (process.ExitCode != 0) 
-                            throw new BuildFailedException($"Failed to build: {process.StartInfo.Arguments}\n{error}\n{output}");
+                            DebugLog.Error(new BuildFailedException($"Failed to build: {process.StartInfo.Arguments}\n{error}\n{output}").ToString());
                         DebugLog.Info($"[DONE] {process.StartInfo.Arguments}\n{output}\n{error}");
                         return output.ToString();
                     }
                     else
-                        throw new TimeoutException("Build process timed out.\n" + arguments);
+                    {
+                        DebugLog.Error(new TimeoutException($"Build process timed out ({(timeout / 1000)} seconds).\n" +
+                                                   arguments).ToString());
+                        return string.Empty;
+                    }
                 }
-            }   
-                
+            }
         }
 
-        public static async Awaitable<string> Generate(string csprojPath)
+        public static async Awaitable<string> GenerateInternal(string csprojPath)
         {
             var projectXml = XDocument.Load(csprojPath);
             var projectRootNamespace = projectXml.Root?.GetDefaultNamespace();
             var assemblyName = projectXml.Descendants(projectRootNamespace + "AssemblyName").Single().Value;
             var documentationPath = Path.Combine(XmlAssemblyDocs, assemblyName + ".xml");
+            var cleanAfterBuild = !Directory.Exists(s_IntermediateOutputPath);
 
-            var output = await ExecuteMsBuild("/t:ResolveAssemblyReferences " +
+            var output = await ExecuteMsBuild("/t:Compile " +
+                                              "/m " +
                                               "/nr:false " +
                                               "/p:Configuration=Debug " +
                                               "/p:GenerateDocumentation=true " +
@@ -143,6 +164,28 @@ namespace Space3x.UiToolkit.Types
                                               "/p:WarningLevel=0 " +
                                               $"/p:DocumentationFile=\"{documentationPath}\" " +
                                               $"\"{csprojPath}\"");
+            
+            var generatedAssemblyPath = Path.Combine(IntermediateOutputPath, assemblyName, assemblyName + ".dll");
+            if (File.Exists(generatedAssemblyPath))
+                File.Copy(
+                    generatedAssemblyPath, 
+                    Path.Combine(XmlAssemblyDocs, assemblyName + ".dll"), 
+                    overwrite: true);
+            if (cleanAfterBuild)
+                Directory.Delete(IntermediateOutputPath, recursive: true);
+            
+            return output;
+        }
+        
+        public static async Awaitable<string> Generate(string csprojPath)
+        {
+            Paths.SyncUnitySolution();
+            Validate();
+            EditorApplication.LockReloadAssemblies();
+            await Awaitable.BackgroundThreadAsync();
+            var output = await GenerateInternal(csprojPath);
+            await Awaitable.MainThreadAsync();
+            EditorApplication.UnlockReloadAssemblies();
 
             return output;
         }
