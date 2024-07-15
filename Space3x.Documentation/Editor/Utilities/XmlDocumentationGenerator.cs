@@ -7,17 +7,18 @@ using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using Space3x.Attributes.Types;
+using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
-namespace Space3x.UiToolkit.Types
+namespace Space3x.Documentation
 {
     public static class XmlDocumentationGenerator
     {
         public static string Project => Directory.GetParent(Application.dataPath)?.FullName;
-        public static string XmlAssemblyDocs => CreatePath(Path.Combine(Project, "Library", "XmlAssemblyDocs"));
+        public static string XmlAssemblyDocs => CreatePath(Paths.XmlAssemblyDocs);
         public static string IntermediateOutputPath => CreatePath(s_IntermediateOutputPath);
         public static string MsBuildPath { get; set; } = Paths.projectBuilder;
 
