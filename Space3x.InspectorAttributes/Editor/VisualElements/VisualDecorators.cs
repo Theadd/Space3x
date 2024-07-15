@@ -12,10 +12,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     public interface IEditorDecorator { }
     
     public interface IElementBlock { }
+    
+    public interface ILayoutElement { }
 
     [UxmlElement]
     [HideInInspector]
-    public partial class AutoDecorator : VisualElement, IEditorDecorator
+    public partial class AutoDecorator : BindableElement, IEditorDecorator
     {
         protected AutoDecorator(string className, bool visible = true) =>
             this.WithClasses(UssConstants.UssDecorator, className, visible ? "" : UssConstants.UssHidden);

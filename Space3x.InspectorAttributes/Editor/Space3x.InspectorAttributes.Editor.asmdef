@@ -4,7 +4,8 @@
     "references": [
         "Space3x.InspectorAttributes",
         "Space3x.Attributes.Types",
-        "Space3x.UiToolkit.Types"
+        "Space3x.UiToolkit.Types",
+        "Space3x.UiToolkit.Types.Editor"
     ],
     "includePlatforms": [
         "Editor"

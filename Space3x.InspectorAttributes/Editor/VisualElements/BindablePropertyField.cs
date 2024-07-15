@@ -16,6 +16,9 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
+    /// <summary>
+    /// Like <see cref="PropertyField"/> but for non-serialized properties (<see cref="IProperty"/>).
+    /// </summary>
     [UxmlElement]
     public partial class BindablePropertyField : VisualElement
     {
@@ -31,12 +34,21 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
         private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
 
+        /// <summary>
+        /// Path of the target property to be bound (Read Only).
+        /// </summary>
+        public string BindingPath => Property?.PropertyPath ?? string.Empty;
+        
         public BindablePropertyField()
         {
             if (DecoratorDrawersContainer != null)
                 this.WithClasses(ussClassName, "unity-property-field");
         }
 
+        /// <summary>
+        /// Creates a new <see cref="BindablePropertyField"/> bound to the given <paramref name="property"/>.
+        /// </summary>
+        /// <param name="property">A non-serialized <see cref="IProperty"/>.</param>
         public BindablePropertyField(IProperty property) : this() => BindProperty(property);
 
         private VisualElement CreateDecoratorDrawersContainer()
@@ -47,6 +59,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             return element;
         }
 
+        /// <summary>
+        /// Binds the given <paramref name="property"/> to this <see cref="BindablePropertyField"/>,
+        /// optionally creating all decorator drawers annotated on the property.
+        /// </summary>
+        /// <param name="property">A non-serialized <see cref="IProperty"/>.</param>
+        /// <param name="applyCustomDrawers">Whether to create all decorator drawers annotated on the property.</param>
         public void BindProperty(IProperty property, bool applyCustomDrawers = false)
         {
             if (!(property is INonSerializedPropertyNode nonSerializedPropertyNode))
@@ -94,24 +112,29 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                     m_PropertyDrawerOnCollectionItems = null;
             }
 
+            VisualElement field = null;
             if (drawer == null)
-                BindToBuiltInField();
+                field = BindToBuiltInField();
             else
             {
                 if (drawer is ICreateDrawerOnPropertyNode customDrawer)
                 {
-                    var field = customDrawer.CreatePropertyNodeGUI(Property);
-                    if (Field != null && Field != field)
-                        Field.RemoveFromHierarchy();
-                    Field = field;
-                    Add(Field);
+                    field = customDrawer.CreatePropertyNodeGUI(Property);
                 }
             }
+            if (Field != null /*&& Field != field*/)
+                Field.RemoveFromHierarchy();
+            Field = field;
+            if (Field != null)
+                Add(Field);
 
             if (Field != null)
                 Field.tooltip = vType.Tooltip;
         }
 
+        /// <summary>
+        /// Instantiates and attaches all decorator drawers annotated on the property.
+        /// </summary>
         public void AttachDecoratorDrawers()
         {
             DecoratorDrawersContainer.Clear();
@@ -137,15 +160,39 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 }
             }
         }
+
+        /// <summary>
+        /// Removes the <see cref="BindablePropertyField"/> from the VisualElement's hierarchy, properly removing
+        /// all it's decorator drawers.
+        /// </summary>
+        public void ProperlyRemoveFromHierarchy()
+        {
+            for (var i = DecoratorDrawersContainer.hierarchy.childCount - 1; i >= 0; i--)
+            {
+                if (DecoratorDrawersContainer.hierarchy[i] is GhostDecorator ghostDecorator)
+                {
+                    ghostDecorator.TargetDecorator.ProperlyRemoveFromHierarchy();
+                }
+            }
+            DecoratorDrawersContainer.Clear();
+            try
+            {
+                RemoveFromHierarchy();
+            }
+            catch (Exception e)
+            {
+                DebugLog.Error(e.ToString());
+            }
+        }
         
-        private void BindToBuiltInField()
+        private VisualElement BindToBuiltInField()
         {
             var propertyInfo = m_Controller.DeclaringObject.GetType().GetField(Property.Name, 
                 BindingFlags.Instance 
                 | BindingFlags.Static
                 | BindingFlags.NonPublic
                 | BindingFlags.Public);
-            var isAdded = Field != null;
+            // var isAdded = Field != null;
             VisualElement field = null;
             var propertyValue = propertyInfo.GetValue(m_Controller.DeclaringObject);
             if (propertyValue is IList list)
@@ -237,9 +284,10 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                         _ => throw new NotImplementedException($"{propertyInfo.FieldType} not yet implemented in {nameof(BindablePropertyField)}.{nameof(BindToBuiltInField)}().")
                     };
             }
-            Field = field;
-            if (!isAdded)
-                this.Add(Field);
+            // Field = field;
+            // if (!isAdded)
+            //     this.Add(Field);
+            return field;
         }
         
         private TField ConfigureField<TField, TValue>(

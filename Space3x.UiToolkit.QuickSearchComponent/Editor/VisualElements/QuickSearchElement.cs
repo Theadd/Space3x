@@ -121,7 +121,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                         m_ActiveAttributeVisibilityFilters.Contains(t.Attributes & m_AttributeVisibilityFiltersMask) &&
                         t.Name.ToLowerInvariant().Contains(m_SearchString.ToLowerInvariant()))
                     .ToList(),
-                _ => throw new ArgumentOutOfRangeException()
+                _ => throw new ArgumentOutOfRangeException($"Filter: {filterAssemblies}, {searchFilter}, {typeFilter}, {visibilityFilter}")
             };
             m_ListView.SetDatasource(m_FilteredDatasource.Select(t => t.DisplayName).ToList());
             UpdateSelectedIndicesInFilteredDatasource();

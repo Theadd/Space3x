@@ -7,7 +7,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     [UxmlElement]
     [HideInInspector]
-    public partial class PropertyGroupField : BaseField<bool>
+    public partial class PropertyGroupField : BaseField<bool>, ILayoutElement
     {
         public static readonly string UssClassName = "ui3x-property-group-field";
         public static readonly string UssWithLabelClassName = UssClassName + "--with-label";
