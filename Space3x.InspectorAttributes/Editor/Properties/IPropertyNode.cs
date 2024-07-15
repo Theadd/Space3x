@@ -5,10 +5,10 @@ using UnityEditor;
 namespace Space3x.InspectorAttributes.Editor
 {
     /// <summary>
-    /// IProperty interface that can be used instead of (or alongside) a SerializedProperty but
+    /// IPropertyNode interface that can be used instead of (or alongside) a SerializedProperty but
     /// also works with the non-serialized properties. 
     /// </summary>
-    public interface IProperty
+    public interface IPropertyNode
     {
         /// <summary>
         /// The name of the property.
@@ -35,12 +35,12 @@ namespace Space3x.InspectorAttributes.Editor
     /// <summary>
     /// Represents a property which is also a container for other properties. For example, an object or struct.
     /// </summary>
-    public interface INodeTree : IProperty
+    public interface INodeTree : IPropertyNode
     {
-        // public IEnumerable<IPropertyNode> Children();
+        // public IEnumerable<IPropertyNodeWithFlags> Children();
     }
     
-    public interface IPropertyNode : IProperty, IPropertyFlags { }
+    public interface IPropertyNodeWithFlags : IPropertyNode, IPropertyFlags { }
     
     /// <summary>
     /// Base interface for properties that can be bound to a bindable object.
@@ -49,7 +49,7 @@ namespace Space3x.InspectorAttributes.Editor
     /// <seealso cref="ISerializedPropertyNodeIndex"/>
     /// <seealso cref="INonSerializedPropertyNode"/>
     /// <seealso cref="INonSerializedPropertyNodeIndex"/>
-    public interface IBindablePropertyNode : IPropertyNode, IPropertyWithSerializedObject
+    public interface IBindablePropertyNode : IPropertyNodeWithFlags, IPropertyWithSerializedObject
     {
         // public VisualElement Field { get; set; }
     }
@@ -64,7 +64,7 @@ namespace Space3x.InspectorAttributes.Editor
     /// </summary>
     public interface INonSerializedPropertyNode : IBindablePropertyNode
     {
-        public event Action<IProperty> ValueChanged;
+        public event Action<IPropertyNode> ValueChanged;
         public void NotifyValueChanged();
     }
 
@@ -99,9 +99,9 @@ namespace Space3x.InspectorAttributes.Editor
     public interface INonSerializedPropertyNodeIndex : INonSerializedPropertyNode, IPropertyNodeIndex { }
     
     // TODO: INodeArray is not implemented yet
-    public interface INodeArray : IProperty
+    public interface INodeArray : IPropertyNode
     {
-        public IEnumerable<IPropertyNode> Children();
+        public IEnumerable<IPropertyNodeWithFlags> Children();
 
         public int ChildCount { get; }
     }

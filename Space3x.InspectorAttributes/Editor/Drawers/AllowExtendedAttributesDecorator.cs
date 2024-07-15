@@ -136,7 +136,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
         }
 
-        private void OnPropertyValueChanged(IProperty property)
+        private void OnPropertyValueChanged(IPropertyNode property)
         {
             DebugLog.Info($"<color=#00FF00FF>Tracked change on {property.GetType().Name}: {property.PropertyPath}</color>");
             PropertyAttributeController.OnPropertyValueChanged(property);

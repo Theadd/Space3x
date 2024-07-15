@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
-    public class VTypeMember : IProperty, IPropertyFlags
+    public class VTypeMember : IPropertyNode, IPropertyFlags
     {
         public FieldInfo RuntimeField;
         public Type FieldType;

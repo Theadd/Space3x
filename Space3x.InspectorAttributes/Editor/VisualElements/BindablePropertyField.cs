@@ -17,7 +17,7 @@ using UnityEngine.UIElements;
 namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     /// <summary>
-    /// Like <see cref="PropertyField"/> but for non-serialized properties (<see cref="IProperty"/>).
+    /// Like <see cref="PropertyField"/> but for non-serialized properties (<see cref="IPropertyNode"/>).
     /// </summary>
     [UxmlElement]
     public partial class BindablePropertyField : VisualElement
@@ -26,7 +26,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public static readonly string decoratorDrawersContainerClassName = "unity-decorator-drawers-container";
         public static readonly string listViewNamePrefix = "unity-list-";
         public VisualElement Field;
-        public IProperty Property;
+        public IPropertyNode Property;
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
         private VisualElement m_DecoratorDrawersContainer;
         private PropertyAttributeController m_Controller;
@@ -48,8 +48,8 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         /// <summary>
         /// Creates a new <see cref="BindablePropertyField"/> bound to the given <paramref name="property"/>.
         /// </summary>
-        /// <param name="property">A non-serialized <see cref="IProperty"/>.</param>
-        public BindablePropertyField(IProperty property) : this() => BindProperty(property);
+        /// <param name="property">A non-serialized <see cref="IPropertyNode"/>.</param>
+        public BindablePropertyField(IPropertyNode property) : this() => BindProperty(property);
 
         private VisualElement CreateDecoratorDrawersContainer()
         {
@@ -63,12 +63,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         /// Binds the given <paramref name="property"/> to this <see cref="BindablePropertyField"/>,
         /// optionally creating all decorator drawers annotated on the property.
         /// </summary>
-        /// <param name="property">A non-serialized <see cref="IProperty"/>.</param>
+        /// <param name="property">A non-serialized <see cref="IPropertyNode"/>.</param>
         /// <param name="applyCustomDrawers">Whether to create all decorator drawers annotated on the property.</param>
-        public void BindProperty(IProperty property, bool applyCustomDrawers = false)
+        public void BindProperty(IPropertyNode property, bool applyCustomDrawers = false)
         {
             if (!(property is INonSerializedPropertyNode nonSerializedPropertyNode))
-                throw new ArgumentException($"Invalid IProperty, it must be a non serialized property in order to bind it to a {nameof(BindablePropertyField)}, for serialized properties, just use {nameof(PropertyField)} instead.");
+                throw new ArgumentException($"Invalid IPropertyNode, it must be a non serialized property in order to bind it to a {nameof(BindablePropertyField)}, for serialized properties, just use {nameof(PropertyField)} instead.");
             Property = nonSerializedPropertyNode;
             m_Controller = PropertyAttributeController.GetInstance(Property);
             if (m_Controller == null)

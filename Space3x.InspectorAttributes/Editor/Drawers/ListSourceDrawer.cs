@@ -19,7 +19,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public override ListSourceAttribute Target => (ListSourceAttribute) attribute;
         
-        protected override VisualElement OnCreatePropertyGUI(IProperty property)
+        protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
             m_ListView = new VariableListView()
             {

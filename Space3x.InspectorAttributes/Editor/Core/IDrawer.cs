@@ -10,7 +10,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     {
         public static StyleSheet DefaultStyleSheet  = Resources.Load<StyleSheet>("Space3x.InspectorAttributes.Stylesheet");
         
-        public IProperty Property { get; }
+        public IPropertyNode Property { get; }
         
         public VisualElement Container { get; }
         

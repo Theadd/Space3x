@@ -6,19 +6,19 @@ namespace Space3x.InspectorAttributes.Editor
     {
         private PropertyAttributeController Controller { get; set; }
 
-        public List<IProperty> Values { get; set; }
+        public List<IPropertyNode> Values { get; set; }
         
         public List<string> Keys { get; }
 
         public RuntimeTypeProperties(PropertyAttributeController controller)
         {
             Controller = controller;
-            Values = new List<IProperty>();
+            Values = new List<IPropertyNode>();
             Keys = new List<string>();
             Bind();
         }
 
-        public IProperty GetValue(string key)
+        public IPropertyNode GetValue(string key)
         {
             var i = Keys.IndexOf(key);
             return i >= 0 ? Values[i] : null;

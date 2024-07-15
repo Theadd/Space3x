@@ -47,9 +47,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public VisualElement Field { get; set; }
         
         /// <summary>
-        /// The <see cref="IProperty"/> being decorated.
+        /// The <see cref="IPropertyNode"/> being decorated.
         /// </summary>
-        public IProperty Property { get; set; }
+        public IPropertyNode Property { get; set; }
         
         public virtual TAttribute Target => (TAttribute) attribute;
 

@@ -297,7 +297,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 		
 		/* ------------------------ */
 		
-		public static Invokable<TIn, TOut> CreateInvokable<TIn, TOut>(string memberName, IProperty property)
+		public static Invokable<TIn, TOut> CreateInvokable<TIn, TOut>(string memberName, IPropertyNode property)
 		{
 			var mInfo = GetValidMemberInfo(memberName, property, out object targetObject);
 			return mInfo == null 
@@ -309,7 +309,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 				};
 		}
 		
-		public static MemberInfo GetValidMemberInfo(string memberName, IProperty property, out object targetObj)
+		public static MemberInfo GetValidMemberInfo(string memberName, IPropertyNode property, out object targetObj)
 		{
 			var initialTarget = (object)property.GetDeclaringObject();
 			var targetObject = (object)property.GetDeclaringObject();
@@ -331,7 +331,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 			return memberInfo;
 		}
 		
-		public static FieldInfo FindField(string fieldName, IProperty property, ref object targetObject)
+		public static FieldInfo FindField(string fieldName, IPropertyNode property, ref object targetObject)
 		{
 			var fieldInfo = FindField(fieldName, targetObject);
 
@@ -350,7 +350,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 			return fieldInfo;
 		}
 		
-		public static Type GetSerializedObjectFieldType(IProperty property, out object serializedObject)
+		public static Type GetSerializedObjectFieldType(IPropertyNode property, out object serializedObject)
 		{
 			var targetObject = property.GetSerializedObject().targetObject;
 			var pathComponents = property.PropertyPath.Split('.'); // Split the property path to get individual components
@@ -363,7 +363,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 			return serializedObject?.GetType();
 		}
 		
-		public static PropertyInfo FindProperty(string propertyName, IProperty property, ref object targetObject)
+		public static PropertyInfo FindProperty(string propertyName, IPropertyNode property, ref object targetObject)
 		{
 			var propertyInfo = FindProperty(propertyName, targetObject);
 
@@ -382,7 +382,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 			return propertyInfo;
 		}
 		
-		public static MethodInfo FindFunction(string functionName, IProperty property, ref object targetObject)
+		public static MethodInfo FindFunction(string functionName, IPropertyNode property, ref object targetObject)
 		{
 			MethodInfo methodInfo = FindFunction(functionName, targetObject);
 			

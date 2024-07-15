@@ -87,10 +87,10 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 return prop.serializedObject.targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
         }
 
-        public static IProperty GetPropertyNode(this SerializedProperty prop)
+        public static IPropertyNode GetPropertyNode(this SerializedProperty prop)
         {
             var c = PropertyAttributeController.GetInstance(prop);
-            IProperty n = null;
+            IPropertyNode n = null;
             if (PropertyExtensions.IsPropertyIndexer(prop.propertyPath, out var fieldName, out var index))
                 n = c?.GetProperty(fieldName, index);
             else

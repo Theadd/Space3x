@@ -4,7 +4,7 @@ using Space3x.Attributes.Types;
 namespace Space3x.InspectorAttributes.Editor
 {
     /// <summary>
-    /// Flags for <see cref="IProperty"/> and <see cref="Space3x.InspectorAttributes.Editor.VisualElements.BindablePropertyField"/>.
+    /// Flags for <see cref="IPropertyNode"/> and <see cref="Space3x.InspectorAttributes.Editor.VisualElements.BindablePropertyField"/>.
     /// </summary>
     public interface IPropertyFlags
     {

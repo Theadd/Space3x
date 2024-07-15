@@ -11,7 +11,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 {
     public interface ICreateDrawerOnPropertyNode
     {
-        public VisualElement CreatePropertyNodeGUI(IProperty property);
+        public VisualElement CreatePropertyNodeGUI(IPropertyNode property);
     }
     
     /// <summary>
@@ -32,7 +32,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         where TAttribute : PropertyAttribute
     {
         public virtual TAttribute Target => (TAttribute) attribute;
-        public IProperty Property { get; set; }
+        public IPropertyNode Property { get; set; }
         public VisualElement Container { get; set; }
         public VisualElement VisualTarget => Field;
         public VisualElement Field => m_Field ??= Container.GetClosestParentOfType<PropertyField, InspectorElement>();
@@ -50,13 +50,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// It's the <see cref="Drawer{TAttribute}"/> version of the <see cref="PropertyDrawer.CreatePropertyGUI"/>
         /// method, that is, the entry point in which you create the initial VisualElement hierarchy for this
         /// <see cref="Drawer{TAttribute}"/>.
-        /// Except that now it receives an <see cref="IProperty"/> as parameter, allowing your property drawers to
+        /// Except that now it receives an <see cref="IPropertyNode"/> as parameter, allowing your property drawers to
         /// not only work with <see cref="SerializedProperty"/>, but also with the non-serialized ones.
         /// </summary>
-        /// <param name="property">The <see cref="IProperty"/> being drawn.</param>
-        protected abstract VisualElement OnCreatePropertyGUI(IProperty property);
+        /// <param name="property">The <see cref="IPropertyNode"/> being drawn.</param>
+        protected abstract VisualElement OnCreatePropertyGUI(IPropertyNode property);
 
-        public VisualElement CreatePropertyNodeGUI(IProperty property)
+        public VisualElement CreatePropertyNodeGUI(IPropertyNode property)
         {
             if (Property != null)
                 return ((ICreateDrawerOnPropertyNode)this.CreateCopy()).CreatePropertyNodeGUI(property);
@@ -71,7 +71,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// <summary>
         /// As it's the entry point of any <see cref="PropertyDrawer"/> it has been sealed and the
         /// <see cref="OnCreatePropertyGUI"/> abstract method, with the same purpose is provided instead.
-        /// Except that now it receives an <see cref="IProperty"/> as parameter, allowing your property drawers to
+        /// Except that now it receives an <see cref="IPropertyNode"/> as parameter, allowing your property drawers to
         /// not only work with <see cref="SerializedProperty"/>, but also with the non-serialized ones.
         /// </summary>
         /// <seealso cref="OnCreatePropertyGUI"/>

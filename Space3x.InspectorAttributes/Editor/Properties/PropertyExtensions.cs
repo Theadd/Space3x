@@ -18,13 +18,13 @@ namespace Space3x.InspectorAttributes.Editor
         /// <summary>
         /// Determines whether the property is also a container for other properties. For example, an object or struct.
         /// </summary>
-        public static bool HasChildren(this IProperty self) => self is INodeTree;
+        public static bool HasChildren(this IPropertyNode self) => self is INodeTree;
 
         /// <summary>
         /// Unity structures array paths like "fieldName.Array.data[i]".
         /// Fix that quirk and directly go to index, i.e. "fieldName[i]".
         /// </summary>
-        private static string FixedPropertyPath(this IProperty self) => 
+        private static string FixedPropertyPath(this IPropertyNode self) => 
             self.PropertyPath.Replace(".Array.data[", "[");
         
         private static string FixedPropertyPath(string propertyPath) => 
@@ -33,7 +33,7 @@ namespace Space3x.InspectorAttributes.Editor
         private static string UnfixedPropertyPath(string propertyPath) => 
             propertyPath.Replace("[", ".Array.data[");
         
-        private static string[] PropertyPathParts(this IProperty self) => 
+        private static string[] PropertyPathParts(this IPropertyNode self) => 
             self.FixedPropertyPath().Split('.');
         
         /// <summary>
@@ -41,11 +41,11 @@ namespace Space3x.InspectorAttributes.Editor
         /// the property index within the array as out parameters.
         /// </summary>
         /// <seealso cref="IPropertyNodeIndex"/>
-        /// <param name="self">This IProperty.</param>
+        /// <param name="self">This IPropertyNode.</param>
         /// <param name="parentPath">The parent path as out parameter.</param>
         /// <param name="index">The property index within the array as out parameter.</param>
         [UsedImplicitly]
-        public static bool IsPropertyIndexer(this IProperty self, out string parentPath, out int index) => 
+        public static bool IsPropertyIndexer(this IPropertyNode self, out string parentPath, out int index) => 
             IsPropertyIndexer(self.PropertyPath, out parentPath, out index);
 
         public static bool IsPropertyIndexer(string propertyPath, out string parentPath, out int index)
@@ -70,7 +70,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// <summary>
         /// Gets the <see cref="SerializedObject"/> related to this property, if any.
         /// </summary>
-        public static SerializedObject GetSerializedObject(this IProperty self)
+        public static SerializedObject GetSerializedObject(this IPropertyNode self)
         {
             if (self is IPropertyWithSerializedObject property)
                 return property.SerializedObject;
@@ -78,15 +78,15 @@ namespace Space3x.InspectorAttributes.Editor
             return null;
         }
         
-        public static bool HasSerializedProperty(this IProperty self) => 
+        public static bool HasSerializedProperty(this IPropertyNode self) => 
             self is ISerializedPropertyNode;
 
-        public static SerializedProperty GetSerializedProperty(this IProperty self) =>
+        public static SerializedProperty GetSerializedProperty(this IPropertyNode self) =>
             self is ISerializedPropertyNode property
                 ? property.SerializedObject.FindProperty(property.PropertyPath)
                 : null;
 
-        public static int GetParentObjectHash(this IProperty property)
+        public static int GetParentObjectHash(this IPropertyNode property)
         {
             var parentPath = property.ParentPath;
             if (string.IsNullOrEmpty(parentPath))
@@ -95,7 +95,7 @@ namespace Space3x.InspectorAttributes.Editor
                 return property.GetSerializedObject().targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
         }
         
-        public static IProperty GetPropertyNode(this VisualElement element)
+        public static IPropertyNode GetPropertyNode(this VisualElement element)
         {
             if (element is PropertyField propertyField)
             {
@@ -109,22 +109,22 @@ namespace Space3x.InspectorAttributes.Editor
                 $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.", nameof(element));
         }
         
-        public static bool IsArray(this IProperty self) => 
+        public static bool IsArray(this IPropertyNode self) => 
             (self is INodeArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
 
-        public static bool IsNonReorderable(this IProperty self) => 
+        public static bool IsNonReorderable(this IPropertyNode self) => 
             self is IPropertyFlags property && property.IsNonReorderable;
         
-        public static bool IsExpanded(this IProperty self) => 
+        public static bool IsExpanded(this IPropertyNode self) => 
             self.GetSerializedProperty()?.isExpanded ?? false;
 
-        public static void SetExpanded(this IProperty self, bool expanded)
+        public static void SetExpanded(this IPropertyNode self, bool expanded)
         {
             if (self.HasSerializedProperty())
                 self.GetSerializedProperty().isExpanded = expanded;
         }
 
-        public static string DisplayName(this IProperty self)
+        public static string DisplayName(this IPropertyNode self)
         {
             if (self.HasSerializedProperty())
                 return self.GetSerializedProperty().displayName;
@@ -137,12 +137,12 @@ namespace Space3x.InspectorAttributes.Editor
         /// </summary>
         /// <typeparam name="TIn">The type of the parameter passed in to the callable member when invoking a method.</typeparam>
         /// <typeparam name="TOut">The type of the value returned from the callable member.</typeparam>
-        /// <param name="self">The <see cref="IProperty"/> to create the invokable for.</param>
+        /// <param name="self">The <see cref="IPropertyNode"/> to create the invokable for.</param>
         /// <param name="memberName">The name of the member to create the invokable for.</param>
         /// <param name="invokableMember">The created invokable, or null if creation failed.</param>
         /// <returns>True if the invokable was successfully created, false otherwise.</returns>
         public static bool TryCreateInvokable<TIn, TOut>(
-            this IProperty self,
+            this IPropertyNode self,
             string memberName, 
             out Invokable<TIn, TOut> invokableMember)
         {
@@ -154,13 +154,13 @@ namespace Space3x.InspectorAttributes.Editor
             return invokableMember != null;
         }
         
-        public static object GetDeclaringObject(this IProperty property) => 
+        public static object GetDeclaringObject(this IPropertyNode property) => 
             PropertyAttributeController.GetInstance(property)?.DeclaringObject;
         
-        public static Type GetUnderlyingType(this IProperty property) =>
+        public static Type GetUnderlyingType(this IPropertyNode property) =>
             property.GetVTypeMember()?.FieldType;
         
-        public static object GetUnderlyingValue(this IProperty property)
+        public static object GetUnderlyingValue(this IPropertyNode property)
         {
             if (property.HasSerializedProperty())
                 return property.GetSerializedProperty().boxedValue;
@@ -188,7 +188,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// <seealso cref="GetParentProperty"/>
         /// <param name="parentProperty">The parent property as an out parameter, or null if not found.</param>
         /// <returns>True if the parent property was found.</returns>
-        public static bool TryGetParentProperty(this IProperty property, out IProperty parentProperty)
+        public static bool TryGetParentProperty(this IPropertyNode property, out IPropertyNode parentProperty)
         {
             parentProperty = property.GetParentProperty();
             return parentProperty != null;
@@ -198,7 +198,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// Gets the parent property of the provided property.
         /// </summary>
         /// <seealso cref="TryGetParentProperty"/>
-        public static IProperty GetParentProperty(this IProperty property) =>
+        public static IPropertyNode GetParentProperty(this IPropertyNode property) =>
             property is IPropertyNodeIndex propertyNodeIndex
                 ? propertyNodeIndex.Indexer
                 : property.FindProperty(property.ParentPath);
@@ -211,7 +211,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// <seealso cref="FindPropertyRelative"/>
         /// <param name="propertyPath">Target property path.</param>
         /// <returns>The property, or null if not found.</returns>
-        public static IProperty FindProperty(this IProperty property, string propertyPath)
+        public static IPropertyNode FindProperty(this IPropertyNode property, string propertyPath)
         {
             property.PropertyBreakdownOnPath(
                 propertyPath, 
@@ -237,7 +237,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// <seealso cref="FindProperty"/>
         /// <param name="relativePath">Property path relative to this property.</param>
         /// <returns>The relative property, or null if not found.</returns>
-        public static IProperty FindPropertyRelative(this IProperty property, string relativePath) =>
+        public static IPropertyNode FindPropertyRelative(this IPropertyNode property, string relativePath) =>
             property.FindProperty(property.PropertyPath.Length == 0 
                 ? relativePath 
                 : property.PropertyPath + (relativePath.StartsWith('.') 
@@ -260,7 +260,7 @@ namespace Space3x.InspectorAttributes.Editor
         }
 
         private static void PropertyBreakdownOnPath(
-            this IProperty prop, 
+            this IPropertyNode prop, 
             string propertyPath, 
             out int instanceId, 
             out string parentPath, 
@@ -281,7 +281,7 @@ namespace Space3x.InspectorAttributes.Editor
                 instanceId = prop.GetTargetObjectInstanceID() * 397 ^ parentPath.GetHashCode();
         }
 
-        public static int GetTargetObjectInstanceID(this IProperty property) =>
+        public static int GetTargetObjectInstanceID(this IPropertyNode property) =>
             property.GetSerializedObject().targetObject.GetInstanceID();
 
         private static object GetFieldValue(object declaringObject, string fieldName) =>
@@ -292,10 +292,10 @@ namespace Space3x.InspectorAttributes.Editor
                     BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
                 ?.GetValue(declaringObject);
 
-        public static FieldInfo GetUnderlyingField(this IProperty property) =>
+        public static FieldInfo GetUnderlyingField(this IPropertyNode property) =>
             property.GetVTypeMember()?.RuntimeField;
 
-        public static Type GetUnderlyingElementType(this IProperty property) =>
+        public static Type GetUnderlyingElementType(this IPropertyNode property) =>
             property.GetVTypeMember()?.FieldType.GetArrayOrListElementType();
 
         private static Type GetArrayOrListElementType(this Type listType) =>
@@ -305,7 +305,7 @@ namespace Space3x.InspectorAttributes.Editor
                     ? listType.GetGenericArguments().FirstOrDefault()
                     : null;
 
-        private static VTypeMember GetVTypeMember(this IProperty property) =>
+        private static VTypeMember GetVTypeMember(this IPropertyNode property) =>
             PropertyAttributeController.GetInstance(property)?.AnnotatedType.GetValue(property.Name);
         
         // public static void SetUnderlyingValue(this SerializedProperty property, object value)
@@ -343,7 +343,7 @@ namespace Space3x.InspectorAttributes.Editor
         // }
         
         #region PROPERTY BINDING
-        public static void BindProperty<TValue>(this BaseField<TValue> field, IProperty property)
+        public static void BindProperty<TValue>(this BaseField<TValue> field, IPropertyNode property)
         {
             if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
                 field.BindProperty(serializedProperty);
@@ -358,7 +358,7 @@ namespace Space3x.InspectorAttributes.Editor
             }
         }
         
-        public static void BindProperty<TValue>(this BindableElement element, IProperty property, BindingId bindingId)
+        public static void BindProperty<TValue>(this BindableElement element, IPropertyNode property, BindingId bindingId)
         {
             if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
                 element.BindProperty(serializedProperty);
@@ -380,7 +380,7 @@ namespace Space3x.InspectorAttributes.Editor
             BindingExtensions.Unbind((VisualElement)field);
         }
         
-        public static void TrackPropertyValue(this VisualElement element, IProperty property, Action<IProperty> callback = null)
+        public static void TrackPropertyValue(this VisualElement element, IPropertyNode property, Action<IPropertyNode> callback = null)
         {
             if (property.HasSerializedProperty())
                 element.TrackPropertyValue(property.GetSerializedProperty(), callback == null ? null : _ => callback(property));
@@ -394,7 +394,7 @@ namespace Space3x.InspectorAttributes.Editor
             }
         }
 
-        public static void TrackSerializedObjectValue(this VisualElement element, IProperty property, Action callback = null)
+        public static void TrackSerializedObjectValue(this VisualElement element, IPropertyNode property, Action callback = null)
         {
             element.TrackSerializedObjectValue(property.GetSerializedObject(), callback == null ? null : _ => callback.Invoke());
         }

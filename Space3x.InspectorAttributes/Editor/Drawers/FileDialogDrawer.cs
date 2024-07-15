@@ -9,7 +9,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     public class FileDialogDrawer : Drawer<FileDialogAttribute>
     {
         public override FileDialogAttribute Target => (FileDialogAttribute) attribute;
-        protected override VisualElement OnCreatePropertyGUI(IProperty property)
+        protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
             var field = new FileDialogField()
             {

@@ -5,7 +5,7 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public abstract class NonSerializedPropertyNodeBase : INonSerializedPropertyNode
     {
-        public event Action<IProperty> ValueChanged;
+        public event Action<IPropertyNode> ValueChanged;
         public void NotifyValueChanged() => ValueChanged?.Invoke(this); 
         public VTypeFlags Flags { get; set; }
         public string Name { get; set; }
@@ -24,7 +24,7 @@ namespace Space3x.InspectorAttributes.Editor
     {
         public IBindablePropertyNode Indexer { get; set; }
         public int Index { get; set; }
-        public event Action<IProperty> ValueChanged
+        public event Action<IPropertyNode> ValueChanged
         {
             add => ((INonSerializedPropertyNode)Indexer).ValueChanged += value;
             remove => ((INonSerializedPropertyNode)Indexer).ValueChanged -= value;

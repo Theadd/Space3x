@@ -37,7 +37,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         protected virtual List<Type> GetAllTypes() => Target.GetAllTypes();
         protected virtual void OnReload() => Target.ReloadCache();
 
-        protected override VisualElement OnCreatePropertyGUI(IProperty property)
+        protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
             if (!(property.GetSerializedProperty() is SerializedProperty serializedProperty))
             {
@@ -234,9 +234,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         /// Otherwise, attempts to properly bind it and returns false.
         /// </summary>
         /// <param name="propertyField">Target PropertyField to check.</param>
-        /// <param name="propertyNode">The IProperty that the PropertyField should be bound to.</param>
+        /// <param name="propertyNode">The IPropertyNode that the PropertyField should be bound to.</param>
         /// <returns>Whether propertyField was bound to the correct property or not.</returns>
-        private bool EnsurePropertyFieldIsBoundToTheCorrectProperty(PropertyField propertyField, IProperty propertyNode)
+        private bool EnsurePropertyFieldIsBoundToTheCorrectProperty(PropertyField propertyField, IPropertyNode propertyNode)
         {
             if (ReferenceEquals(propertyField.GetPropertyNode(), propertyNode)) return true;
             propertyField.Unbind();

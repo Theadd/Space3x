@@ -16,7 +16,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private VisualElement m_InnerField;
 
-        protected override VisualElement OnCreatePropertyGUI(IProperty property)
+        protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
             var container = new VisualElement();
 
@@ -92,6 +92,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
         }
 
-        private void CheckInline(IProperty property) => OnUpdate();
+        private void CheckInline(IPropertyNode property) => OnUpdate();
     }
 }

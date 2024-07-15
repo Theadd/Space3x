@@ -74,7 +74,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                                  ^ (propertyContainsChildrenProperties ? propertyNode.PropertyPath : propertyNode.ParentPath).GetHashCode();
                 return GetInstance(instanceId * 397 ^ panelId);
             }
-            DebugLog.Error("<b><color=#FF0000FF>UNEXPECTED!</color></b> related IProperty is not an IPropertyWithSerializedObject");
+            DebugLog.Error("<b><color=#FF0000FF>UNEXPECTED!</color></b> related IPropertyNode is not an IPropertyWithSerializedObject");
             return null;
         }
         

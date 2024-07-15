@@ -42,7 +42,7 @@ namespace Space3x.InspectorAttributes.Editor
             return value;
         }
         
-        public static PropertyAttributeController GetInstance(IProperty prop)
+        public static PropertyAttributeController GetInstance(IPropertyNode prop)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -78,7 +78,7 @@ namespace Space3x.InspectorAttributes.Editor
             return value;
         }
 
-        public static void OnPropertyValueChanged(IProperty prop)
+        public static void OnPropertyValueChanged(IPropertyNode prop)
         {
             if (!prop.HasChildren())
             {
@@ -88,7 +88,7 @@ namespace Space3x.InspectorAttributes.Editor
             GetInstance(prop.GetTargetObjectInstanceID() * 397 ^ prop.PropertyPath.GetHashCode())?.Rebuild(prop);
         }
 
-        private void Rebuild(IProperty declaringProperty)
+        private void Rebuild(IPropertyNode declaringProperty)
         {
             object declaringObject = declaringProperty.GetUnderlyingValue();
             var areEqual = ReferenceEquals(declaringObject, DeclaringObject);
@@ -102,13 +102,13 @@ namespace Space3x.InspectorAttributes.Editor
         public static void RemoveFromCache(PropertyAttributeController controller) => 
             s_Instances.Remove(controller.InstanceID);
 
-        public IProperty GetProperty(string propertyName) => 
+        public IPropertyNode GetProperty(string propertyName) => 
             Properties.GetValue(propertyName); // Properties.GetValue(propertyName.GetHashCode() ^ ParentPath.GetHashCode());
         
-        public IProperty GetProperty(string propertyName, int arrayIndex)
+        public IPropertyNode GetProperty(string propertyName, int arrayIndex)
         {
-            IProperty indexer = Properties.GetValue(propertyName);
-            IProperty prop = null;
+            IPropertyNode indexer = Properties.GetValue(propertyName);
+            IPropertyNode prop = null;
             Type elementType = indexer.GetUnderlyingElementType();
             var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) && elementType != typeof(string);
             if (indexer is ISerializedPropertyNode serializedIndexer)

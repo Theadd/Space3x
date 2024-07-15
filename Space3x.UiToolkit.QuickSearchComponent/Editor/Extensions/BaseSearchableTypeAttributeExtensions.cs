@@ -31,7 +31,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
 
     public static class DerivedTypeSearcherAttributeExtensions
     {
-        public static List<Type> GetAllTypes(this DerivedTypeSearcherAttribute self, IProperty property)
+        public static List<Type> GetAllTypes(this DerivedTypeSearcherAttribute self, IPropertyNode property)
         {
             // self.ReloadCache();
             return self.CachedTypes ??= self.GetDerivedTypes(property);
@@ -46,7 +46,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
             self.RawTypes = null;
         }
 
-        private static List<Type> GetDerivedTypes(this DerivedTypeSearcherAttribute self, IProperty property)
+        private static List<Type> GetDerivedTypes(this DerivedTypeSearcherAttribute self, IPropertyNode property)
         {
             var allDerivedTypes = self.RawTypes ??= self.GetAllDerivedTypes();
             if (self is ISealedExtension<ICondition> and ICondition selfWithConditional)

@@ -22,9 +22,9 @@ namespace Space3x.InspectorAttributes.Editor
 
         private bool m_IsNodeIndex = false;
 
-        private IProperty m_Property;
+        private IPropertyNode m_Property;
 
-        public BindableDataSource(IProperty property)
+        public BindableDataSource(IPropertyNode property)
         {
             if (property is IPropertyNodeIndex propertyNodeIndex)
                 Bind(propertyNodeIndex.Indexer, propertyNodeIndex.Index);
@@ -32,16 +32,16 @@ namespace Space3x.InspectorAttributes.Editor
                 Bind(property);
         }
 
-        public BindableDataSource(IProperty property, int index) => Bind(property, index);
+        public BindableDataSource(IPropertyNode property, int index) => Bind(property, index);
 
-        private void Bind(IProperty property, int index)
+        private void Bind(IPropertyNode property, int index)
         {
             m_IsNodeIndex = true;
             Index = index;
             Bind(property);
         }
         
-        private void Bind(IProperty property)
+        private void Bind(IPropertyNode property)
         {
             m_Property = property;
             DeclaringObject = property.GetDeclaringObject();
