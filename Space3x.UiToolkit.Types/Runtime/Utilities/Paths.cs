@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using Debug = UnityEngine.Debug;
 
@@ -15,6 +17,7 @@ namespace Space3x.UiToolkit.Types
         static Paths()
         {
             assets = Application.dataPath;
+            #if UNITY_EDITOR
             editor = EditorApplication.applicationPath;
             editorContents = EditorApplication.applicationContentsPath;
 
@@ -32,6 +35,7 @@ namespace Space3x.UiToolkit.Types
             {
                 throw new Exception("Failed to load UnityEditor.SyncVS", ex);
             }
+            #endif
         }
 
         public static string assets { get; }
@@ -57,6 +61,7 @@ namespace Space3x.UiToolkit.Types
 
         private static MethodInfo SyncVS_SyncSolution; // public static void SyncSolution()
 
+        [Conditional("UNITY_EDITOR")]
         public static void SyncUnitySolution()
         {
             try
@@ -258,9 +263,83 @@ namespace Space3x.UiToolkit.Types
 
         #endregion
         
+        public static string XmlAssemblyDocs => Resolve(Path.Combine(project, "Library", "XmlAssemblyDocs"));
+        
+        /// <summary>
+        /// Gets the path relative to project where the Xml Documentation Generator generates the *.dll file for a
+        /// given assembly name, which also corresponds to the name of the *.csproj file, without the extension.
+        /// <seealso cref="Space3x.Documentation.XmlDocumentationGenerator"/>  
+        /// </summary>
+        /// <param name="assemblyName">The assembly name, e.g. "Unity.Timeline".</param>
+        /// <returns></returns>
+        public static string AssemblyProjectDllPath(string assemblyName) => 
+            RelativePath(Path.Combine(XmlAssemblyDocs, assemblyName + ".dll"));
+        
+        public static bool IsWindowsPlatform =>
+            Application.platform switch
+            {
+                RuntimePlatform.WindowsPlayer or RuntimePlatform.WindowsEditor or RuntimePlatform.WindowsServer
+                    or RuntimePlatform.WSAPlayerX64 or RuntimePlatform.WSAPlayerX86
+                    or RuntimePlatform.WSAPlayerARM => true,
+                _ => false
+            };
+
         public static string TryPathsForFile(string fileName, IEnumerable<string> directories)
         {
             return directories.Select(directory => Path.Combine(directory, fileName)).FirstOrDefault(File.Exists);
         }
+        
+        public static string Npx => TryPathsForFile(IsWindowsPlatform ? "npx.cmd" : "npx", environmentPaths) ?? "";
+        
+        public static string Python => TryPathsForFile(IsWindowsPlatform ? "python.exe" : "python", environmentPaths) ?? "";
+
+        /// <summary>
+        /// Returns the absolute path of the given path.
+        /// If the path is already absolute, it returns the normalized full path.
+        /// Otherwise, it returns the normalized full path with the given base path.
+        /// If no base path is provided, it uses the project path.
+        /// </summary>
+        /// <param name="path">The path to convert to an absolute path.</param>
+        /// <param name="basePath">The base path to use if the path is not absolute. Default is null.</param>
+        /// <returns>The absolute path of the given path.</returns>
+        public static string AbsolutePath(string path, string basePath = null) =>
+            Path.IsPathRooted(path) 
+                ? Path.GetFullPath(path) 
+                : Path.GetFullPath(path, basePath ?? project);
+
+        /// <summary>
+        /// Returns the normalized relative path from 'path' to 'relativeTo' if 'path' is rooted; otherwise, returns
+        /// the normalized relative path from 'path' to the full path of 'path' using 'relativeTo' as the base path.
+        /// </summary>
+        public static string RelativePath(string path, string relativeTo = null) =>
+            Path.IsPathFullyQualified(path)     // Path.IsPathRooted(path) 
+                ? Path.GetRelativePath(relativeTo ?? project, path) 
+                : Path.GetRelativePath(relativeTo ?? project, Path.GetFullPath(path, relativeTo ?? project));
+                // : Path.GetRelativePath(relativeTo ?? project, Path.GetFullPath(relativeTo ?? project, path));
+
+        public static string DirectoryPath(string path)
+        {
+            var dir = Path.GetDirectoryName(path);
+            return string.IsNullOrEmpty(dir) ? path : TrailingSlash(dir);
+        }
+
+        public static string TrailingSlash(string path) => 
+            path.EndsWith(Path.DirectorySeparatorChar) ? path : path + Path.DirectorySeparatorChar;
+
+        // var cfgFileAbs = MdDocumentationGenerator.GetConfigurationFileFullPath(assemblyName);
+        // var dllPath = Paths.AssemblyProjectDllPath(assemblyName);
+        // var dllPathAbs = Paths.AbsolutePath(Paths.AssemblyProjectDllPath(assemblyName));
+        // var dllPathRelToCfgFileAbs = Paths.RelativePath(dllPathAbs, cfgFileAbs);
+        
+        
+        /// <summary>
+        /// Returns the same path but normalized.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static string Resolve(string path) =>
+            Path.IsPathRooted(path)
+                ? Path.GetFullPath(path)
+                : Path.Combine(Path.GetDirectoryName(path), Path.GetFileName(path));
     }
 }

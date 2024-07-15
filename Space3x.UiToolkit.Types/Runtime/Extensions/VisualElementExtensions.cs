@@ -111,7 +111,7 @@ namespace Space3x.UiToolkit.Types
 #if UNITY_EDITOR
         [HideInCallstack]
         public static string AsString(this VisualElement self) => 
-            NJoin(" ", new[] 
+            self == null ? "null" : NJoin(" ", new[] 
             {
                 StyleTag.Highlight.Wrap(StyleTag.Bold, self.GetType().Name),
                 Prefix(StyleTag.Primary.Start + "#", self.name, StyleTag.Primary.End),
@@ -121,6 +121,7 @@ namespace Space3x.UiToolkit.Types
         [HideInCallstack]
         public static VisualElement LogThis(this VisualElement self, string message = null, int indentLevel = 1)
         {
+            if (self == null) return null;
             var content = string.Join("", Enumerable.Repeat("  ", indentLevel)) + "\u21e8 " 
                           + Prefix("", Prefix("<b>", message, "</b>"), " ‣ ") 
                           + self.AsString() + "\n" + self.AsSimplifiedParentHierarchyString();

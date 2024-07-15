@@ -14,7 +14,7 @@ namespace Space3x.UiToolkit.Types
     public static class DocumentationExtensions
     {
         private static string s_XmlAssemblyDocs = null;
-        public static string XmlAssemblyDocs => s_XmlAssemblyDocs ??= XmlDocumentationGenerator.XmlAssemblyDocs;
+        public static string XmlAssemblyDocs => s_XmlAssemblyDocs ??= Paths.XmlAssemblyDocs;
         public static string EditorApplicationManaged => Path.Combine(EditorApplication.applicationContentsPath, "Managed");
         public static string NetFrameworkReferenceAssemblies { get; set; } = @"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework";
 
