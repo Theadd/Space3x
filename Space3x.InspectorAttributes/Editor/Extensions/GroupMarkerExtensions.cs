@@ -18,6 +18,8 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
         public static PropertyGroupField UngroupAll(this PropertyGroupField group)
         {
             var parent = group.hierarchy.parent;
+            if (parent == null)
+                return group;
             var indexInParent = parent.hierarchy.IndexOf(group);
             var parentGroupTypeClass = "";
             var iMax = group.contentContainer.hierarchy.childCount - 1;

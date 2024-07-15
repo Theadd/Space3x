@@ -18,7 +18,7 @@ namespace Space3x.InspectorAttributes.Editor
         
         public Type TargetType { get; private set; }    // TODO: rename
         
-        public object DeclaringObject { get; private set; }
+        public object DeclaringObject { get; protected set; }
 
         public Type DeclaringType => DeclaringObject?.GetType();
         
@@ -48,7 +48,7 @@ namespace Space3x.InspectorAttributes.Editor
                     TargetObject = serializedObject.targetObject;
                     InstanceID = TargetObject.GetInstanceID();
                     TargetType = TargetObject.GetType();
-                    DeclaringObject = property.GetDeclaringObject(); // TODO: IProperty.DeclaringObject
+                    DeclaringObject = property.GetDeclaringObject();
                     IsValid = true;
                 }
             }

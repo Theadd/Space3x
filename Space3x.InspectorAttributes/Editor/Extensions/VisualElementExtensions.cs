@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using Space3x.UiToolkit.Types;
-using UnityEditor.UIElements;
+using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -191,6 +190,22 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 else
                     foreach (var c in GetChildren<T>(child))
                         yield return c;
+            }
+            yield break;
+        }
+        
+        public static IEnumerable<BindableElement> GetChildrenFields(this VisualElement self)
+        {
+            foreach (var child in self.Children())
+            {
+                if (child is not ILayoutElement && child is IMixedValueSupport and BindableElement t)
+                    yield return t;
+                else
+                {
+                    var bindableElements = GetChildrenFields(child);
+                    foreach (var c in bindableElements)
+                        yield return c;
+                }
             }
             yield break;
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using UnityEngine;
 

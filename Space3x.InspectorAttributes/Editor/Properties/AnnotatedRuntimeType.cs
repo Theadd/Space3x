@@ -10,8 +10,10 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public class AnnotatedRuntimeType
     {
-        public List<string> Keys;
-        public List<VTypeMember> Values;
+        public List<string> Keys = new List<string>();
+        public List<VTypeMember> Values = new List<VTypeMember>();
+        
+        public static readonly AnnotatedRuntimeType Empty = new AnnotatedRuntimeType();
 
         private static Dictionary<Type, AnnotatedRuntimeType> s_Instances;
         private static Comparer<PropertyAttribute> s_Comparer;
@@ -24,6 +26,7 @@ namespace Space3x.InspectorAttributes.Editor
                 s_Comparer = Comparer<PropertyAttribute>.Create((p1, p2) => 
                     p1.order.CompareTo(p2.order));
             }
+            if (declaringType == null) return Empty;
             if (!s_Instances.TryGetValue(declaringType, out var value))
             {
                 value = new AnnotatedRuntimeType();
@@ -42,8 +45,6 @@ namespace Space3x.InspectorAttributes.Editor
         
         private void Bind(Type declaringType)
         {
-            Keys = new List<string>();
-            Values = new List<VTypeMember>();
             var allProperties = new Dictionary<string, PropertyInfo>();
             var allMembers = declaringType.GetMembers(
                 BindingFlags.Instance | BindingFlags.Static | 

@@ -204,7 +204,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 if (this.IsGroupMarkerUsed())
                 {
-                    Debug.LogError($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
+                    DebugLog.Warning($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
                     // ((IDrawer) this).ForceRebuild();
                     // return; // TODO: FIXME: this is a hack, should be fixed in the next release
                     UndoAllHierarchyGrouping();
@@ -220,7 +220,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 
                 RemoveGroupMarker();
                 LinkedMarkerDecorator?.RemoveGroupMarker(); // TODO: is this needed?
-                DebugLog.Error("<color=#FF0000FF>// TODO: FIXME: this is a hack, should be fixed in the next release</color>");
+                DebugLog.Warning("<color=#FF0000FF>// TODO: FIXME: this is a hack, should be fixed in the next release</color>");
                 // HACK COMMENTED OUT: return; // TODO: FIXME: this is a hack, should be fixed in the next release
             }
             else
