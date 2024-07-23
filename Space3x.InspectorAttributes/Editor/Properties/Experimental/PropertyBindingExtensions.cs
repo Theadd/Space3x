@@ -8,6 +8,12 @@ namespace Space3x.InspectorAttributes.Editor
 {
     public static class PropertyBindingExtensions
     {
+        /// <summary>
+        /// Binds a property to a field and synchronizes their values.
+        /// </summary>
+        /// <param name="field"></param>
+        /// <param name="property"></param>
+        /// <typeparam name="TValue"></typeparam>
         public static void BindProperty<TValue>(this BaseField<TValue> field, IPropertyNode property)
         {
             if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
@@ -38,12 +44,12 @@ namespace Space3x.InspectorAttributes.Editor
             }
         }
 
-        public static void Unbind<TValue>(this BaseField<TValue> field)
-        {
-            if (field.HasBinding(nameof(BaseField<TValue>.value)))
-                field.ClearBinding(nameof(BaseField<TValue>.value));
-            BindingExtensions.Unbind((VisualElement)field);
-        }
+        // public static void Unbind<TValue>(this BaseField<TValue> field)
+        // {
+        //     if (field.HasBinding(nameof(BaseField<TValue>.value)))
+        //         field.ClearBinding(nameof(BaseField<TValue>.value));
+        //     BindingExtensions.Unbind((VisualElement)field);
+        // }
 
         public static void TrackPropertyValue(this VisualElement element, IPropertyNode property, Action<IPropertyNode> callback = null)
         {

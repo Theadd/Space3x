@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
@@ -26,6 +27,21 @@ namespace Space3x.Attributes.Types
         {
             #if SPACE3X_DEBUG
             Debug.LogWarning(msg);
+            #endif
+        }
+        
+        [HideInCallstack]
+        public static void AllLines(string msg, int maxLines = 150)
+        {
+            #if SPACE3X_DEBUG
+            var lines = msg.Split('\n');
+            while (lines.Length > maxLines)
+            {
+                Debug.unityLogger.Log(LogType.Log, "<color=#FFFFFFFF>" + string.Join('\n', lines.Take(maxLines)) + "</color>");
+                lines = lines.Skip(maxLines).ToArray();
+            }
+            if (lines.Length > 0)
+                Debug.unityLogger.Log(LogType.Log, "<color=#FFFFFFFF>" + string.Join('\n', lines) + "</color>");
             #endif
         }
     }
