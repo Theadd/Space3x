@@ -3,10 +3,10 @@ using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
-    [AttributeUsage(
-        AttributeTargets.Field | AttributeTargets.Property, 
-        AllowMultiple = true, 
-        Inherited = true)]
+    /// <summary>
+    /// Determines the visibility of the next VisualTarget based on a condition.
+    /// </summary>
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
     public class VisibleOnAttribute : 
         PropertyAttribute,
         IVisibleOnEx<VisibleOnAttribute>

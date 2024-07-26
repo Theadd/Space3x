@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
+    /// <summary>
+    /// Displays a TextField with a customizable file picker dialog on the annotated string property in the inspector.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class FileDialogAttribute : PropertyAttribute
     {

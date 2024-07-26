@@ -10,7 +10,7 @@ namespace Space3x.Attributes.Types
     /// using reflection over the provided MemberName, while the value on the property itself only holds those selected
     /// values.
     /// </summary>
-    [Draft]
+    [Experimental]
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class ListSourceAttribute : PropertyAttribute
     {

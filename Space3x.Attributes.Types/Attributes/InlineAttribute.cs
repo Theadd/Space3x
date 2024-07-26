@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
+    /// <summary>
+    /// Inlines the inspector UI of the annotated property's referenced value as if it was part of this one.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
     public class InlineAttribute : PropertyAttribute
     {

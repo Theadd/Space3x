@@ -33,7 +33,7 @@ namespace Space3x.Attributes.Types.DeveloperNotes
     /// Don't implement an abstraction which complicates the feature that you are implementing in the present,
     /// because there's a good chance you'll never actually leverage your abstraction in the future.
     /// </summary>
-    public class ViolatesYAGNIPrinciple : PrincipleViolationAttribute { }
+    public class ViolatesYAGNI : PrincipleViolationAttribute { }
     
     
     /// <summary>
@@ -41,7 +41,7 @@ namespace Space3x.Attributes.Types.DeveloperNotes
     /// 
     /// Any single object in object-oriented programing (OOP) should be made for one specific function.
     /// </summary>
-    public class ViolatesSingleResponsibilityPrinciple : PrincipleViolationAttribute { }
+    public class ViolatesSingleResponsibility : PrincipleViolationAttribute { }
 
     /// <summary>
     /// Principle Violation: "Open/Closed Principle"
@@ -49,7 +49,7 @@ namespace Space3x.Attributes.Types.DeveloperNotes
     /// Code should be open for extension but closed for modification. In simpler terms, you should be able
     /// to add new functionality to existing code without altering its source.
     /// </summary>
-    public class ViolatesOpenClosedPrinciple : PrincipleViolationAttribute { }
+    public class ViolatesOpenClosed : PrincipleViolationAttribute { }
     
     /// <summary>
     /// Code Smell: "Speculative Generality".

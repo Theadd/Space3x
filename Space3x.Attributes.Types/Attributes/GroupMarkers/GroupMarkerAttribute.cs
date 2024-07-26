@@ -28,7 +28,7 @@ namespace Space3x.Attributes.Types
         public bool ProportionalSize { get; set; } = true;
 
         /// <summary>
-        /// Group serialized members within this attribute marker to it's corresponding closing attribute.
+        /// Groups members within this attribute marker to it's corresponding closing attribute.
         /// </summary>
         public GroupMarkerAttribute(GroupType groupType) => this.Type = groupType;
     }
