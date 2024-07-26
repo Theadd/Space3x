@@ -1,8 +1,10 @@
 using System;
+using Space3x.Attributes.Types.DeveloperNotes;
 using UnityEngine;
 
 namespace Space3x.Attributes.Types
 {
+    [ViolatesYAGNI]
     public abstract class Extension<T> : GenericExtension
     {
         public virtual bool TryApply<TValue, TContent>(IExtensionContext context, TContent content, out TValue outValue, TValue defaultValue)

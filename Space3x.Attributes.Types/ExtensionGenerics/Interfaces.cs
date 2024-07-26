@@ -1,4 +1,6 @@
-﻿namespace Space3x.Attributes.Types
+﻿using Space3x.Attributes.Types.DeveloperNotes;
+
+namespace Space3x.Attributes.Types
 {
     public interface IContract { }
     
@@ -10,6 +12,7 @@
             (Extension<T>) GenericExtension.GetExtension<T>(typeof(T), typeof(TExtensionHandler));
     }
     
+    [ViolatesYAGNI]
     public interface IExtensionContext
     {
         public IExtensionContext
