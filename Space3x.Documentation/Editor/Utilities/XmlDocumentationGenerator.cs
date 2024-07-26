@@ -23,6 +23,7 @@ namespace Space3x.Documentation
         public static string MsBuildPath { get; set; } = Paths.projectBuilder;
 
         private static string s_IntermediateOutputPath = Path.Combine(Project, "Temp", "Bin", "Debug");
+        private static string s_IntermediateObjDebugPath = Path.Combine(Project, "obj", "Debug");
         
         private static string CreatePath(string path) => 
             !Directory.Exists(path) ? Directory.CreateDirectory(path).FullName : path;
@@ -165,17 +166,24 @@ namespace Space3x.Documentation
                                               "/p:WarningLevel=0 " +
                                               $"/p:DocumentationFile=\"{documentationPath}\" " +
                                               $"\"{csprojPath}\"");
+
+            CopyGeneratedAssembly(assemblyName);
+            if (cleanAfterBuild)
+                Directory.Delete(IntermediateOutputPath, recursive: true);
             
-            var generatedAssemblyPath = Path.Combine(IntermediateOutputPath, assemblyName, assemblyName + ".dll");
+            return output;
+        }
+
+        private static void CopyGeneratedAssembly(string assemblyName)
+        {
+            var generatedAssemblyPath = Path.Combine(s_IntermediateOutputPath, assemblyName, assemblyName + ".dll");
+            if (!File.Exists(generatedAssemblyPath))
+                generatedAssemblyPath = Path.Combine(s_IntermediateObjDebugPath, assemblyName + ".dll");
             if (File.Exists(generatedAssemblyPath))
                 File.Copy(
                     generatedAssemblyPath, 
                     Path.Combine(XmlAssemblyDocs, assemblyName + ".dll"), 
                     overwrite: true);
-            if (cleanAfterBuild)
-                Directory.Delete(IntermediateOutputPath, recursive: true);
-            
-            return output;
         }
         
         public static async Awaitable<string> Generate(string csprojPath)
