@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine.Internal;
 
 namespace Space3x.Attributes.Types.DeveloperNotes
 {
