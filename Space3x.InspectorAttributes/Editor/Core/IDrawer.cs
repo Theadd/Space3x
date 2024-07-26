@@ -3,9 +3,11 @@ using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
+    [ExcludeFromDocs]
     public interface IDrawer : IDisposable
     {
         public static StyleSheet DefaultStyleSheet  = Resources.Load<StyleSheet>("Space3x.InspectorAttributes.Stylesheet");

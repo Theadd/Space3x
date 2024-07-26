@@ -3,10 +3,12 @@ using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
+    [ExcludeFromDocs]
     [InitializeOnLoad]
     public static class UngroupedMarkerDecorators
     {

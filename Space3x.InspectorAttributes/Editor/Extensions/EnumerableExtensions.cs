@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class EnumerableExtensions
     {
         /// <summary>

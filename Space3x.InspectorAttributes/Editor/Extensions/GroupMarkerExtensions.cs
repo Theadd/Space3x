@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class GroupMarkerExtensions
     {
         public static PropertyGroupField UngroupAll(this PropertyGroupField group)

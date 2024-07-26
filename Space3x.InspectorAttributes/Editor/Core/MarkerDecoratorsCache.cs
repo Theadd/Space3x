@@ -4,10 +4,11 @@ using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
-using UnityEngine;
+using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
+    [ExcludeFromDocs]
     public class MarkerDecoratorsCache
     {
         private List<IGroupMarkerDecorator> m_CachedInstances;

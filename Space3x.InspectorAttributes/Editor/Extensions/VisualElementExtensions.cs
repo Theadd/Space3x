@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class VisualElementExtensions
     {
         public static T GetClosestParentOfType<T>(this VisualElement element) where T : VisualElement

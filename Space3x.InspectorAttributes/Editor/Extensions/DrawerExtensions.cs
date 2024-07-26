@@ -3,10 +3,12 @@ using System.Reflection;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class DrawerExtensions
     {
         #region PIVATE REFLECTION STUFF

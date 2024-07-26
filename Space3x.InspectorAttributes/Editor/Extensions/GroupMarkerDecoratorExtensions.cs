@@ -2,10 +2,12 @@
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class GroupMarkerDecoratorExtensions
     {
         public static bool IsGroupMarkerUsed(this IGroupMarkerDecorator self) => 

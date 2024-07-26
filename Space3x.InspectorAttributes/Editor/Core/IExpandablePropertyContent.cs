@@ -1,9 +1,11 @@
 ﻿using System;
 using UnityEditor.UIElements;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
+    [ExcludeFromDocs]
     public interface IExpandablePropertyContent
     {
         VisualElement Content { get; set; }
