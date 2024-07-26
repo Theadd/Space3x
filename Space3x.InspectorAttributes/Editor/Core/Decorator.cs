@@ -10,24 +10,6 @@ using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    public interface IDecorator : IDrawer
-    {
-        GhostDecorator GhostContainer { get; set; }
-        
-        /// <summary>
-        /// Ensures that the container is properly attached and positioned.
-        /// </summary>
-        /// <param name="onProperlyAttachedCallback"></param>
-        /// <returns>Whether the container was properly attached or not.</returns>
-        bool EnsureContainerIsProperlyAttached(Action onProperlyAttachedCallback = null);
-
-        bool HasValidContainer();
-
-        void OnAttachedAndReady(VisualElement element);
-
-        void ProperlyRemoveFromHierarchy();
-    }
-    
     /// <summary>
     /// The base class to derive from when implementing your custom <see cref="DecoratorDrawer"/> on a <see cref="PropertyAttribute"/>.
     /// </summary>
@@ -51,10 +33,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// </summary>
         public IPropertyNode Property { get; set; }
         
+        /// <summary>
+        /// The <see cref="PropertyAttribute"/> being decorated.
+        /// </summary>
         public virtual TAttribute Target => (TAttribute) attribute;
 
         /// <summary>
-        /// A reference to the <see cref="VisualElement"/> that the decorator should affect to.
+        /// A reference to the <see cref="VisualElement"/> that this decorator should affect to.
         /// </summary>
         public VisualElement VisualTarget => Container.GetNextSibling<AutoDecorator, IElementBlock>();
         
@@ -62,6 +47,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         VisualElement IDrawer.Container => Container;
         
+        /// <summary>
+        /// The <see cref="VisualElement"/> container for this decorator.
+        /// </summary>
         public T Container { get; private set; }
 
         public MarkerDecoratorsCache DecoratorsCache =>
@@ -69,16 +57,26 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         protected MarkerDecoratorsCache CachedDecoratorsCache;
         
-        private bool m_Detached;
         private bool m_Ready;
         private bool m_Disposed = false;
         
         /// <summary>
-        /// Override this in order to make the decorator call OnUpdate() on any value change on the serialized object
-        /// being inspected. Defaults to false.
+        /// Override this in order to make the decorator call <see cref="OnUpdate">OnUpdate()</see> on any value change
+        /// on the serialized object being inspected. Defaults to false.
         /// </summary>
         protected virtual bool UpdateOnAnyValueChange => false;
 
+        /// <summary>
+        /// Override this method to add any initial <c>VisualElement</c>s to the newly created decorator
+        /// <see cref="Container"/> (of type <typeparamref name="T"/>) before it is added to the <c>VisualElement</c>'s
+        /// hierarchy.
+        /// </summary>
+        /// <remarks>
+        /// At this point, values for <see cref="Field"/>, <see cref="Property"/> and <see cref="Target"/> are already
+        /// provided but <see cref="VisualTarget"/> is not since the <see cref="Container"/> is not yet added to the
+        /// <c>VisualElement</c>'s hierarchy.
+        /// </remarks>
+        /// <param name="container">This decorator's <c>VisualElement</c> <see cref="Container"/> of type <typeparamref name="T"/>.</param>
         protected virtual void OnCreatePropertyGUI(VisualElement container) {}
 
         /// <summary>
@@ -90,8 +88,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// Override this method to perform any custom logic when the decorator is created.
         /// </summary>
         public virtual void OnAttachedAndReady(VisualElement element) { }
-
-        private int m_Counter = 0;
+        
         private bool m_Removed = false;
         private bool m_TotallyRemoved = false;
         private bool m_Added = false;
@@ -99,7 +96,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         public sealed override VisualElement CreatePropertyGUI()
         {
-            m_Counter++;
             var numGhosts = GhostContainer?.hierarchy.parent?.hierarchy.childCount ?? -1;
 
             if (GhostContainer != null || m_TotallyRemoved)
@@ -110,7 +106,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                           $"Add: {m_Added}, TotallyRemoved: {m_TotallyRemoved}</color>");
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
             GhostContainer.WithDevTools(this);
-            m_Detached = false;
             m_Ready = false;
             GhostContainer.RegisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
             GhostContainer.RegisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
@@ -122,17 +117,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             var hasPanel = GhostContainer.hierarchy.parent?.hierarchy.parent != null;
             var originPanelHash = GetPanelContentHash(evt.originPanel);
-            DebugLog.Info($"<color=#FFFF00FF>OnDetachGhostFromPanel: <b>[{(hasPanel ? "IGNORE, HAS PANEL" : "REMOVE, NO PANEL")}]</b> " +
-                          $"{this.GetType().Name}, Removed: {m_Removed}, Added: {m_Added}, ThisHash: {this.GetHashCode()}</color>");
+            // DebugLog.Info($"<color=#FFFF00FF>OnDetachGhostFromPanel: <b>[{(hasPanel ? "IGNORE, HAS PANEL" : "REMOVE, NO PANEL")}]</b> " +
+            //               $"{this.GetType().Name}, Removed: {m_Removed}, Added: {m_Added}, ThisHash: {this.GetHashCode()}</color>");
 
             if (hasPanel)
                 return; // TODO
             m_Removed = true;
             if (originPanelHash != 0)
             {
-                GhostContainer?.LogThis($"REMOVING GHOST... HAS PANEL: {hasPanel}, THash: {this.GetHashCode()} => " +
-                                        $"{this.GetType().Name}, OriginPanel: {originPanelHash}, DestPanel: " +
-                                        $"{(evt.destinationPanel == null ? -1 : GetPanelContentHash(evt.destinationPanel))}");
+                // GhostContainer?.LogThis($"REMOVING GHOST... HAS PANEL: {hasPanel}, THash: {this.GetHashCode()} => " +
+                //                         $"{this.GetType().Name}, OriginPanel: {originPanelHash}, DestPanel: " +
+                //                         $"{(evt.destinationPanel == null ? -1 : GetPanelContentHash(evt.destinationPanel))}");
                 ProperlyRemoveFromHierarchy();
             }
             else
@@ -168,16 +163,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             
             if (m_Added)
             {
-                GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[SKIP ADD!!]</b> {this.GetType().Name}, " +
-                                       $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
-                                       $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
+                // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[SKIP ADD!!]</b> {this.GetType().Name}, " +
+                //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
+                //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
                 BindToClosestParentPropertyFieldOf(GhostContainer);
                 return;
             }
 
-            GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[ADD]</b> {this.GetType().Name}, " +
-                                   $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
-                                   $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
+            // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[ADD]</b> {this.GetType().Name}, " +
+            //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
+            //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
             BindToClosestParentPropertyFieldOf(GhostContainer);
             m_Added = true;
             if (!m_Removed)
@@ -209,11 +204,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
         }
 
-        /// <summary>
-        /// Ensures that the container is properly attached and positioned.
-        /// </summary>
-        /// <param name="onProperlyAttachedCallback"></param>
-        /// <returns>Whether the container was properly attached or not.</returns>
+        /// <inheritdoc/>
         public bool EnsureContainerIsProperlyAttached(Action onProperlyAttachedCallback = null)
         {
             if (!HasValidContainer())
@@ -221,7 +212,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 m_Ready = false;
                 Container.RemoveFromHierarchy();
                 Container.WithClasses("ui3x-detached");
-                m_Detached = true;
                 if (onProperlyAttachedCallback != null)
                     Container.RegisterCallbackOnce<AttachToPanelEvent>((_) => 
                     {
@@ -313,39 +303,15 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (m_TotallyRemoved) return;
             OnUpdate();
         }
-        
-        // private void OnGeometryChanged(GeometryChangedEvent ev)
-        // {
-        //     if (m_OnUpdateCalled)
-        //     {
-        //         DebugLog.Error($"<b><color=#FF0000FF>OnGeometryChanged called twice!</color></b> {this.GetType().Name}, ThisHash: {this.GetHashCode()}");
-        //         return;
-        //     }
-        //     if (m_Removed)
-        //     {
-        //         DebugLog.Warning($"{this.GetType().Name} already removed, ThisHash: {this.GetHashCode()} #4");
-        //         return;
-        //     }
-        //     DebugLog.Info("#OnGeometryChanged " + this.GetHashCode());
-        //     if (((IDrawer) this).InspectorElement is InspectorElement inspectorElement)
-        //     {
-        //         m_OnUpdateCalled = true;
-        //         inspectorElement.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-        //         OnUpdate();
-        //     }
-        //     else
-        //         Debug.LogError($"<color=#FF0000FF><b>Could not find InspectorElement for {attribute.GetType().Name}</b> {((VisualElement)ev.target)?.AsString()}</color>");
-        // }
 
         public virtual void OnReset(bool disposing = false)
         {
-            DebugLog.Warning($"<color=#FF0000FF>[RESET]</color> {this.GetType().Name}, ThisHash: {this.GetHashCode()}, " +
-                             $"Removed: {m_Removed}, Added: {m_Added}, Detached: {m_Detached}, Ready: {m_Ready}");
+            // DebugLog.Warning($"<color=#FF0000FF>[RESET]</color> {this.GetType().Name}, ThisHash: {this.GetHashCode()}, " +
+            //                  $"Removed: {m_Removed}, Added: {m_Added}, Ready: {m_Ready}");
             // ((IDrawer) this).InspectorElement?.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             Container?.RemoveFromHierarchy();
             Field = null;
             Container = null;
-            m_Detached = false;
             m_Ready = false;
             if (disposing)
             {
@@ -367,16 +333,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             Property = Field.GetPropertyNode();
             if (UpdateOnAnyValueChange)
                 GhostContainer.TrackSerializedObjectValue(Property, OnUpdate);
-                // TrackAllChangesOnInspectorElement();
         }
-
-        // private void TrackAllChangesOnInspectorElement()
-        // {
-        //     // ((IDrawer) this).InspectorElement.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
-        //     GhostContainer.TrackSerializedObjectValue(Property.GetSerializedObject(), OnSerializedObjectValueChanged);
-        // }
-        //
-        // private void OnSerializedObjectValueChanged(SerializedObject serializedObject) => OnUpdate();
 
         public virtual bool HasValidContainer() => 
             Container != null 
