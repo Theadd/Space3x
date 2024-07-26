@@ -238,3 +238,31 @@
 .ui3x-non-proportional > .ui3x-property-group > .unity-base-field {
     flex-basis: 90%;
 }
+
+/* Space */
+
+.ui3x-group-type--row > .ui3x-property-group > .ui3x-decorator > .ui3x-space {
+    max-height: 1px;
+}
+
+.ui3x-group-type--column > .ui3x-property-group > .ui3x-decorator > .ui3x-space {
+    max-width: 1px;
+}
+
+/* Foldout Transitions */
+
+.unity-foldout:checked {
+    min-height: 42px;
+    max-height: 2000px;
+    overflow: visible;
+}
+
+.unity-foldout {
+    transition-property: max-height, min-height;
+    transition-duration: 1s, 0.25s;
+    transition-delay: 0s, 0s;
+    transition-timing-function: ease-in-out-sine, ease-in-out-sine;
+    min-height: 21px;
+    max-height: 42px;
+    overflow: hidden;
+}
