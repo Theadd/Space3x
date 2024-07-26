@@ -29,7 +29,8 @@ namespace Space3x.Documentation.Templates
     </script>
     <script src=""./all-links.js""></script>
     <!-- Docsify v4 -->
-    <script src=""https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js""></script>
+    <!-- <script src=""https://cdn.jsdelivr.net/npm/docsify@4/lib/docsify.js""></script> -->
+    <script src=""js/docsify.js""></script>
     {AdditionalScripts(settings)}
 </body>
 
@@ -142,6 +143,8 @@ namespace Space3x.Documentation.Templates
         
         private string ExternalStyles(MdDocsSettings settings)
         {
+            var prismLink = @"<link rel=""stylesheet"" href=""./resources/prism.css"">
+    ";
             switch (settings.PageTheme)
             {
                 case MdPageThemes.Vue:
@@ -150,14 +153,14 @@ namespace Space3x.Documentation.Templates
     <!-- coy, dark, funky, okaidia, solarizedlight, romorrow, twilight -->
     <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/prismjs@1.25.0/themes/prism-coy.css"">";
                 case MdPageThemes.Basic:
-                    return "<link rel=\"stylesheet\" href=\"https://unpkg.com/docsify-themeable/dist/css/theme-defaults.css\">";
+                    return prismLink + "<link rel=\"stylesheet\" href=\"https://unpkg.com/docsify-themeable/dist/css/theme-defaults.css\">";
                 case MdPageThemes.SimpleLight:
-                    return "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css\">";
+                    return prismLink + "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css\">";
                 case MdPageThemes.SimpleDark:
-                    return "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css\">";
+                    return prismLink + "<link rel=\"stylesheet\" href=\"https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css\">";
                 case MdPageThemes.SimpleAuto:
                 default:
-                    return @"<link rel=""stylesheet"" media=""(prefers-color-scheme: dark)"" href=""https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css"">
+                    return prismLink + @"<link rel=""stylesheet"" media=""(prefers-color-scheme: dark)"" href=""https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple-dark.css"">
    <link rel=""stylesheet"" media=""(prefers-color-scheme: light)"" href=""https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"">";
             }
         }
@@ -184,8 +187,9 @@ namespace Space3x.Documentation.Templates
                 scriptTags.Add("<script src=\"https://cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js\"></script>");
             if (settings.AddCopyCodeToClipboardPlugin)
                 scriptTags.Add("<script src=\"//cdn.jsdelivr.net/npm/docsify-copy-code/dist/docsify-copy-code.min.js\"></script>");
-            scriptTags.Add("<script src=\"https://unpkg.com/prismjs/components/prism-bash.min.js\"></script>");
-            scriptTags.Add("<script src=\"https://unpkg.com/prismjs/components/prism-csharp.min.js\"></script>");
+            scriptTags.Add("<script src=\"js/prism.js\"></script>");
+            // scriptTags.Add("<script src=\"https://unpkg.com/prismjs/components/prism-bash.min.js\"></script>");
+            // scriptTags.Add("<script src=\"https://unpkg.com/prismjs/components/prism-csharp.min.js\"></script>");
             scriptTags.Add("<script src=\"https://unpkg.com/@rakutentech/docsify-code-inline/dist/index.min.js\"></script>");
             scriptTags.Add("<script src=\"js/common.js\"></script>");
             scriptTags.Add("<script src=\"js/docsify.plugins.space3x.js\"></script>");

@@ -101,7 +101,7 @@ This sandbox is a demonstration of the [docsify-themeable](https://jhildenbiddle
             foreach (var targetAssembly in TargetAssemblies)
             {
                 var output = await MdDocumentationGenerator.Generate(DefaultDocumentationBinary, targetAssembly);
-                Debug.Log(output);
+                DebugLog.AllLines(output, 100);
             }
             IsGeneratingMdDocs = false;
         }

@@ -114,15 +114,8 @@ namespace Space3x.Documentation
 
         private static string GenerateInternal(string binaryPath, string assemblyName)
         {
-            // ./resources/DefaultDocumentation/DefaultDocumentation.Console.exe -a ./resources/Space3x.InspectorAttributes.Editor.dll
-            // --FileNameFactory Name -g Types -n Space3x.InspectorAttributes.Editor -o ./generated/Space3x.InspectorAttributes.Editor/ -p ../../../
-
             var linksPath = Paths.Resolve(Path.Combine(GeneratedLinksPath, GetLinksFileName(assemblyName)));
-            // var args = $"-j {GetConfigurationFileFullPath(assemblyName)} --FileNameFactory Name --UrlFactories DocItem|MdDocs3xUrl";
             var args = $"-j {GetConfigurationFileFullPath(assemblyName)} --FileNameFactory Name --UrlFactories MdDocs3xUrl";
-            // var args = $"-a {assemblyPath} --FileNameFactory Name -g Types -n {assemblyName} -o {outputPath} -l {linksPath} -p .\\";
-            // var args = $"-a {assemblyPath} --FileNameFactory Name -g Types -n {assemblyName} -o {outputPath} -p .\\";
-
             var res = Execute(binaryPath, args);
             MdLinkParser.Parse(linksPath, assemblyName);
 
@@ -132,7 +125,6 @@ namespace Space3x.Documentation
         private static string GenerateSidebarTOC(string binaryPath, string assemblyName)
         {
             MarkdownPageTemplates.Instance.CreateConfigurationFile(assemblyName, "sidebar");
-            // var args = $"-j {GetConfigurationFileFullPath(assemblyName)} --FileNameFactory Name --UrlFactories DocItem|MdDocs3xUrl";
             var args = $"-j {GetConfigurationFileFullPath(assemblyName)} --FileNameFactory Name --UrlFactories MdDocs3xUrl";
             var res = Execute(binaryPath, args);
             return res;

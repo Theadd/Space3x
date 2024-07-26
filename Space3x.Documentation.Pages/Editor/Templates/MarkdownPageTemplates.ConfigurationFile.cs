@@ -1,7 +1,5 @@
 ﻿using System.IO;
-using Space3x.Documentation.Settings;
 using Space3x.UiToolkit.Types;
-using UnityEngine;
 
 namespace Space3x.Documentation.Templates
 {
@@ -9,31 +7,6 @@ namespace Space3x.Documentation.Templates
     {
 	    public void CreateConfigurationFile(string assemblyName, string configurationTarget = "default")
 	    {
-// 		    var cfgFile = MdDocumentationGenerator.GetConfigurationFileName(assemblyName);
-// 		    var genPath = Paths.AbsolutePath(MdDocumentationGenerator.GeneratedPath);
-// 		    var combined = Path.Combine(genPath, cfgFile);
-// 		    var combAbs = Paths.AbsolutePath(combined);
-// 		    var combRelProj = Paths.RelativePath(combAbs);
-// 		    var combRelGenPath = Paths.RelativePath(combAbs, genPath);
-// 		    
-// 		    var cfgFileAbs = MdDocumentationGenerator.GetConfigurationFileFullPath(assemblyName);
-// 		    var dllPath = Paths.AssemblyProjectDllPath(assemblyName);
-// 		    var dllPathAbs = Paths.AbsolutePath(Paths.AssemblyProjectDllPath(assemblyName));
-// 		    var dllPathRelToCfgFileAbs = Paths.RelativePath(dllPathAbs, cfgFileAbs);
-// 		    
-// 		    Debug.Log(@$"<color=#000000FF><b>cfgFile: {cfgFile}
-// genPath: {genPath}
-// combined: {combined}
-// combAbs: {combAbs}
-// combRelProj: {combRelProj}
-// combRelGenPath: {combRelGenPath}
-// ------------------------------------------ FUCK ME!??!? asas
-// cfgFileAbs: {cfgFileAbs}
-// dllPath: {dllPath}
-// dllPathAbs: {dllPathAbs}
-// dllPathRelToCfgFileAbs: {dllPathRelToCfgFileAbs}
-// </b></color>");
-		    
 		    WriteToFile(
 			    MdDocumentationGenerator.GetConfigurationFileName(assemblyName), 
 			    ConfigurationFile(assemblyName, configurationTarget), 
@@ -173,8 +146,8 @@ namespace Space3x.Documentation.Templates
 
         private static string StandaloneDocItemSections => @"""QuickDefinition"", ""summary"", ""remarks"", ""example"", ""seealso"", 
 			""Definition"", ""Inheritance"", ""Implement"", ""Derived"", ""exception"", 
-			""Fields"", ""Properties"", ""Constructors"", ""Methods"", ""Operators"", 
-			""Events"", ""ExplicitInterfaceImplementations""";
+			""Fields"", ""InheritedFields"", ""Properties"", ""InheritedProperties"", ""Constructors"", ""Methods"", ""InheritedMethods"", ""Operators"", 
+			""Events"", ""ExplicitInterfaceImplementations"", ""ExtensionMethods""";
     }
 }
 // ""FileNameFactory"": ""Name"", asdasdasd
