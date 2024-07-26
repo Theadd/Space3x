@@ -49,18 +49,18 @@ namespace Space3x.Documentation
 
         public static void Start()
         {
-            var npxPath = Paths.Npx;
-            if (!string.IsNullOrEmpty(npxPath))
+            var pythonPath = Paths.Python;
+            if (!string.IsNullOrEmpty(pythonPath))
             {
-                Run(npxPath, $"--yes http-server -p {Port}");
+                Run(pythonPath, $"-m http.server {Port}");
                 IsServerRunning = !m_Process.HasExited;
             }
             else
             {
-                var pythonPath = Paths.Python;
-                if (!string.IsNullOrEmpty(pythonPath))
+                var npxPath = Paths.Npx;
+                if (!string.IsNullOrEmpty(npxPath))
                 {
-                    Run(pythonPath, $"-m http.server {Port}");
+                    Run(npxPath, $"--yes http-server -p {Port}");
                     IsServerRunning = !m_Process.HasExited;
                 }
                 else 

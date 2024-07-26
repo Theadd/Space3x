@@ -42,7 +42,8 @@ namespace Space3x.Documentation.Settings
 
         public bool AddCoverPage = true;
 
-        [Multiline]
+        [VisibleOn(nameof(AddCoverPage))]
+        [Multiline(lines: 8)]
         public string CoverPage = @"# docsify-themeable
 
 > A delightfully simple theme system for [docsify.js](https://docsify.js.org)
@@ -58,7 +59,7 @@ namespace Space3x.Documentation.Settings
 [Unity Asset Store](https://www.npmjs.com/package/docsify-themeable)
 ";
         
-        [Multiline]
+        [Multiline(lines: 5)]
         public string ReadmePage = @"# Demo
 
 This sandbox is a demonstration of the [docsify-themeable](https://jhildenbiddle.github.io/docsify-themeable/) theme system for [docsify.js](https://docsify.js.org/). 
@@ -78,6 +79,7 @@ This sandbox is a demonstration of the [docsify-themeable](https://jhildenbiddle
         
         [EnableOn(nameof(IsGeneratingMdDocs), Enabled = false)]
         [Button(nameof(Generate), Text = "Generate Markdown Pages")]
+        [EnableOn(nameof(IsGeneratingMdDocs), Enabled = false)]
         [Button(nameof(RebuildStaticPages))]
         [Header("Preview (HTTP Server)")]
         [EnableOn(nameof(IsServerRunning), Enabled = false)]

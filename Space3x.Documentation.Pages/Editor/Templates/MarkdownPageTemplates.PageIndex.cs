@@ -245,44 +245,6 @@ namespace Space3x.Documentation.Templates
         private string DocsifyPluginsConfiguration(MdDocsSettings settings)
         {
             return "";
-            return @"function(hook, vm) {
-                hook.mounted(function() {
-                // Called after initial completion. Only trigger once, no arguments.
-                const linkRef = window.$docsify.markdown.renderer.link;
-
-                const renderer = {
-                    link: (href, title, text) => {
-                        var targetMember = '';
-                        if (href.length > 0 && href[0] == '#') {
-                            targetMember = href.substring(1).split('#')[0];
-                            switch ((targetMember.split('.')[0]).toLowerCase()) {
-                                case 'system':
-                                    href = 'https://learn.microsoft.com/en-us/dotnet/api/' + targetMember.toLowerCase() + '?view=net-8.0';
-                                    break;
-                                case 'unityeditor':
-                                case 'unityengine':
-                                    href = 'https://docs.unity3d.com/ScriptReference/' + targetMember.substr(targetMember.indexOf('.') + 1) + '.html';
-                                    break;
-                                case 'unity':
-                                    href = 'https://docs.unity3d.com/ScriptReference/' + targetMember + '.html';
-                                    break;
-                                default:
-                                    href = window.$allLinks.get(targetMember.split('(')[0]) ?? ('#' + targetMember);
-                                    break;
-                            }
-                        } else {
-                            if (href.length > 0 && href.indexOf('//') < 0 && href[0] != '.' && href[0] != '/')
-                                href = location.hash.substr(2, Math.max(location.hash.lastIndexOf('/') - 1, 0)) + href.split('(')[0];
-                        }
-                        var r = linkRef(href, title, text);
-                        console.log('link', { href, title, text, r, targetMember });
-                        return r;
-                    }
-                };
-
-                window.marked.use({ renderer });
-                });
-            }";
         }
 
         private string DocsifyThemeConfiguration(MdDocsSettings settings)
