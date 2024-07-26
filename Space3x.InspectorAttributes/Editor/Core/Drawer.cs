@@ -20,13 +20,15 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     /// That's right, it's tied to a PropertyAttribute and, unlike the ordinary PropertyDrawer, it is not
     /// designed to be used directly on a Type, which would remove the need to annotate a custom <see cref="Type"/>
     /// meant to be drawn, always, using the same <see cref="PropertyDrawer"/>.
+    /// </summary>
+    /// <remarks>
     /// However, by simply annotating the relevant members on that custom <see cref="Type"/>'s definition,
     /// you can get whatsoever you were looking for in just a tiny fraction of the time you would have spent
     /// implementing a custom PropertyDrawer.
+    /// 
     /// If for any reason that would not be feasible and neither having to annotate that type every time its used,
     /// like in a public API, post an issue on the project repo in GitHub, otherwise it won't be even considered.
-    /// </summary>
-    /// <typeparam name="T">Any <see cref="VisualElement"/> derived <see cref="Type"/> to be instantiated as a container element for the decorator.</typeparam>
+    /// </remarks>
     /// <typeparam name="TAttribute">The <see cref="PropertyAttribute"/> type being decorated.</typeparam>
     public abstract class Drawer<TAttribute> : PropertyDrawer, IDrawer<TAttribute>, ICreateDrawerOnPropertyNode
         where TAttribute : PropertyAttribute
@@ -69,8 +71,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         }
         
         /// <summary>
-        /// As it's the entry point of any <see cref="PropertyDrawer"/> it has been sealed and the
-        /// <see cref="OnCreatePropertyGUI"/> abstract method, with the same purpose is provided instead.
+        /// Since it is the only entry point of any <see cref="PropertyDrawer"/>, it's been sealed and the abstract
+        /// method <see cref="OnCreatePropertyGUI"/> is provided instead.
         /// Except that now it receives an <see cref="IPropertyNode"/> as parameter, allowing your property drawers to
         /// not only work with <see cref="SerializedProperty"/>, but also with the non-serialized ones.
         /// </summary>
@@ -80,11 +82,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public sealed override VisualElement CreatePropertyGUI(SerializedProperty property) =>
             CreatePropertyNodeGUI(property.GetPropertyNode());
 
-        private void OnAttachToPanel(AttachToPanelEvent evt) => 
-            ((IDrawer)this).AddDefaultStyles();
+        private void OnAttachToPanel(AttachToPanelEvent evt) => ((IDrawer)this).AddDefaultStyles();
 
         /// <summary>
-        /// Override this method to perform any custom logic when the property drawer needs to be updated.
+        /// Override this method in order to perform any custom logic when this property drawer needs to be updated.
         /// </summary>
         public virtual void OnUpdate() { }
         

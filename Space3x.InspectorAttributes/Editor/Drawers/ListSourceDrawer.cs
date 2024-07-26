@@ -9,7 +9,7 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [Draft]
+    [Experimental]
     [CustomPropertyDrawer(typeof(ListSourceAttribute), useForChildren: false)]
     public class ListSourceDrawer : Drawer<ListSourceAttribute>
     {
@@ -29,7 +29,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     maxHeight = 230f
                 }
             };
-            m_ListView.BindProperty<List<string>>(property, VariableListView.ValueProperty);
+            // m_ListView.BindProperty<List<string>>(property, VariableListView.ValueProperty);
+            m_ListView.BindProperty(property);
             m_ListView.RegisterCallback<AttachToPanelEvent>(OnAttachContentToPanel);
             m_ListView.RegisterValueChangedCallback(OnValueChanged);
             return m_ListView;

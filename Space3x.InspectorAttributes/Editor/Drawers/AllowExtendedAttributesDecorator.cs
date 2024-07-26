@@ -65,7 +65,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 propertyField.Unbind();
                 propertyField.Bind(Property.GetSerializedObject());
                 childProp = propertyField.GetSerializedProperty();
-                DebugLog.Info($"<color=#FFFF00FF>{propertyField.name} REBOUND, success: {childProp != null}</color>");
+                // DebugLog.Info($"<color=#FFFF00FF>{propertyField.name} REBOUND, success: {childProp != null}</color>");
             }
             // "unity-decorator-drawers-container"
             return childProp;
@@ -74,12 +74,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         private void PopulateNonSerializedProperties()
         {
             // var parentPath = Property?.ParentPath ?? "";
-            DebugLog.Info($"<color=#00FF00FF>IN !! AllowExtendedAttributesDecorator.PopulateNonSerializedProperties: {Property?.ParentPath}; m_BindableFields.Count: {m_BindableFields.Count}</color>");
+            // DebugLog.Info($"<color=#00FF00FF>IN !! AllowExtendedAttributesDecorator.PopulateNonSerializedProperties: {Property?.ParentPath}; m_BindableFields.Count: {m_BindableFields.Count}</color>");
             var parentElement = Container.hierarchy.parent;
             var allFields = new Dictionary<string, VisualElement>();
             var allChildren = parentElement.hierarchy.Children().ToList();
             for (var i = 0; i < allChildren.Count; i++)
-            // foreach (var child in parentElement.hierarchy.Children())
             {
                 var child = allChildren.ElementAt(i);
                 if (child is PropertyField childField)
@@ -104,12 +103,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             for (var i = 0; i < Controller.Properties.Values.Count; i++)
             {
                 var prop = Controller.Properties.Values[i];
+                if (string.IsNullOrEmpty(prop.Name)) continue;
                 // DebugLog.Info($"  <color=#FFFF00FF>REQUESTING {prop.Name} ON: {parentPath}</color> ({prop.PropertyPath})");
                 if (prop is SerializedPropertyNodeBase serializedNode)
                 {
                     if (allFields.TryGetValue(serializedNode.Name, out VisualElement targetField))
                     {
-                        if (serializedNode.HasChildren() && targetField is PropertyField propertyField)
+                        if (serializedNode.HasChildren() && !serializedNode.IsArrayOrList() && targetField is PropertyField propertyField)
                         {
                             propertyField.TrackPropertyValue(serializedNode, OnPropertyValueChanged);
                         }
@@ -129,9 +129,21 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     bindableField.AttachDecoratorDrawers();
                     previousField = bindableField;
                     m_BindableFields.Add(bindableField);
-                    if (nonSerializedNode.HasChildren())
+                    if (nonSerializedNode.HasChildren() && !nonSerializedNode.IsArrayOrList())
                         bindableField.TrackPropertyValue(nonSerializedNode, OnPropertyValueChanged);
                     // DebugLog.Info($"    <color=#66FF66FF>{nonSerializedNode.Name} SYNCED as <b>NON</b>-SERIALIZED ON: {parentPath}</color> ({nonSerializedNode.PropertyPath})");
+                }
+                else if (prop is InvokablePropertyNodeBase invokableNode)
+                {
+                    var invokableField = new BindablePropertyField();
+                    invokableField.BindProperty(invokableNode, applyCustomDrawers: true);
+                    previousField.AddAfter(invokableField);
+                    invokableField.AttachDecoratorDrawers();
+                    previousField = invokableField;
+                    m_BindableFields.Add(invokableField);
+                    // if (invokableNode.HasChildren())
+                    //     invokableField.TrackPropertyValue(invokableNode, OnPropertyValueChanged);
+                    DebugLog.Info($"    <color=#66FF66FF>{invokableNode.Name} SYNCED as <b>INVOKABLE PROPERTY NODE</b> ON: {invokableNode.ParentPath}</color> ({invokableNode.PropertyPath})");
                 }
             }
         }
@@ -164,6 +176,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnClick()
         {
+            var allControllers = PropertyAttributeController.GetAllInstances();
+            foreach (var controller in allControllers)
+            {
+                Debug.Log(controller.InstanceID + " - " + controller.ParentPath);
+            }
             LogActiveEditors();
             // if (Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel)
             // {
@@ -201,25 +218,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 m_IsReady = true;
                 Controller ??= PropertyAttributeController.GetInstance(Property);
-                // DebugLog.Info("[ROOT] BEFORE PopulateNonSerializedProperties() ON " + Property.PropertyPath + ": Container.AsHierarchyString(depth: 10)");
-                // DebugLog.Info("[ROOT] " + Container.hierarchy.parent.AsHierarchyString(depth: 10));
                 PopulateNonSerializedProperties();
-                DebugLog.Warning($"[ROOT] # ONE !!!!!!!!!!!!!!!!!! {Property.PropertyPath}");
-                // EditorApplication.delayCall += (EditorApplication.CallbackFunction) (() =>
-                // {
-                //     DebugLog.Warning($"[ROOT] # DELAYED !!!!!!!!!!!!!!!!!! {Property.PropertyPath}");
-                //     
-                //     DebugLog.Info("[ROOT] BEFORE RebuildAll() ON " + Property.PropertyPath + ": Container.AsHierarchyString(depth: 10)");
-                //     DebugLog.Info("[ROOT] " + Container.hierarchy.parent.AsHierarchyString(depth: 10));
-                    DecoratorsCache.RebuildAll();
-                    DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
-                    // DebugLog.Info("[ROOT] BEFORE HandlePendingDecorators() ON " + Property.PropertyPath + ": Container.AsHierarchyString(depth: 10)");
-                    // DebugLog.Info("[ROOT] " + Container.hierarchy.parent.AsHierarchyString(depth: 10));
-                    DecoratorsCache.HandlePendingDecorators();
-                //     DebugLog.Info("[ROOT] AFTER Everything! ON " + Property.PropertyPath + ": Container.AsHierarchyString(depth: 10)");
-                //     DebugLog.Info("[ROOT] " + Container.hierarchy.parent.AsHierarchyString(depth: 10));
-                // });
-                DebugLog.Warning($"[ROOT] # DELAYED END !!!!!!!!!!!!!!!!!! {Property.PropertyPath}");
+                DecoratorsCache.RebuildAll();
+                DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
+                DecoratorsCache.HandlePendingDecorators();
             }
         }
         
@@ -236,8 +238,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnReset(bool disposing = false)
         {
-            DebugLog.Error($"<b> ========== ON RESET ========= </b> disposing: {disposing}, ParentPath: {Property?.ParentPath}");
-            
             if (!disposing)
             {
                 m_IsReady = false;
