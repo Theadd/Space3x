@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes.Editor
 {
     /// <summary>
-    /// IPropertyNode interface that can be used instead of (or alongside) a SerializedProperty but
+    /// IPropertyNode interface that can be used instead of (or alongside) a <see cref="SerializedProperty"/> but
     /// also works with the non-serialized properties. 
     /// </summary>
     public interface IPropertyNode
@@ -35,11 +36,13 @@ namespace Space3x.InspectorAttributes.Editor
     /// <summary>
     /// Represents a property which is also a container for other properties. For example, an object or struct.
     /// </summary>
+    [ExcludeFromDocs]
     public interface INodeTree : IPropertyNode
     {
         // public IEnumerable<IPropertyNodeWithFlags> Children();
     }
     
+    [ExcludeFromDocs]
     public interface IPropertyNodeWithFlags : IPropertyNode, IPropertyFlags { }
     
     /// <summary>
@@ -49,6 +52,7 @@ namespace Space3x.InspectorAttributes.Editor
     /// <seealso cref="ISerializedPropertyNodeIndex"/>
     /// <seealso cref="INonSerializedPropertyNode"/>
     /// <seealso cref="INonSerializedPropertyNodeIndex"/>
+    [ExcludeFromDocs]
     public interface IBindablePropertyNode : IPropertyNodeWithFlags, IPropertyWithSerializedObject
     {
         // public VisualElement Field { get; set; }
@@ -57,11 +61,13 @@ namespace Space3x.InspectorAttributes.Editor
     /// <summary>
     /// Base interface for serialized properties.
     /// </summary>
+    [ExcludeFromDocs]
     public interface ISerializedPropertyNode : IBindablePropertyNode { }
 
     /// <summary>
     /// Base interface for non-serialized properties.
     /// </summary>
+    [ExcludeFromDocs]
     public interface INonSerializedPropertyNode : IBindablePropertyNode
     {
         public event Action<IPropertyNode> ValueChanged;
@@ -70,9 +76,10 @@ namespace Space3x.InspectorAttributes.Editor
 
     /// <summary>
     /// Base interface for properties which are elements of an array or IList.
+    /// </summary>
     /// <seealso cref="ISerializedPropertyNodeIndex"/>
     /// <seealso cref="INonSerializedPropertyNodeIndex"/>
-    /// </summary>
+    [ExcludeFromDocs]
     public interface IPropertyNodeIndex
     {
         /// <summary>
@@ -88,21 +95,21 @@ namespace Space3x.InspectorAttributes.Editor
     
     /// <summary>
     /// Base interface for serialized properties which are elements of an array or IList.
-    /// <seealso cref="INonSerializedPropertyNodeIndex"/>
     /// </summary>
+    /// <seealso cref="INonSerializedPropertyNodeIndex"/>
+    [ExcludeFromDocs]
     public interface ISerializedPropertyNodeIndex : ISerializedPropertyNode, IPropertyNodeIndex { }
     
     /// <summary>
     /// Base interface for non-serialized properties which are elements of an array or IList.
-    /// <seealso cref="ISerializedPropertyNodeIndex"/>
     /// </summary>
+    /// <seealso cref="ISerializedPropertyNodeIndex"/>
+    [ExcludeFromDocs]
     public interface INonSerializedPropertyNodeIndex : INonSerializedPropertyNode, IPropertyNodeIndex { }
     
-    // TODO: INodeArray is not implemented yet
-    public interface INodeArray : IPropertyNode
-    {
-        public IEnumerable<IPropertyNodeWithFlags> Children();
-
-        public int ChildCount { get; }
-    }
+    /// <summary>
+    /// Base interface for invokable properties, such as methods annotated with any valid <see cref="UnityEngine.PropertyAttribute"/>.
+    /// </summary>
+    [ExcludeFromDocs]
+    public interface IInvokablePropertyNode : IBindablePropertyNode { }
 }

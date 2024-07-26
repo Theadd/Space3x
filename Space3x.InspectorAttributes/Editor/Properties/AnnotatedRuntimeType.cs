@@ -49,28 +49,42 @@ namespace Space3x.InspectorAttributes.Editor
             var allMembers = declaringType.GetMembers(
                 BindingFlags.Instance | BindingFlags.Static | 
                 BindingFlags.Public | BindingFlags.NonPublic);
+            var invokableKeys = new List<string>();
+            var invokableValues = new List<VTypeMember>();
 
             for (var i = 0; i < allMembers.Length; i++)
             {
+                VTypeMember item = null;
                 var memberInfo = allMembers[i];
                 switch (memberInfo.MemberType)
                 {
                     case MemberTypes.Method:
                         if (memberInfo is MethodInfo methodInfo)
                         {
-                            var attributeNames = string.Join(", ", memberInfo
-                                .GetCustomAttributes<PropertyAttribute>(true)
-                                .Select(attr => attr.GetType().Name)
-                                .ToList());
-                            if (!string.IsNullOrEmpty(attributeNames))
-                                Debug.LogWarning($"<color=#FF0000FF><b>// TODO: Valid PropertyAttribute are assigned to an unhandled MethodInfo ({memberInfo.Name}):</b> {attributeNames}.</color>");
+                            if (methodInfo.GetCustomAttributes<PropertyAttribute>(true).Any())
+                            {
+                                if (invokableKeys.Contains(methodInfo.Name))
+                                {
+                                    Debug.LogError("Unexpected duplicated method found: " + methodInfo.Name);
+                                    continue;
+                                }
+                                item = new VTypeMember()
+                                {
+                                    FieldType = methodInfo.ReturnType,
+                                    Name = methodInfo.Name,
+                                    PropertyAttributes = GetSortedCustomPropertyAttributes(methodInfo),
+                                    RuntimeMethod = methodInfo,
+                                };
+                                item.Flags = ComputeInvokableNodeFlags(item);
+                                invokableValues.Add(item);
+                                invokableKeys.Add(methodInfo.Name);
+                            }
                         }
                         continue;
                     
                     case MemberTypes.Field:
                         if (memberInfo is FieldInfo fieldInfo)
                         {
-                            VTypeMember item = null;
                             if (fieldInfo.Name.EndsWith("k__BackingField"))
                             {
                                 if (allProperties.TryGetValue(fieldInfo.Name, out var propInfo))
@@ -125,7 +139,15 @@ namespace Space3x.InspectorAttributes.Editor
                         continue;
                 }
             }
+
+            if (invokableKeys.Count > 0)
+            {
+                Keys = Keys.Concat(invokableKeys).ToList();
+                Values = Values.Concat(invokableValues).ToList();
+            }
         }
+
+        private static VTypeFlags ComputeInvokableNodeFlags(VTypeMember vType) => VTypeFlags.None;
 
         private static VTypeFlags ComputeFlags(VTypeMember vType) =>
             (IsSerializableField(vType.RuntimeField) 
@@ -140,6 +162,12 @@ namespace Space3x.InspectorAttributes.Editor
                 : VTypeFlags.None) 
             | (vType.PropertyAttributes.Any(attr => attr is NonReorderableAttribute) 
                 ? VTypeFlags.NonReorderable 
+                : VTypeFlags.None) 
+            | (vType.FieldType.IsArray
+                ? VTypeFlags.Array 
+                : VTypeFlags.None)
+            | (typeof(System.Collections.IList).IsAssignableFrom(vType.FieldType)
+                ? VTypeFlags.List 
                 : VTypeFlags.None);
 
         private static bool IsSerializableField(FieldInfo fieldInfo) => 
