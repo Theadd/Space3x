@@ -73,7 +73,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor
         private void SetCurrentType(Type type)
         {
             m_CurrentType = type;
-            var isReloadable = ReloadableAssemblyNames.Contains(type.Assembly.GetName().Name);
+            var isReloadable = false;
+            try
+            {
+                isReloadable = ReloadableAssemblyNames.Contains(type.Assembly.GetName().Name);
+            }
+            catch (Exception)
+            {
+                // Ignore
+            }
             m_OverlayToolbar?.GenDocsButton.SetVisible(isReloadable);
         }
 

@@ -49,7 +49,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             Validate();
             if (attribute.applyToCollection)
             {
-                if (!Property.IsArray()) 
+                if (!Property.IsArrayOrList()) 
                     Debug.LogError($"Collection property {Property.Name} is not an array", serializedProperty.serializedObject.targetObject);
                 return CreatePropertyCollectionGUI(serializedProperty);
             }
@@ -238,7 +238,18 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         /// <returns>Whether propertyField was bound to the correct property or not.</returns>
         private bool EnsurePropertyFieldIsBoundToTheCorrectProperty(PropertyField propertyField, IPropertyNode propertyNode)
         {
-            if (ReferenceEquals(propertyField.GetPropertyNode(), propertyNode)) return true;
+            IPropertyNode property = null;
+            try
+            {
+                property = propertyField.GetPropertyNode();
+            }
+            catch (InvalidOperationException)
+            {
+                propertyField.Unbind();
+                propertyField.Bind(propertyNode.GetSerializedObject());
+                property = propertyField.GetPropertyNode();
+            }
+            if (ReferenceEquals(property, propertyNode)) return true;
             propertyField.Unbind();
             propertyField.BindProperty(propertyNode.GetSerializedProperty());
             return false;
