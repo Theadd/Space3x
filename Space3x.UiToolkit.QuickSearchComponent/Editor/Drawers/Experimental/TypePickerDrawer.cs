@@ -4,6 +4,8 @@ using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor;
 using Space3x.InspectorAttributes.Editor.Drawers;
+using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Types;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
@@ -25,6 +27,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         } 
         
         private TypePickerField m_TypeField;
+        private BindableElement m_InstanceContainer;
         private ElementType m_ElementType;
         public override TypePickerAttribute Target => (TypePickerAttribute) attribute;
         public ITypeSearchHandler Handler => (ITypeSearchHandler)(Target.Handler ??= new QuickTypeSearchHandler(Target));
@@ -37,32 +40,34 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 // Handler = Handler,
                 OnShowPopup = OnShowPopup,
                 OnSelectionChanged = OnSelectionChanged,
+                style =
+                {
+                    flexDirection = FlexDirection.Column,
+                    overflow = Overflow.Visible
+                }
             };
-            m_TypeField.AddToClassList(BaseField<int>.alignedFieldUssClassName);
+            // m_TypeField.AddToClassList(BaseField<int>.alignedFieldUssClassName);
             // TODO: Fix this, why binding to a serialized property doesn't synchronize the property value with the UI.
             //       Problem should be around the TypePickerField/BaseField class.
-            m_TypeField.BindProperty(property);
-
-            var elementType = Property.GetUnderlyingElementType() ?? Property.GetUnderlyingType();
-            m_ElementType = elementType switch
-            {
-                not null when elementType == typeof(NamedType) => ElementType.Named,
-                not null when elementType == typeof(SerializableType) => ElementType.Serializable,
-                not null => ElementType.Instance,
-                _ => throw new ArgumentException($"Property.GetUnderlyingElementType() is null for {Property.PropertyPath}")
-            };
             
-            if (Property.HasSerializedProperty())
-            {
+            // Binding is not supported for managed references
+            if (!property.HasSerializedProperty())
+                m_TypeField.BindProperty(property);
+
+            m_ElementType = GetPropertyElementType(property);
+            
+            if (property.HasSerializedProperty() || !(property.IsArrayOrList() || property.IsArrayOrListElement())) 
                 m_TypeField.TrackPropertyValue(Property, OnPropertyValueChanged);
-                OnPropertyValueChanged(Property);
-                
-                // EDIT
-                var bindableContainer = new BindableElement();
-                var inlineManagedObject = new PropertyField(Property.GetSerializedProperty()).WithClasses("ui3x-as-managed-reference-d");
-                // inlineManagedObject.SetEnabled(Target.ContentEnabled);
-                bindableContainer.Add(inlineManagedObject);
-                m_TypeField.Add(bindableContainer);
+            if (property.HasSerializedProperty() || !property.IsArrayOrList())
+                OnPropertyValueChanged(property);
+            if (m_ElementType == ElementType.Instance)
+            {
+                m_InstanceContainer = new BindableElement();
+                m_InstanceContainer.WithClasses(UssConstants.UssTypePickerInstanceContainer);
+                property.SetExpanded(true);
+                m_InstanceContainer.SetVisible(m_TypeField.value != null);
+                m_InstanceContainer.Add(CreatePropertyField(property));
+                m_TypeField.Add(m_InstanceContainer);
             }
             
             return m_TypeField;
@@ -74,6 +79,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             var currentValue = Property.GetUnderlyingValue();
             if (Equals(currentValue, m_TypeField.value)) return;
             m_TypeField.value = currentValue;
+            if (m_ElementType == ElementType.Instance)
+                m_InstanceContainer?.SetVisible(currentValue != null);
             Debug.Log("2.1");
         }
 
@@ -81,7 +88,16 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         {
             Debug.LogWarning("// TODO: OnUpdate - Just a check to see if this method gets called somehow.");
             // throw new Exception("// TODO: OnUpdate - Just a check to see if this method gets called somehow.");
+            if (m_ElementType == ElementType.Instance)
+            {
+                m_InstanceContainer?.Clear();
+                Property.SetExpanded(true);
+                m_InstanceContainer?.Add(CreatePropertyField(Property));
+                m_InstanceContainer?.SetVisible(Property.GetUnderlyingValue() != null);
+            }
         }
+
+        
 
         public void OnShowPopup(IQuickTypeSearch target, VisualElement selectorField, ShowWindowMode mode) =>
             Handler.OnShowPopup(Property, target, selectorField, mode);
@@ -121,11 +137,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             // }
             // Debug.Log("1.2");
 
-            if (!Property.HasSerializedProperty())
+            if (!Property.HasSerializedProperty() && Property.IsArrayOrListElement())  //  && Property.IsArrayOrListElement()
             {
                 m_TypeField.value = newValue;
+                if (m_ElementType == ElementType.Instance)
+                    m_InstanceContainer?.SetVisible(newValue != null);
                 return;
             }
+
+            bool succeeded = false;
             
             // Get ready to save modified values on serialized object
             if (Property.GetSerializedObject().hasModifiedProperties)
@@ -134,8 +154,21 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             Debug.Log("1.1");
             // Modify values
             // m_TypeField.value = newValue;
-            // if (Property.HasSerializedProperty())
+            if (Property.HasSerializedProperty())
                 Property.SetUnderlyingValue(newValue);
+            else
+            {
+                if (Property.TrySetValue(newValue))
+                {
+                    Debug.Log("TrySetValue succeeded!");
+                    succeeded = true;
+                } 
+                else
+                {
+                    Property.SetUnderlyingValue(newValue);
+                    Debug.Log("TrySetValue failed!");
+                }
+            }
             Debug.Log("1.2");
             // Save modified values on serialized object 
             if (Property.GetSerializedObject().hasModifiedProperties)
@@ -143,6 +176,34 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             else
                 Property.GetSerializedObject().Update();
             Debug.Log("1.3");
+            
+            if (!Property.HasSerializedProperty() && !succeeded)
+            {
+                Debug.Log("Fixing fail on succeeded");
+                m_TypeField.value = newValue;
+                if (m_ElementType == ElementType.Instance)
+                    m_InstanceContainer?.SetVisible(newValue != null);
+            }
         }
+
+        private static ElementType GetPropertyElementType(IPropertyNode property)
+        {
+            var elementType = (property.GetUnderlyingElementType() ?? property.GetUnderlyingType()) 
+                              ?? (property.IsArrayOrListElement() 
+                                  ? property.GetParentProperty().GetUnderlyingElementType()
+                                  : null);
+            return elementType switch
+            {
+                not null when elementType == typeof(NamedType) => ElementType.Named,
+                not null when elementType == typeof(SerializableType) => ElementType.Serializable,
+                not null => ElementType.Instance,
+                _ => throw new ArgumentException($"GetPropertyElementType() is null for {property.PropertyPath}")
+            };
+        }
+        
+        private static VisualElement CreatePropertyField(IPropertyNode property) =>
+            property.HasSerializedProperty()
+                ? new PropertyField(property.GetSerializedProperty())
+                : new BindablePropertyField(property, property.IsArrayOrList()).WithClasses(UssConstants.UssShowInInspector);
     }
 }
