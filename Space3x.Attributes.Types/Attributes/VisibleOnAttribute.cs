@@ -6,7 +6,7 @@ namespace Space3x.Attributes.Types
     /// <summary>
     /// Determines the visibility of the next VisualTarget based on a condition.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class VisibleOnAttribute : 
         PropertyAttribute,
         IVisibleOnEx<VisibleOnAttribute>

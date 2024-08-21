@@ -7,8 +7,8 @@ namespace Space3x.Attributes.Types
     /// Displays a LayerField selector for the annotated property in the inspector.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false, Inherited = true)]
-    public class LayerAttribute : PropertyAttribute
+    public class LayerPickerAttribute : PropertyAttribute
     {
-        public LayerAttribute() : base(applyToCollection: false) { }
+        public LayerPickerAttribute() : base(applyToCollection: false) { }
     }
 }

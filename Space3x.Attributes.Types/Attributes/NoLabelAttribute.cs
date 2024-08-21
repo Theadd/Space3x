@@ -13,6 +13,6 @@ namespace Space3x.Attributes.Types
 
         private new List<string> ClassNames { get; set; }
 
-        public NoLabelAttribute() : base(true, "ui3x-no-label") { }
+        public NoLabelAttribute(bool applyToChildren = false) : base(true, applyToChildren ? "ui3x-no-label-all" : "ui3x-no-label") { }
     }
 }

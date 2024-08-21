@@ -6,7 +6,7 @@ namespace Space3x.Attributes.Types
     /// <summary>
     /// Determines whether the next VisualTarget is enabled or not.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public class EnableAttribute : 
         PropertyAttribute,
         IEnableEx<EnableAttribute>
