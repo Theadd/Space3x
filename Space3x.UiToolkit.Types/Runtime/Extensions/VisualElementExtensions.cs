@@ -82,6 +82,16 @@ namespace Space3x.UiToolkit.Types
             return self;
         }
 
+        public static bool IsFocused(this VisualElement self) =>
+            self.panel != null 
+            && (self.panel.focusController.focusedElement == self 
+                || (self.panel.focusController.focusedElement == self.parent && self.parent?.delegatesFocus == true));
+
+        public static bool ShowPlaceholderText(this TextElement self) =>
+            !string.IsNullOrEmpty(((ITextEdition)self).placeholder)
+            && !(((ITextEdition)self).hidePlaceholderOnFocus && self.IsFocused())
+            && string.IsNullOrEmpty(self.text);
+        
         /// <summary>
         /// Provides access to the internal VisualElement's children List as an IList{VisualElement} for quick deconstructing.
         /// <example>
