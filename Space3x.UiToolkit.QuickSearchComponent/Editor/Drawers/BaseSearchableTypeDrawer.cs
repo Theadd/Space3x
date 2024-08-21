@@ -12,7 +12,6 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using Unity.VisualScripting;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 {
@@ -39,19 +38,19 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
-            if (!(property.GetSerializedProperty() is SerializedProperty serializedProperty))
+            if (property is not IBindablePropertyNode bindableProperty)
             {
-                DebugLog.Error($"Property {property.Name} is not a SerializedProperty");
+                DebugLog.Error($"Property {property.Name} is not a bindable property.");
                 return null;
             }
-            m_ElementType = GetUnderlyingElementType(serializedProperty);
+            m_ElementType = GetUnderlyingElementType(bindableProperty);
             m_IsTypeValue = IsTypeValue(m_ElementType);
             Validate();
             if (attribute.applyToCollection)
             {
                 if (!Property.IsArrayOrList()) 
-                    Debug.LogError($"Collection property {Property.Name} is not an array", serializedProperty.serializedObject.targetObject);
-                return CreatePropertyCollectionGUI(serializedProperty);
+                    Debug.LogError($"Collection property {Property.Name} is not an array", bindableProperty.GetSerializedObject().targetObject);
+                return CreatePropertyCollectionGUI(bindableProperty);
             }
             
             IsExpanded = Property.IsExpanded();
@@ -61,11 +60,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             return CreateContainerGUI();
         }
 
-        public virtual VisualElement CreatePropertyCollectionGUI(SerializedProperty property)
+        public virtual VisualElement CreatePropertyCollectionGUI(IBindablePropertyNode property)
         {
             ListViewElement = CreateListView();
             ListViewElement.BindProperty(property);
-            ListViewElement.headerTitle = property.displayName;
+            ListViewElement.headerTitle = property.DisplayName();
 
             return ListViewElement;
         }
@@ -97,7 +96,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
                     if (element is ExpandableTypeInstanceItem instanceItem)
                     {
-                        instanceItem.BindProperty(serializedProperty, i);
+                        instanceItem.BindProperty(Property, i);
                     }
                     else if (element is TypeField field)
                     {
@@ -128,7 +127,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         
         protected virtual void Validate()
         {
-            if (!m_IsTypeValue && (Property.GetSerializedProperty().propertyType != SerializedPropertyType.ManagedReference && !attribute.applyToCollection))
+            var isSerializedAndNotAManagedReference = Property.HasSerializedProperty() && (Property.GetSerializedProperty().propertyType != SerializedPropertyType.ManagedReference);
+            if (!m_IsTypeValue && (isSerializedAndNotAManagedReference && !attribute.applyToCollection))
                 throw new Exception(attribute.GetType().Name
                                     + " can be used only with a ManagedReference. Add a [SerializedReference] attribute"
                                     + " to the property you want to use this attribute on.");
@@ -149,20 +149,13 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             return false;
         }
         
-        /**
-         * TODO: Use the following code to get rid of the GetUnderlyingType() call in order to allow edits on multiple objects.
-         * internal static System.Type GetArrayOrListElementType(this System.Type listType)
-         * {
-         *   if (listType.IsArray)
-         *     return listType.GetElementType();
-         *   return listType.IsGenericType ? listType.GetGenericArguments()[0] : (System.Type) null;
-         * }
-         */
-        private static Type GetUnderlyingElementType(SerializedProperty property)
+        private static Type GetUnderlyingElementType(IBindablePropertyNode property)
         {
-            var type = property.GetUnderlyingType();
-            if (property.isArray) type = type.GetElementType() ?? type.GetGenericArguments().FirstOrDefault();
-            return type;
+            return property.GetUnderlyingElementType() ?? property.GetUnderlyingType();
+            // var eType = property.GetUnderlyingElementType();
+            // var type = property.GetUnderlyingType();
+            // if (property.isArray) type = type.GetElementType() ?? type.GetGenericArguments().FirstOrDefault();
+            // return type;
         }
         
         public IAttributeExtensionContext<TAttribute> Context => this;
