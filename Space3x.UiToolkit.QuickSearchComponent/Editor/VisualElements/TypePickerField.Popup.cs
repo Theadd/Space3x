@@ -1,18 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Types;
-using Unity.Properties;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 {
-    public interface IQuickTypeSearch : IQuickSearchable
-    {
-        // ITypePickerAttributeHandler Handler { get; set; }
-    }
+    public interface IQuickTypeSearch : IQuickSearchable { }
     
     public partial class TypePickerField : IQuickTypeSearch
     {
@@ -20,7 +13,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         
         public Action<IQuickTypeSearch, VisualElement, ShowWindowMode> OnShowPopup;
         public Action<IEnumerable<Type>> OnSelectionChanged;
-        // public ITypePickerAttributeHandler Handler { get; set; }
 
         public void OnShow(QuickSearchElement element)
         {
@@ -33,23 +25,17 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         public void OnHide(QuickSearchElement element) => 
             element.UnregisterValueChangedCallback(OnSelectionChangeHandler);
 
-        private void OnSelectionChangeHandler(ChangeEvent<IEnumerable<Type>> e)
-        {
-            // DebugLog.Info("OnSelectionChangeHandler: " + string.Join(", ", e.newValue.Select(t => t.ToString())));
+        private void OnSelectionChangeHandler(ChangeEvent<IEnumerable<Type>> e) => 
             OnSelectionChanged?.Invoke(e.newValue);
-        }
 
-        // [CreateProperty]
         public override object value
         {
             get => rawValue;
             set
             {
-                // Debug.Log($"<color=#FF0000FF>IN TypePickerField.value SETTER!</color>");
                 if (Equals(rawValue, value))
                     return;
                 base.value = value;
-                // rawValue = value;
                 SetValueFromObject(value);
                 NotifyPropertyChanged(ValueProperty);
             }
