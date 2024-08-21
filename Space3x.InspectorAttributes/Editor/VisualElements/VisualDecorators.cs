@@ -2,9 +2,9 @@
 using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
@@ -43,14 +43,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public GhostDecorator() : base(UssConstants.UssGhostDecorator) { }
     }
     
-    // [UxmlElement]
-    // [HideInInspector]
-    // public partial class GhostDecoratorBlock : GhostDecorator, IElementBlock
-    // {
-    //     public new static readonly string UssClassName = "ui3x-ghost-decorator-block";
-    //     public GhostDecoratorBlock() => this.WithClasses(GhostDecoratorBlock.UssClassName).SetVisible(true);
-    // }
-    
+    [ExcludeFromDocs]
     [UxmlElement]
     [HideInInspector]
     public partial class GroupMarker : VisualElement

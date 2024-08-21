@@ -45,8 +45,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                     overflow = Overflow.Visible
                 }
             };
-            TextElement e;
-            TextField f;
             // m_TypeField.AddToClassList(BaseField<int>.alignedFieldUssClassName);
             // TODO: Fix this, why binding to a serialized property doesn't synchronize the property value with the UI.
             //       Problem should be around the TypePickerField/BaseField class.

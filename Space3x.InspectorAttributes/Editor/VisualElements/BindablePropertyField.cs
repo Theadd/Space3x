@@ -23,7 +23,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     /// Like <see cref="PropertyField"/> but for non-serialized properties (<see cref="IPropertyNode"/>).
     /// </summary>
     [UxmlElement]
-    public partial class BindablePropertyField : VisualElement
+    public partial class BindablePropertyField : VisualElement, IBindable
     {
         public static readonly string ussClassName = "ui3x-bindable-property-field";
         public static readonly string decoratorDrawersContainerClassName = "unity-decorator-drawers-container";
@@ -33,16 +33,15 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public VisualElement DecoratorDrawersContainer => m_DecoratorDrawersContainer ??= CreateDecoratorDrawersContainer();
         private VisualElement m_DecoratorDrawersContainer;
         private PropertyAttributeController m_Controller;
-        private Type m_PropertyDrawerOnCollectionItems = null;
-        private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
-        private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
-        private Dictionary<VisualElement, ICreateDrawerOnPropertyNode> m_ElementDrawers;
+        // private Type m_PropertyDrawerOnCollectionItems = null;
+        // private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
+        // private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
+        // private Dictionary<VisualElement, ICreateDrawerOnPropertyNode> m_ElementDrawers;
         private BindablePropertyFieldFactory m_BindablePropertyFieldFactory;
-
-        /// <summary>
-        /// Path of the target property to be bound (Read Only).
-        /// </summary>
-        public string BindingPath => Property?.PropertyPath ?? string.Empty;
+        
+        // IBindable interface
+        public IBinding binding { get; set; }
+        public string bindingPath { get; set; }
         
         public BindablePropertyField()
         {
@@ -77,6 +76,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             //     throw new ArgumentException($"Invalid IPropertyNode, it must be a non serialized property in order to bind it to a {nameof(BindablePropertyField)}, for serialized properties, just use {nameof(PropertyField)} instead.");
             // Property = nonSerializedPropertyNode;
             Property = property;
+            bindingPath = Property.PropertyPath;
             // m_Controller = PropertyAttributeController.GetInstance(Property);
             m_Controller = Property.GetController();
             if (m_Controller == null)
@@ -84,24 +84,32 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             var vType = m_Controller.AnnotatedType.GetValue(Property.Name);
             if (vType == null && applyCustomDrawers)
             {
-                DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
-                Field?.RemoveFromHierarchy();
-                Field = new Label("WTF!");
-                Add(Field);
-                return;
+                if (property.IsArrayOrListElement())
+                {
+                    var collectionProperty = property.GetParentProperty();
+                    vType = collectionProperty.GetController().AnnotatedType.GetValue(collectionProperty.Name);
+                }
+                else
+                {
+                    DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
+                    Field?.RemoveFromHierarchy();
+                    Field = new Label("WTF!");
+                    Add(Field);
+                    return;
+                }
             }
 
             PropertyDrawer drawer = null;
             if (applyCustomDrawers)
             {
-                var propertyDrawer = vType.PropertyDrawer;
+                var propertyDrawer = property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItems : vType.PropertyDrawer;
                 if (propertyDrawer != null && typeof(IDrawer).IsAssignableFrom(propertyDrawer))
                 {
                     try
                     {
                         drawer = DrawerExtensions.CreatePropertyDrawer(
                             propertyDrawer,
-                            vType.PropertyDrawerAttribute, 
+                            property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItemsAttribute : vType.PropertyDrawerAttribute, 
                             vType.RuntimeField, 
                             Property.DisplayName());
                     }
@@ -111,16 +119,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                         drawer = null;
                     }
                 }
-
-                m_PropertyDrawerOnCollectionItems = vType.PropertyDrawerOnCollectionItems;
-                if (m_PropertyDrawerOnCollectionItems != null &&
-                    typeof(IDrawer).IsAssignableFrom(m_PropertyDrawerOnCollectionItems))
-                {
-                    m_PropertyDrawerOnCollectionItemsAttribute = vType.PropertyDrawerOnCollectionItemsAttribute;
-                    m_RuntimeField = vType.RuntimeField;
-                }
-                else
-                    m_PropertyDrawerOnCollectionItems = null;
             }
 
             VisualElement field = null;
@@ -133,7 +131,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 if (drawer is ICreateDrawerOnPropertyNode customDrawer)
                 {
                     field = customDrawer.CreatePropertyNodeGUI(Property);
-                    (m_ElementDrawers ??= new Dictionary<VisualElement, ICreateDrawerOnPropertyNode>())[field] = customDrawer;
+                    // EDIT: (m_ElementDrawers ??= new Dictionary<VisualElement, ICreateDrawerOnPropertyNode>())[field] = customDrawer;
                     BindableUtility.AutoNotifyValueChangedOnNonSerialized(field, Property);
                 }
                 else
@@ -160,8 +158,16 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             var vType = m_Controller.AnnotatedType.GetValue(Property.Name);
             if (vType == null)
             {
-                DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
-                return;
+                if (Property.IsArrayOrListElement())
+                {
+                    var collectionProperty = Property.GetParentProperty();
+                    vType = collectionProperty.GetController().AnnotatedType.GetValue(collectionProperty.Name);
+                }
+                else
+                {
+                    DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
+                    return;
+                }
             }
             for (var i = 0; i < vType.DecoratorDrawers.Count; i++)
             {
@@ -169,6 +175,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 if (decorator == null) continue;
                 try
                 {
+                    if (Property.IsArrayOrListElement() && vType.PropertyAttributes[i].applyToCollection) continue;
                     var drawer = DrawerExtensions.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
                     if (drawer.CreatePropertyGUI() is VisualElement decoratorElement)
                         DecoratorDrawersContainer.Add(decoratorElement);
@@ -234,55 +241,34 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 propertyValue = propertyInfo.GetValue(m_Controller.DeclaringObject);
             if (propertyValue is IList list)
             {
-                Func<VisualElement> itemFactory = null;
-                if (m_PropertyDrawerOnCollectionItems != null)
-                {
-                    itemFactory = () =>
-                    {
-                        PropertyDrawer drawer = DrawerExtensions.CreatePropertyDrawer(
-                            m_PropertyDrawerOnCollectionItems, 
-                            m_PropertyDrawerOnCollectionItemsAttribute,
-                            m_RuntimeField,
-                            Property.DisplayName());
-                        VisualElement itemElement = ((ICreateDrawerOnPropertyNode)drawer).CreatePropertyNodeGUI(Property);
-                        (m_ElementDrawers ??= new Dictionary<VisualElement, ICreateDrawerOnPropertyNode>())[itemElement] = (ICreateDrawerOnPropertyNode)drawer;
-                        return itemElement;
-                    };
-                    field = list switch
-                    {
-                        IList<NamedType> _ => ConfigureListView<NamedType>(itemFactory, Field as ListView),
-                        IList<SerializableType> _ => ConfigureListView<SerializableType>(itemFactory, Field as ListView),
-                        IList<UnityEngine.Object> _ => ConfigureListView<UnityEngine.Object>(itemFactory, Field as ListView),
-                        not null when Property.HasChildren() => ConfigureDynamicListView(itemFactory, Field as ListView),
-                        _ => null
-                    };
-                    if (field != null) return field;
-                }
+                Func<VisualElement> itemFactory = () => new BindablePropertyField().WithClasses(UssConstants.UssShowInInspector);
                 field = list switch
                 {
-                    IList<int> _ => ConfigureListView<int>(itemFactory ?? (() => new IntegerField()), Field as ListView),
-                    IList<uint> _ => ConfigureListView<uint>(itemFactory ?? (() => new UnsignedIntegerField()), Field as ListView),
-                    IList<long> _ => ConfigureListView<long>(itemFactory ?? (() => new LongField()), Field as ListView),
-                    IList<ulong> _ => ConfigureListView<ulong>(itemFactory ?? (() => new UnsignedLongField()), Field as ListView),
-                    IList<double> _ => ConfigureListView<double>(itemFactory ?? (() => new DoubleField()), Field as ListView),
-                    IList<float> _ => ConfigureListView<float>(itemFactory ?? (() => new FloatField()), Field as ListView),
-                    IList<bool> _ => ConfigureListView<bool>(itemFactory ?? (() => new Toggle()), Field as ListView),
-                    IList<string> _ => ConfigureListView<string>(itemFactory ?? (() => new TextField()), Field as ListView),
-                    IList<Color> _ => ConfigureListView<Color>(itemFactory ?? (() => new ColorField()), Field as ListView),
-                    IList<Vector2> _ => ConfigureListView<Vector2>(itemFactory ?? (() => new Vector2Field()), Field as ListView),
-                    IList<Vector3> _ => ConfigureListView<Vector3>(itemFactory ?? (() => new Vector3Field()), Field as ListView),
-                    IList<Vector4> _ => ConfigureListView<Vector4>(itemFactory ?? (() => new Vector4Field()), Field as ListView),
-                    IList<Rect> _ => ConfigureListView<Rect>(itemFactory ?? (() => new RectField()), Field as ListView),
-                    IList<Bounds> _ => ConfigureListView<Bounds>(itemFactory ?? (() => new BoundsField()), Field as ListView),
-                    IList<Vector2Int> _ => ConfigureListView<Vector2Int>(itemFactory ?? (() => new Vector2IntField()), Field as ListView),
-                    IList<Vector3Int> _ => ConfigureListView<Vector3Int>(itemFactory ?? (() => new Vector3IntField()), Field as ListView),
-                    IList<RectInt> _ => ConfigureListView<RectInt>(itemFactory ?? (() => new RectIntField()), Field as ListView),
-                    IList<BoundsInt> _ => ConfigureListView<BoundsInt>(itemFactory ?? (() => new BoundsIntField()), Field as ListView),
-                    IList<AnimationCurve> _ => ConfigureListView<AnimationCurve>(itemFactory ?? (() => new CurveField()), Field as ListView),
-                    IList<Gradient> _ => ConfigureListView<Gradient>(itemFactory ?? (() => new GradientField()), Field as ListView),
-                    IList<Hash128> _ => ConfigureListView<Hash128>(itemFactory ?? (() => new Hash128Field()), Field as ListView),
-                    // IList<NamedType> _ => ConfigureListView<NamedType>(itemFactory ?? (() => new Hash128Field()), Field as ListView),
-                    // TODO: IList<UnityEngine.Object>
+                    IList<int> _ => ConfigureListView<int>(itemFactory, Field as ListView),
+                    IList<uint> _ => ConfigureListView<uint>(itemFactory, Field as ListView),
+                    IList<long> _ => ConfigureListView<long>(itemFactory, Field as ListView),
+                    IList<ulong> _ => ConfigureListView<ulong>(itemFactory, Field as ListView),
+                    IList<double> _ => ConfigureListView<double>(itemFactory, Field as ListView),
+                    IList<float> _ => ConfigureListView<float>(itemFactory, Field as ListView),
+                    IList<bool> _ => ConfigureListView<bool>(itemFactory, Field as ListView),
+                    IList<string> _ => ConfigureListView<string>(itemFactory, Field as ListView),
+                    IList<Color> _ => ConfigureListView<Color>(itemFactory, Field as ListView),
+                    IList<Vector2> _ => ConfigureListView<Vector2>(itemFactory, Field as ListView),
+                    IList<Vector3> _ => ConfigureListView<Vector3>(itemFactory, Field as ListView),
+                    IList<Vector4> _ => ConfigureListView<Vector4>(itemFactory, Field as ListView),
+                    IList<Rect> _ => ConfigureListView<Rect>(itemFactory, Field as ListView),
+                    IList<Bounds> _ => ConfigureListView<Bounds>(itemFactory, Field as ListView),
+                    IList<Vector2Int> _ => ConfigureListView<Vector2Int>(itemFactory, Field as ListView),
+                    IList<Vector3Int> _ => ConfigureListView<Vector3Int>(itemFactory, Field as ListView),
+                    IList<RectInt> _ => ConfigureListView<RectInt>(itemFactory, Field as ListView),
+                    IList<BoundsInt> _ => ConfigureListView<BoundsInt>(itemFactory, Field as ListView),
+                    IList<AnimationCurve> _ => ConfigureListView<AnimationCurve>(itemFactory, Field as ListView),
+                    IList<Gradient> _ => ConfigureListView<Gradient>(itemFactory, Field as ListView),
+                    IList<Hash128> _ => ConfigureListView<Hash128>(itemFactory, Field as ListView),
+                    IList<NamedType> _ => ConfigureListView<NamedType>(itemFactory, Field as ListView),
+                    IList<SerializableType> _ => ConfigureListView<SerializableType>(itemFactory, Field as ListView),
+                    IList<UnityEngine.Object> _ => ConfigureListView<UnityEngine.Object>(itemFactory, Field as ListView),
+                    not null when Property.HasChildren() => ConfigureDynamicListView(itemFactory, Field as ListView),
                     _ => FieldNotImplemented()
                 };
             }
@@ -466,26 +452,24 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             listView.bindItem = (element, i) =>
             {
                 Debug.Log("bindItem " + i + " @ " + Property.PropertyPath);
-                element.dataSource = new DataSourceBinding(Property, i);
-                element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
-                {
-                    dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
-                    bindingMode = BindingMode.TwoWay
-                });
-                if (element is BaseField<TItemValue> baseField)
-                    baseField.label = "Element " + i;
-                if (m_ElementDrawers?.TryGetValue(element, out ICreateDrawerOnPropertyNode elementDrawer) ?? false)
-                    elementDrawer.SetPropertyNode(Property.GetArrayElementAtIndex(i));
-                    // TODO: BindableUtility.AutoNotifyValueChangedOnNonSerialized(itemElement, Property); m_ElementDrawers
+                ((BindablePropertyField)element).BindProperty(Property.GetArrayElementAtIndex(i), true);
+                // element.dataSource = new DataSourceBinding(Property, i);
+                // element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
+                // {
+                //     dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
+                //     bindingMode = BindingMode.TwoWay
+                // });
+                // if (element is BaseField<TItemValue> baseField)
+                //     baseField.label = "Element " + i;
+                // if (m_ElementDrawers?.TryGetValue(element, out ICreateDrawerOnPropertyNode elementDrawer) ?? false)
+                //     elementDrawer.SetPropertyNode(Property.GetArrayElementAtIndex(i));
+                //     // TODO: BindableUtility.AutoNotifyValueChangedOnNonSerialized(itemElement, Property); m_ElementDrawers
             };
             listView.onAdd = list =>
             {
                 Debug.Log("OnAdd @ " + Property.PropertyPath);
                 List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
                 newList.Add(default);
-                // ((DataSourceBinding)this.dataSource).Value = list.itemsSource is Array
-                //     ? (TValue)((IList<TItemValue>) newList.ToArray())
-                //     : (TValue)((IList<TItemValue>) newList.ToList());
                 ((DataSourceBinding)this.dataSource).Value = Property.IsArray()
                     ? newList.ToArray()
                     : newList.ToList();
@@ -514,12 +498,8 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             return (VisualElement) listView;
         }
         
-        private static MethodInfo ConfigureListViewMethod = null;
-        private static readonly BindingFlags PublicStaticFlags = BindingFlags.Public 
-                                                                | BindingFlags.NonPublic
-                                                                | BindingFlags.Static 
-                                                                | BindingFlags.CreateInstance 
-                                                                | BindingFlags.DoNotWrapExceptions;
+        private static MethodInfo s_ConfigureListViewMethod = null;
+        private const BindingFlags PublicStaticFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DoNotWrapExceptions;
 
         private VisualElement ConfigureDynamicListView(
             Func<VisualElement> itemFactory,
@@ -527,125 +507,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             Func<ListView> factory = null)
         {
             var itemType = Property.GetUnderlyingElementType();
-            Debug.Log($"Item Type: {itemType?.Name}");
-
-            ConfigureListViewMethod ??= typeof(BindablePropertyField).GetMethod("ConfigureListView",
+            s_ConfigureListViewMethod ??= typeof(BindablePropertyField).GetMethod("ConfigureListView",
                 BindingFlags.Instance | BindingFlags.NonPublic);
-            var method = ConfigureListViewMethod!.MakeGenericMethod(itemType);
+            var method = s_ConfigureListViewMethod!.MakeGenericMethod(itemType);
             return (VisualElement) method.Invoke(this, PublicStaticFlags, null, new object[] { itemFactory, listView, factory },
                 CultureInfo.InvariantCulture);
-            
-            // var listType = typeof(List<>).MakeGenericType(itemType);
-            // object emptyList = Activator.CreateInstance(listType);
-            // dynamic dynList = emptyList;
-            // Debug.Log($"Dynamic Types: \n{itemType}\n{listType}\n{emptyList}\n{dynList}");
-            //
-            // return ConfigureDynamicListViewWrapper(dynList, itemFactory, listView, factory);
+
         }
-        
-        // private VisualElement ConfigureDynamicListViewWrapper<TValue>(
-        //     TValue emptyList,
-        //     Func<VisualElement> itemFactory,
-        //     ListView listView,
-        //     Func<ListView> factory = null)
-        //     where TValue : IList //, IList<TItemValue>
-        //     // where TItemValue : class
-        // {
-        //     emptyList.Add(default);
-        //     object defaultItem = emptyList[0];
-        //     dynamic dynItem = defaultItem;
-        //     Debug.Log($"Dynamic Types 1: \n{typeof(TValue)}\n{dynItem}\n{defaultItem}");
-        //     return ConfigureDynamicListViewWrapper2(emptyList, dynItem, itemFactory, listView, factory);
-        // }
-        //
-        // private VisualElement ConfigureDynamicListViewWrapper2<TValue, TItemValue>(
-        //     TValue emptyList,
-        //     TItemValue defaultItem,
-        //     Func<VisualElement> itemFactory,
-        //     ListView listView,
-        //     Func<ListView> factory = null)
-        //     where TValue : IList, IList<TItemValue>
-        // // where TItemValue : class
-        // {
-        //     Debug.Log($"Dynamic Types 2: \n{typeof(TValue)}\n{typeof(TItemValue)}\n{defaultItem}");
-        //     return null; // ConfigureCustomListView<TItemValue>(itemFactory, listView, factory);
-        // }
-        //
-        // private VisualElement ConfigureCustomListView<TValue, TItemValue>(
-        //         TValue emptyList,
-        //     Func<VisualElement> itemFactory,
-        //     ListView listView,
-        //     Func<ListView> factory = null)
-        //     //where TValue : IList, IList<TItemValue>
-        // {
-        //     if (listView == null)
-        //     {
-        //         if (factory != null)
-        //             listView = factory();
-        //         else
-        //             listView = new ListView();
-        //         listView.showBorder = true;
-        //         listView.selectionType = SelectionType.Multiple;
-        //         listView.showAddRemoveFooter = true;
-        //         listView.showBoundCollectionSize = true;
-        //         listView.showFoldoutHeader = true;
-        //         listView.reorderable = !Property.IsNonReorderable();
-        //         listView.reorderMode = ListViewReorderMode.Animated;
-        //         listView.virtualizationMethod = CollectionVirtualizationMethod.DynamicHeight;
-        //         listView.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
-        //     }
-        //
-        //     listView.makeItem = () => itemFactory()
-        //         .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
-        //     listView.bindItem = (element, i) =>
-        //     {
-        //         Debug.Log("bindItem " + i);
-        //         element.dataSource = new DataSourceBinding(Property, i);
-        //         element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
-        //         {
-        //             dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
-        //             bindingMode = BindingMode.TwoWay
-        //         });
-        //         if (element is BaseField<TItemValue> baseField)
-        //             baseField.label = "Element " + i;
-        //         if (m_ElementDrawers?.TryGetValue(element, out ICreateDrawerOnPropertyNode elementDrawer) ?? false)
-        //             elementDrawer.SetPropertyNode(Property.GetArrayElementAtIndex(i));
-        //             // TODO: BindableUtility.AutoNotifyValueChangedOnNonSerialized(itemElement, Property); m_ElementDrawers
-        //     };
-        //     listView.onAdd = list =>
-        //     {
-        //         Debug.Log("OnAdd");
-        //         List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
-        //         newList.Add(default);
-        //         // ((DataSourceBinding)this.dataSource).Value = list.itemsSource is Array
-        //         //     ? (TValue)((IList<TItemValue>) newList.ToArray())
-        //         //     : (TValue)((IList<TItemValue>) newList.ToList());
-        //         ((DataSourceBinding)this.dataSource).Value = Property.IsArray()
-        //             ? newList.ToArray()
-        //             : newList.ToList();
-        //         list.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
-        //     };
-        //     listView.onRemove = list =>
-        //     {
-        //         Debug.Log("OnRemove");
-        //         List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
-        //         var indices = new List<int>(list.selectedIndices);
-        //         if (indices.Count == 0)
-        //             indices.Add(newList.Count - 1);
-        //         newList = newList.Where((item, i) => !indices.Contains(i)).ToList();
-        //         ((DataSourceBinding)this.dataSource).Value = Property.IsArray()
-        //             ? newList.ToArray()
-        //             : newList.ToList();
-        //         list.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
-        //     };
-        //     this.dataSource = new DataSourceBinding(Property);
-        //     var str = listViewNamePrefix + Property.PropertyPath;
-        //     listView.headerTitle = Property.DisplayName();
-        //     listView.viewDataKey = str;
-        //     listView.name = str;
-        //     listView.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
-        //     
-        //     return (VisualElement) listView;
-        // }
     }
 }

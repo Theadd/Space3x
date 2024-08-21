@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Space3x.Attributes.Types;
 using Space3x.Attributes.Types.DeveloperNotes;
 using Unity.Properties;
 using UnityEngine;
@@ -7,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
-    [Draft]
+    [Experimental]
     [UxmlElement]
     public partial class VariableListView : BindableElement, INotifyValueChanged<List<string>>
     {
