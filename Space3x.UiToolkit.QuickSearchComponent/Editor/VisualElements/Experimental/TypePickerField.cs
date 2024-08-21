@@ -1,7 +1,6 @@
 ﻿using System;
 using Space3x.Attributes.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -15,6 +14,17 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         private TextField m_TextField;
         private Button m_Button;
         private Type m_ValueType;
+        
+        public new string label
+        {
+            get => ((TextField)m_VisualInput).label;
+            set
+            {
+                if (((TextField)m_VisualInput).label == value)
+                    return;
+                ((TextField)m_VisualInput).label = value;
+            }
+        }
         
         public TypePickerField() : this(label: "") { }
         
@@ -30,17 +40,20 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             style =
             {
                 marginRight = 0f,
+                flexDirection = FlexDirection.Row,
             }
         }) { }
 
-        protected TypePickerField(string label, VisualElement visualInput) : base(label, visualInput)
+        protected TypePickerField(string label, VisualElement visualInput) : base(label: null, visualInput)
         {
             m_VisualInput = visualInput;
             m_VisualInput.focusable = false;
+            this.label = label;
+            m_VisualInput.AddToClassList(BaseField<int>.alignedFieldUssClassName);
             Add(m_VisualInput);
-            this.labelElement.focusable = false;
-            this.AddToClassList(ObjectField.ussClassName);
-            this.labelElement.AddToClassList(ObjectField.labelUssClassName);
+            // this.labelElement.focusable = false;
+            EnableInClassList(UssConstants.UssTypePicker, true);
+            // this.labelElement.AddToClassList(ObjectField.labelUssClassName);
             RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
             this.RegisterValueChangedCallback(OnValueChangedCallback);
         }
@@ -58,8 +71,6 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             if (m_VisualInput is not TextField textField)
                 throw new Exception($"{nameof(TypePickerField)} expects a {nameof(TextField)} as BaseField<>'s visualInput.");
             m_TextField = textField;
-            m_Button = new Button(() => OnShowPopup?.Invoke(this, m_TextField, ShowWindowMode.NormalWindow)) { text = " " };
-            m_TextField.Add(m_Button);
             // Add(m_TextField);
             if (m_ValueType != null)
                 SetValue(m_ValueType);
@@ -72,7 +83,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             DebugLog.Info($"<color=#7F00FFFF>{nameof(TypePickerField)}.SetValue := {newValue}</color>");
             m_ValueType = newValue;
             // EDIT
-            m_TextField?.SetValueWithoutNotify(TypeRewriter.AsDisplayName(newValue, TypeRewriter.NoStyle));
+            m_TextField?.SetValueWithoutNotify(TypeRewriter.AsDisplayName(newValue, DisplayStyle));
             // if (m_TextField != null) 
             //     m_TextField.value = TypeRewriter.AsDisplayName(newValue, TypeRewriter.NoStyle);
         }
