@@ -1,0 +1,1 @@
+﻿[assembly: Unity.Properties.GeneratePropertyBagsForAssembly]

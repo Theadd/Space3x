@@ -46,6 +46,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                     overflow = Overflow.Visible
                 }
             };
+            TextElement e;
+            TextField f;
             // m_TypeField.AddToClassList(BaseField<int>.alignedFieldUssClassName);
             // TODO: Fix this, why binding to a serialized property doesn't synchronize the property value with the UI.
             //       Problem should be around the TypePickerField/BaseField class.
@@ -56,7 +58,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
             m_ElementType = GetPropertyElementType(property);
             
-            if (property.HasSerializedProperty() || !(property.IsArrayOrList() || property.IsArrayOrListElement())) 
+            // if (property.HasSerializedProperty() || !(property.IsArrayOrList() || property.IsArrayOrListElement())) 
                 m_TypeField.TrackPropertyValue(Property, OnPropertyValueChanged);
             if (property.HasSerializedProperty() || !property.IsArrayOrList())
                 OnPropertyValueChanged(property);
@@ -76,7 +78,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         private void OnPropertyValueChanged(IPropertyNode propertyNode)
         {
             Debug.Log("2.0");
-            var currentValue = Property.GetUnderlyingValue();
+            // var currentValue = Property.GetUnderlyingValue();
+            var currentValue = Property.GetValue();
             if (Equals(currentValue, m_TypeField.value)) return;
             m_TypeField.value = currentValue;
             if (m_ElementType == ElementType.Instance)
@@ -116,75 +119,84 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                     throw new ArgumentOutOfRangeException();
             }
         }
+
         public void OnSelectionChanged(IEnumerable<Type> newValues)
         {
             // var newValue = new NamedType(newValues.FirstOrDefault());
             var newValue = GetValueFromType(newValues.FirstOrDefault());
             Debug.Log("1.0 " + Property.PropertyPath);
-            // // m_TypeField.value = newValue;
-            // if (Property.HasSerializedProperty() &&
-            //     Property.GetSerializedProperty() is SerializedProperty serializedProperty)
-            // {
-            //     Debug.Log("1.1S");
-            //     serializedProperty.boxedValue = newValue;
-            //     // serializedProperty.serializedObject.ApplyModifiedProperties();
-            //     // serializedProperty.serializedObject.UpdateIfRequiredOrScript();
-            // }
-            // else
-            // {
-            //     Debug.Log("1.1N");
-            //     m_TypeField.value = newValue;
-            // }
-            // Debug.Log("1.2");
-
-            if (!Property.HasSerializedProperty() && Property.IsArrayOrListElement())  //  && Property.IsArrayOrListElement()
-            {
-                m_TypeField.value = newValue;
-                if (m_ElementType == ElementType.Instance)
-                    m_InstanceContainer?.SetVisible(newValue != null);
-                return;
-            }
-
-            bool succeeded = false;
-            
-            // Get ready to save modified values on serialized object
-            if (Property.GetSerializedObject().hasModifiedProperties)
-                Property.GetSerializedObject().ApplyModifiedPropertiesWithoutUndo();
-            Property.GetSerializedObject().Update();
-            Debug.Log("1.1");
-            // Modify values
-            // m_TypeField.value = newValue;
-            if (Property.HasSerializedProperty())
-                Property.SetUnderlyingValue(newValue);
-            else
-            {
-                if (Property.TrySetValue(newValue))
-                {
-                    Debug.Log("TrySetValue succeeded!");
-                    succeeded = true;
-                } 
-                else
-                {
-                    Property.SetUnderlyingValue(newValue);
-                    Debug.Log("TrySetValue failed!");
-                }
-            }
-            Debug.Log("1.2");
-            // Save modified values on serialized object 
-            if (Property.GetSerializedObject().hasModifiedProperties)
-                Property.GetSerializedObject().ApplyModifiedProperties();
-            else
-                Property.GetSerializedObject().Update();
-            Debug.Log("1.3");
-            
-            if (!Property.HasSerializedProperty() && !succeeded)
-            {
-                Debug.Log("Fixing fail on succeeded");
-                m_TypeField.value = newValue;
-                if (m_ElementType == ElementType.Instance)
-                    m_InstanceContainer?.SetVisible(newValue != null);
-            }
+            Property.SetValue(newValue);
         }
+
+        // public void OnSelectionChanged(IEnumerable<Type> newValues)
+        // {
+        //     // var newValue = new NamedType(newValues.FirstOrDefault());
+        //     var newValue = GetValueFromType(newValues.FirstOrDefault());
+        //     Debug.Log("1.0 " + Property.PropertyPath);
+        //     // // m_TypeField.value = newValue;
+        //     // if (Property.HasSerializedProperty() &&
+        //     //     Property.GetSerializedProperty() is SerializedProperty serializedProperty)
+        //     // {
+        //     //     Debug.Log("1.1S");
+        //     //     serializedProperty.boxedValue = newValue;
+        //     //     // serializedProperty.serializedObject.ApplyModifiedProperties();
+        //     //     // serializedProperty.serializedObject.UpdateIfRequiredOrScript();
+        //     // }
+        //     // else
+        //     // {
+        //     //     Debug.Log("1.1N");
+        //     //     m_TypeField.value = newValue;
+        //     // }
+        //     // Debug.Log("1.2");
+        //
+        //     if (!Property.HasSerializedProperty() && Property.IsArrayOrListElement())  //  && Property.IsArrayOrListElement()
+        //     {
+        //         m_TypeField.value = newValue;
+        //         if (m_ElementType == ElementType.Instance)
+        //             m_InstanceContainer?.SetVisible(newValue != null);
+        //         return;
+        //     }
+        //
+        //     bool succeeded = false;
+        //     
+        //     // Get ready to save modified values on serialized object
+        //     if (Property.GetSerializedObject().hasModifiedProperties)
+        //         Property.GetSerializedObject().ApplyModifiedPropertiesWithoutUndo();
+        //     Property.GetSerializedObject().Update();
+        //     Debug.Log("1.1");
+        //     // Modify values
+        //     // m_TypeField.value = newValue;
+        //     if (Property.HasSerializedProperty())
+        //         Property.SetUnderlyingValue(newValue);
+        //     else
+        //     {
+        //         if (Property.TrySetValue(newValue))
+        //         {
+        //             Debug.Log("TrySetValue succeeded!");
+        //             succeeded = true;
+        //         } 
+        //         else
+        //         {
+        //             Property.SetUnderlyingValue(newValue);
+        //             Debug.Log("TrySetValue failed!");
+        //         }
+        //     }
+        //     Debug.Log("1.2");
+        //     // Save modified values on serialized object 
+        //     if (Property.GetSerializedObject().hasModifiedProperties)
+        //         Property.GetSerializedObject().ApplyModifiedProperties();
+        //     else
+        //         Property.GetSerializedObject().Update();
+        //     Debug.Log("1.3");
+        //     
+        //     if (!Property.HasSerializedProperty() && !succeeded)
+        //     {
+        //         Debug.Log("Fixing fail on succeeded");
+        //         m_TypeField.value = newValue;
+        //         if (m_ElementType == ElementType.Instance)
+        //             m_InstanceContainer?.SetVisible(newValue != null);
+        //     }
+        // }
 
         private static ElementType GetPropertyElementType(IPropertyNode property)
         {
