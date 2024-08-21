@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Internal;
 
@@ -75,6 +74,7 @@ namespace Space3x.Attributes.Types
         /// between all PropertyDrawers in the same collection property, hence the performance impact is minimal in
         /// such cases.
         /// </remarks>
+        [ExcludeFromDocs]
         public ITypePickerAttributeHandler Handler { get; set; } = null;
         
         /// <summary>
@@ -92,12 +92,6 @@ namespace Space3x.Attributes.Types
             DerivedTypes = derivedTypes;
             Types = types ?? Type.EmptyTypes;
         }
-        
-        // public TypePickerAttribute(Type baseType, params Type[] genericParameterTypes)
-        // {
-        //     Types = new[] { baseType };
-        //     GenericParameterTypes = genericParameterTypes;
-        // }
         
         public TypePickerAttribute(Type baseType, bool derivedTypes, params Type[] genericParameterTypes)
         {
