@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,7 +18,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         public bool ShowAllAssemblies;
 
         [UxmlAttribute]
-        public Type[] DataSource
+        public IEnumerable<Type> DataSource
         {
             get => m_Datasource?.Select(t => t.Value).ToArray() ?? Type.EmptyTypes;
             set

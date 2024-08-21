@@ -22,7 +22,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         private void AddEventListeners()
         {
-            m_SearchField.TextField.VisualInput.ForceRenderCursorCaret = true;
+            // EDIT: m_SearchField.TextField.VisualInput.ForceRenderCursorCaret = true;
+            m_SearchField.TextField.textInput.textElement.ForceRenderCursorCaret = true;
+            m_SearchField.TextField.selectAllOnFocus = false;
+            m_SearchField.TextField.selectAllOnMouseUp = false;
+            m_SearchField.TextField.selectWordByDoubleClick = true;
             m_SearchField.TextField.RegisterCallback<FocusEvent>(OnTextFieldFocus);
             m_SearchField.TextField.RegisterCallback<AttachToPanelEvent>(ev => SetFocusToListViewContainer());
             RegisterCallback<DetachFromPanelEvent>(OnDetachFromPanel);
@@ -145,12 +149,9 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
                     break;
                 case KeyCode.KeypadEnter:
                 case KeyCode.Return:
-//                    var selectedIndices = m_ListView.GetSelectedIndices();
-//                    var selectedItems = selectedIndices.Select(selectedIndex => m_FilteredDatasource[selectedIndex]).ToList();
-//                    Debug.Log($"Selected items: {string.Join(", ", selectedItems.Select(t => t.Name))}");
                     break;
                 default:
-                    m_SearchField.TextField.VisualInput.EditorEventHandler.OnKeyDown(ev);
+                    m_SearchField.TextField.textInput.HandleKeyDownEvent(ev);
                     break;
             }
         }
