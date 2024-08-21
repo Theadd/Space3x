@@ -7,11 +7,8 @@
         "Space3x.Attributes.Types",
         "Space3x.InspectorAttributes",
         "Space3x.InspectorAttributes.Editor",
-        "Space3x.InspectorAttributes.Types",
         "Space3x.UiToolkit.Types",
         "Space3x.UiToolkit.Types.Editor",
-        "Space3x.UiToolkit.SlicedText",
-        "Space3x.UiToolkit.SlicedText.Runtime",
         "Space3x.Documentation.Editor",
         "Space3x.Unstable"
     ],
@@ -23,9 +20,7 @@
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": [
-        "!NO_SPACE3X_INSPECTOR_EXTRAS"
-    ],
+    "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor;
+using Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using UnityEngine.UIElements;
 
