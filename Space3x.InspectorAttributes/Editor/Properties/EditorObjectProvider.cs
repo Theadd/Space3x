@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -11,6 +10,8 @@ namespace Space3x.InspectorAttributes.Editor
     public abstract class EditorObjectProvider
     {
         private UnityEditor.Editor m_Editor;
+        
+        protected int ControllerID { get; private set; }
         
         public int InstanceID { get; private set; }
 
@@ -24,23 +25,25 @@ namespace Space3x.InspectorAttributes.Editor
         
         public string ParentPath { get; private set; }
         
-        public SerializedObject SerializedObject { get; private set; }
+        public bool IsSerialized { get; private set; }
+        
+        public SerializedObject SerializedObject { get; protected set; }
 
         public UnityEditor.Editor Editor => m_Editor ??=
             ActiveEditorTracker.sharedTracker.activeEditors.FirstOrDefault(
                 e => e.target.GetInstanceID() == InstanceID);
 
-        public bool IsValid { get; private set; } = false;  // TODO: use
-
         public bool IsEditingMultipleObjects { get; private set; }
 
-        protected EditorObjectProvider(SerializedProperty property)
+        protected EditorObjectProvider(SerializedProperty property, int controllerId)
         {
+            ControllerID = controllerId;
             var serializedObject = property.serializedObject;
             if (serializedObject != null)
             {
                 SerializedObject = serializedObject;
                 ParentPath = property.GetParentPath();
+                IsSerialized = true;
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
                 // TODO: get rid of AllObjectTypesAreTheSame, it's always true by design
                 if (!IsEditingMultipleObjects || (IsEditingMultipleObjects && AllObjectTypesAreTheSame(serializedObject.targetObjects)))
@@ -49,11 +52,24 @@ namespace Space3x.InspectorAttributes.Editor
                     InstanceID = TargetObject.GetInstanceID();
                     TargetType = TargetObject.GetType();
                     DeclaringObject = property.GetDeclaringObject();
-                    IsValid = true;
                 }
             }
         }
-        
+
+        protected EditorObjectProvider(IPropertyNode parentPropertyTreeRoot, int controllerId)
+        {
+            ControllerID = controllerId;
+            var parentController = parentPropertyTreeRoot.GetController();
+            SerializedObject = parentController.SerializedObject;
+            IsSerialized = parentPropertyTreeRoot.HasSerializedProperty();
+            ParentPath = parentPropertyTreeRoot.PropertyPath;
+            IsEditingMultipleObjects = parentController.IsEditingMultipleObjects;
+            TargetObject = parentController.TargetObject;
+            InstanceID = TargetObject.GetInstanceID();
+            TargetType = TargetObject.GetType();
+            DeclaringObject = parentPropertyTreeRoot.GetUnderlyingValue();
+        }
+
         private static bool AllObjectTypesAreTheSame(IReadOnlyList<Object> targetObjects)
         {
             if (targetObjects == null || targetObjects.Count == 0)

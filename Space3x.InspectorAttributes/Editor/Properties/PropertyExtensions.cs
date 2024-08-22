@@ -1,24 +1,33 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using JetBrains.Annotations;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
-using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
 {
+    [ExcludeFromDocs]
     public static class PropertyExtensions
     {
         /// <summary>
         /// Determines whether the property is also a container for other properties. For example, an object or struct.
         /// </summary>
         public static bool HasChildren(this IPropertyNode self) => self is INodeTree;
+        
+        /// <summary>
+        /// Determines whether this is the top property of the property tree.
+        /// </summary>
+        public static bool IsRootNode(this IPropertyNode self) => self.Name == string.Empty && self is INodeTree;
 
         /// <summary>
         /// Unity structures array paths like "fieldName.Array.data[i]".
@@ -36,22 +45,21 @@ namespace Space3x.InspectorAttributes.Editor
         private static string[] PropertyPathParts(this IPropertyNode self) => 
             self.FixedPropertyPath().Split('.');
         
-        /// <summary>
-        /// Determines whether this property is an element of an array or IList. If so, provides the parent path and
-        /// the property index within the array as out parameters.
-        /// </summary>
-        /// <seealso cref="IPropertyNodeIndex"/>
-        /// <param name="self">This IPropertyNode.</param>
-        /// <param name="parentPath">The parent path as out parameter.</param>
-        /// <param name="index">The property index within the array as out parameter.</param>
-        [UsedImplicitly]
-        public static bool IsPropertyIndexer(this IPropertyNode self, out string parentPath, out int index) => 
-            IsPropertyIndexer(self.PropertyPath, out parentPath, out index);
+        // /// <summary>
+        // /// Determines whether this property is an element of an array or IList. If so, provides the parent path and
+        // /// the property index within the array as out parameters.
+        // /// </summary>
+        // /// <seealso cref="IPropertyNodeIndex"/>
+        // /// <param name="self">This IPropertyNode.</param>
+        // /// <param name="parentPath">The parent path as out parameter.</param>
+        // /// <param name="index">The property index within the array as out parameter.</param>
+        // public static bool IsPropertyIndexer(this IPropertyNode self, out string parentPath, out int index) => 
+        //     IsPropertyIndexer(self.PropertyPath, out parentPath, out index);
 
         public static bool IsPropertyIndexer(string propertyPath, out string parentPath, out int index)
         {
             var propertyPart = FixedPropertyPath(propertyPath);
-            if (propertyPart[^1] == ']')
+            if (propertyPart.Length > 0 && propertyPart[^1] == ']')
             {
                 var iStart = propertyPart.LastIndexOf("[", propertyPart.Length - 1, 6, StringComparison.Ordinal);
                 if (iStart >= 0)
@@ -68,31 +76,62 @@ namespace Space3x.InspectorAttributes.Editor
         }
 
         /// <summary>
+        /// Determines whether this is an invokable property.
+        /// </summary>
+        public static bool IsInvokable(this IPropertyNode self) => self is IInvokablePropertyNode;
+
+        public static bool IsValid(this IPropertyNode self)
+        {
+            if (self is not IPropertyWithSerializedObject property) 
+                return true;
+            
+            try
+            {
+                return property.SerializedObject.targetObject != null;
+            }
+            catch (NullReferenceException)
+            {
+                return false;
+            }
+        }
+        
+        /// <summary>
         /// Gets the <see cref="SerializedObject"/> related to this property, if any.
         /// </summary>
-        public static SerializedObject GetSerializedObject(this IPropertyNode self)
+        public static SerializedObject GetSerializedObject(this IPropertyNode self) => 
+            self is IPropertyWithSerializedObject property ? property.SerializedObject : null;
+
+        public static bool HasSerializedProperty(this IPropertyNode self) => 
+            self is ISerializedPropertyNode property && (property.Controller?.IsSerialized ?? true);
+
+        public static SerializedProperty GetSerializedProperty(this IPropertyNode self)
         {
-            if (self is IPropertyWithSerializedObject property)
-                return property.SerializedObject;
+            if (self is not ISerializedPropertyNode property)
+                return null;
+
+            try
+            {
+                return property.SerializedObject.FindProperty(property.PropertyPath);
+            }
+            catch (NullReferenceException)
+            {
+                // Can happen when switching from Debug mode to Normal mode in the inspector after editing some properties.
+                DebugLog.Warning("NullReferenceException when trying to get property: " + property.PropertyPath + Environment.NewLine
+                                 + "Can happen when switching from Debug mode to Normal mode in the inspector after editing some properties.");
+            }
 
             return null;
         }
-        
-        public static bool HasSerializedProperty(this IPropertyNode self) => 
-            self is ISerializedPropertyNode;
-
-        public static SerializedProperty GetSerializedProperty(this IPropertyNode self) =>
-            self is ISerializedPropertyNode property
-                ? property.SerializedObject.FindProperty(property.PropertyPath)
-                : null;
 
         public static int GetParentObjectHash(this IPropertyNode property)
         {
             var parentPath = property.ParentPath;
+            var instanceId = property.GetTargetObjectInstanceID();
+            if (instanceId == 0) return 0;
             if (string.IsNullOrEmpty(parentPath))
-                return property.GetSerializedObject().targetObject.GetInstanceID() * 397;
+                return instanceId * 397;
             else
-                return property.GetSerializedObject().targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
+                return instanceId * 397 ^ parentPath.GetHashCode();
         }
         
         public static IPropertyNode GetPropertyNode(this VisualElement element)
@@ -104,14 +143,46 @@ namespace Space3x.InspectorAttributes.Editor
             }
             if (element is BindablePropertyField bindablePropertyField)
                 return bindablePropertyField.Property;
+            if (element.dataSource is IBindableDataSource bindableDataSource)
+                return bindableDataSource.GetPropertyNode();
 
             throw new ArgumentException(
                 $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.", nameof(element));
         }
         
+        /// <summary>
+        /// Determines whether this property is an array.
+        /// </summary>
         public static bool IsArray(this IPropertyNode self) => 
-            (self is INodeArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
-
+            // EDIT: (self is IPropertyFlags property && property.IsArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
+            self is IPropertyFlags property && property.IsArray;
+        
+        /// <summary>
+        /// Determines whether this property derives from <see cref="System.Collections.IList">IList</see>.
+        /// </summary>
+        public static bool IsList(this IPropertyNode self) => 
+            self is IPropertyFlags property && property.IsList;
+        
+        /// <summary>
+        /// Determines whether this property is an array or IList.
+        /// </summary>
+        public static bool IsArrayOrList(this IPropertyNode self) => self.IsArray() || self.IsList();
+        
+        /// <summary>
+        /// Determines whether this property is an element of an array or IList.
+        /// </summary>
+        public static bool IsArrayOrListElement(this IPropertyNode property) =>
+            property is IPropertyNodeIndex;
+        
+        internal static bool IncludeInInspector(this IPropertyNode self) => 
+            self is IPropertyFlags property && property.IncludeInInspector;
+        
+        internal static bool ShowInInspector(this IPropertyNode self) => 
+            self is IPropertyFlags property && property.ShowInInspector;
+        
+        /// <summary>
+        /// On an Array or IList property, determines whether it is non-reorderable.
+        /// </summary>
         public static bool IsNonReorderable(this IPropertyNode self) => 
             self is IPropertyFlags property && property.IsNonReorderable;
         
@@ -146,41 +217,59 @@ namespace Space3x.InspectorAttributes.Editor
             string memberName, 
             out Invokable<TIn, TOut> invokableMember)
         {
-            if (self.HasSerializedProperty())
-                invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self.GetSerializedProperty());
-            else
+            // if (self.HasSerializedProperty())
+            //     invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self.GetSerializedProperty());
+            // else
                 invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self);
             
             return invokableMember != null;
         }
         
         public static object GetDeclaringObject(this IPropertyNode property) => 
-            PropertyAttributeController.GetInstance(property)?.DeclaringObject;
+            property.GetController()?.DeclaringObject;
         
         public static Type GetUnderlyingType(this IPropertyNode property) =>
             property.GetVTypeMember()?.FieldType;
         
-        public static object GetUnderlyingValue(this IPropertyNode property)
+        /// <summary>
+        /// Drop-in replacement for <see cref="SerializedProperty.GetArrayElementAtIndex"/>.
+        /// </summary>
+        public static IPropertyNode GetArrayElementAtIndex(this IPropertyNode property, int propertyIndex)
         {
-            if (property.HasSerializedProperty())
-                return property.GetSerializedProperty().boxedValue;
+            if (property is not IBindablePropertyNode bindableProperty)
+                return null;
 
-            object parentValue = null;
-            if (property is IPropertyNodeIndex propertyNodeIndex)
-            {
-                parentValue = propertyNodeIndex.Indexer.GetUnderlyingValue();
-                if (parentValue != null)
-                    return ((IList)GetFieldValue(parentValue, property.Name))[propertyNodeIndex.Index];
-            }
-            if (property.TryGetParentProperty(out var parentProperty))
-            {
-                parentValue = parentProperty.GetUnderlyingValue();
-                if (parentValue != null)
-                    return GetFieldValue(parentValue, property.Name);
-            }
-
-            return null;
+            return bindableProperty.TryGetPropertyAtIndex(propertyIndex, out var propertyNode) ? propertyNode : null;
         }
+        
+        // public static object GetUnderlyingValue(this IPropertyNode property)
+        // {
+        //     if (property.IsRootNode())
+        //     {
+        //         Unity.Properties.IProperty ppp;
+        //     }
+        //     if (property.HasSerializedProperty())
+        //     {
+        //         DebugLog.Info($"IN GetUnderlyingValue: {property.Name}; IsValid: {property.IsValid()}; IsArray: {property.IsArray()}");
+        //         return property.GetSerializedProperty().boxedValue;
+        //     }
+        //     
+        //     object parentValue = null;
+        //     if (property is IPropertyNodeIndex propertyNodeIndex)
+        //     {
+        //         parentValue = propertyNodeIndex.Indexer.GetUnderlyingValue();
+        //         if (parentValue != null)
+        //             return ((IList)GetFieldValue(parentValue, property.Name))[propertyNodeIndex.Index];
+        //     }
+        //     if (property.TryGetParentProperty(out var parentProperty))
+        //     {
+        //         parentValue = parentProperty.GetUnderlyingValue();
+        //         if (parentValue != null)
+        //             return GetFieldValue(parentValue, property.Name);
+        //     }
+        //     DebugLog.Error($"RETURNING NULL FROM GetUnderlyingValue() FOR \"{property.PropertyPath}\".");
+        //     return null;
+        // }
         
         /// <summary>
         /// Tries to get the parent property of the provided property.
@@ -237,16 +326,18 @@ namespace Space3x.InspectorAttributes.Editor
         /// <seealso cref="FindProperty"/>
         /// <param name="relativePath">Property path relative to this property.</param>
         /// <returns>The relative property, or null if not found.</returns>
-        public static IPropertyNode FindPropertyRelative(this IPropertyNode property, string relativePath) =>
-            property.FindProperty(property.PropertyPath.Length == 0 
-                ? relativePath 
-                : property.PropertyPath + (relativePath.StartsWith('.') 
-                    ? relativePath 
+        public static IPropertyNode FindPropertyRelative(this IPropertyNode property, string relativePath)
+        {
+            return property.FindProperty(property.PropertyPath.Length == 0
+                ? relativePath
+                : property.PropertyPath + (relativePath.StartsWith('.')
+                    ? relativePath
                     : "." + relativePath));
+        }
 
         public static string GetParentPath(string propertyPath)
         {
-            if (propertyPath[^1] == ']')
+            if (propertyPath.Length > 0 && propertyPath[^1] == ']')
             {
                 var path = FixedPropertyPath(propertyPath);
                 var iStart = path.LastIndexOf("[", path.Length - 1, 6, StringComparison.Ordinal);
@@ -274,15 +365,24 @@ namespace Space3x.InspectorAttributes.Editor
                     : propertyPath);
             propertyName = propertyIndex >= 0 
                 ? propertyIndexerPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..] 
-                : propertyPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..] ;
+                : propertyPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..];
             if (string.IsNullOrEmpty(parentPath))
                 instanceId = prop.GetTargetObjectInstanceID() * 397;
             else
                 instanceId = prop.GetTargetObjectInstanceID() * 397 ^ parentPath.GetHashCode();
         }
 
-        public static int GetTargetObjectInstanceID(this IPropertyNode property) =>
-            property.GetSerializedObject().targetObject.GetInstanceID();
+        internal static int GetTargetObjectInstanceID(this IPropertyNode property)
+        {
+            try
+            {
+                return property.GetSerializedObject()?.targetObject?.GetInstanceID() ?? 0;
+            }
+            catch (Exception)
+            {
+                return 0;
+            }
+        }
 
         private static object GetFieldValue(object declaringObject, string fieldName) =>
             declaringObject
@@ -306,6 +406,11 @@ namespace Space3x.InspectorAttributes.Editor
                     : null;
 
         private static VTypeMember GetVTypeMember(this IPropertyNode property) =>
-            PropertyAttributeController.GetInstance(property)?.AnnotatedType.GetValue(property.Name);
+            property.GetController()?.AnnotatedType.GetValue(property.Name);
+        
+        internal static PropertyAttributeController GetController(this IPropertyNode property) => 
+            property is IPropertyWithSerializedObject { Controller: PropertyAttributeController controller } 
+                ? controller
+                : PropertyAttributeController.GetInstance(property);
     }
 }

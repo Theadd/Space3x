@@ -52,6 +52,10 @@ namespace Space3x.InspectorAttributes.Editor
         /// </remarks>
         public bool IsSerializable => (Flags | VTypeFlags.Serializable) == Flags;
         
+        public bool IncludeInInspector => (Flags | VTypeFlags.IncludeInInspector) == Flags;
+        
+        public bool ShowInInspector => (Flags | VTypeFlags.ShowInInspector) == Flags;
+        
         /// <summary>
         /// Makes elements of array or list properties, non-reorderable. See the
         /// <see cref="UnityEngine.NonReorderableAttribute">NonReorderable</see> attribute.

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Unity.Properties;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -43,14 +44,38 @@ namespace Space3x.InspectorAttributes.Editor
             return i >= 0 ? Values[i] : null;
         }
         
+        private static MemberInfo[] GetAllMembers(Type type)
+        {
+            var baseTypes = new List<Type>();
+            Type rootType = type.IsValueType ? typeof(ValueType) : typeof(object);
+
+            while (true)
+            {
+                if (type == null || type.IsInterface || type == rootType)
+                    break;
+                baseTypes.Add(type);
+                type = type.BaseType;
+            }
+            
+            return baseTypes
+                .AsEnumerable()
+                .Reverse()
+                .SelectMany(t => t.GetMembers(
+                    BindingFlags.Instance
+                    | BindingFlags.Static
+                    | BindingFlags.Public
+                    | BindingFlags.NonPublic
+                    | BindingFlags.DeclaredOnly))
+                .ToArray();
+        }
+        
         private void Bind(Type declaringType)
         {
             var allProperties = new Dictionary<string, PropertyInfo>();
-            var allMembers = declaringType.GetMembers(
-                BindingFlags.Instance | BindingFlags.Static | 
-                BindingFlags.Public | BindingFlags.NonPublic);
+            var allMembers = GetAllMembers(declaringType);
             var invokableKeys = new List<string>();
             var invokableValues = new List<VTypeMember>();
+            var keyIndex = -1;
 
             for (var i = 0; i < allMembers.Length; i++)
             {
@@ -63,10 +88,11 @@ namespace Space3x.InspectorAttributes.Editor
                         {
                             if (methodInfo.GetCustomAttributes<PropertyAttribute>(true).Any())
                             {
-                                if (invokableKeys.Contains(methodInfo.Name))
+                                keyIndex = invokableKeys.IndexOf(methodInfo.Name);
+                                if (keyIndex >= 0)
                                 {
-                                    Debug.LogError("Unexpected duplicated method found: " + methodInfo.Name);
-                                    continue;
+                                    invokableValues.RemoveAt(keyIndex);
+                                    invokableKeys.RemoveAt(keyIndex);
                                 }
                                 item = new VTypeMember()
                                 {
@@ -89,10 +115,11 @@ namespace Space3x.InspectorAttributes.Editor
                             {
                                 if (allProperties.TryGetValue(fieldInfo.Name, out var propInfo))
                                 {
-                                    if (Keys.Contains(fieldInfo.Name))
+                                    keyIndex = Keys.IndexOf(fieldInfo.Name);
+                                    if (keyIndex >= 0)
                                     {
-                                        Debug.LogError("Unexpected duplicated property found: " + fieldInfo.Name);
-                                        continue;
+                                        Values.RemoveAt(keyIndex);
+                                        Keys.RemoveAt(keyIndex);
                                     }
 
                                     item = new VTypeMember()
@@ -111,11 +138,13 @@ namespace Space3x.InspectorAttributes.Editor
                             }
                             else
                             {
-                                if (Keys.Contains(fieldInfo.Name))
+                                keyIndex = Keys.IndexOf(fieldInfo.Name);
+                                if (keyIndex >= 0)
                                 {
-                                    Debug.LogError("Unexpected duplicated field found: " + fieldInfo.Name);
-                                    continue;
+                                    Values.RemoveAt(keyIndex);
+                                    Keys.RemoveAt(keyIndex);
                                 }
+
                                 item = new VTypeMember()
                                 {
                                     FieldType = fieldInfo.FieldType,
@@ -147,27 +176,32 @@ namespace Space3x.InspectorAttributes.Editor
             }
         }
 
-        private static VTypeFlags ComputeInvokableNodeFlags(VTypeMember vType) => VTypeFlags.None;
+        private static VTypeFlags ComputeInvokableNodeFlags(VTypeMember vType) => 
+            vType.PropertyAttributes.Any(attr => attr is ShowInInspectorAttribute) 
+                ? VTypeFlags.ShowInInspector | VTypeFlags.IncludeInInspector
+                : VTypeFlags.IncludeInInspector;
 
         private static VTypeFlags ComputeFlags(VTypeMember vType) =>
-            (IsSerializableField(vType.RuntimeField) 
-                ? HasHideInInspectorAttribute(vType.RuntimeField) 
-                    ? VTypeFlags.Serializable | VTypeFlags.HideInInspector 
-                    : VTypeFlags.Serializable 
-                : HasHideInInspectorAttribute(vType.RuntimeField) 
-                    ? VTypeFlags.HideInInspector 
-                    : VTypeFlags.None) 
-            | (vType.PropertyAttributes.Any(attr => attr is ShowInInspectorAttribute) 
-                ? VTypeFlags.ShowInInspector 
-                : VTypeFlags.None) 
-            | (vType.PropertyAttributes.Any(attr => attr is NonReorderableAttribute) 
-                ? VTypeFlags.NonReorderable 
-                : VTypeFlags.None) 
+            (IsSerializableField(vType.RuntimeField)
+                ? HasHideInInspectorAttribute(vType.RuntimeField)
+                    ? VTypeFlags.Serializable | VTypeFlags.HideInInspector
+                    : VTypeFlags.Serializable | VTypeFlags.IncludeInInspector
+                : HasHideInInspectorAttribute(vType.RuntimeField)
+                    ? VTypeFlags.HideInInspector
+                    : vType.PropertyAttributes.Any()
+                        ? VTypeFlags.IncludeInInspector
+                        : VTypeFlags.None)
+            | (vType.PropertyAttributes.Any(attr => attr is ShowInInspectorAttribute)
+                ? VTypeFlags.ShowInInspector
+                : VTypeFlags.None)
+            | (vType.PropertyAttributes.Any(attr => attr is NonReorderableAttribute)
+                ? VTypeFlags.NonReorderable
+                : VTypeFlags.None)
             | (vType.FieldType.IsArray
-                ? VTypeFlags.Array 
+                ? VTypeFlags.Array
                 : VTypeFlags.None)
             | (typeof(System.Collections.IList).IsAssignableFrom(vType.FieldType)
-                ? VTypeFlags.List 
+                ? VTypeFlags.List
                 : VTypeFlags.None);
 
         private static bool IsSerializableField(FieldInfo fieldInfo) => 
@@ -178,25 +212,6 @@ namespace Space3x.InspectorAttributes.Editor
 
         private static bool HasShowInInspectorAttribute(FieldInfo fieldInfo) =>
             fieldInfo.IsDefined(typeof(ShowInInspectorAttribute), false);
-
-        // private static List<PropertyAttribute> GetSortedCustomPropertyAttributes(MemberInfo field)
-        // {
-        //     var list = new List<PropertyAttribute>();
-        //     if (field != null)
-        //     {
-        //         // var customAttributes = memberInfo.CustomAttributes?
-        //         //     .Where(data => typeof(PropertyAttribute).IsAssignableFrom(data.AttributeType))
-        //         //     .ToList();
-        //         // var customAttributes = field
-        //         //     .GetCustomAttributes<PropertyAttribute>(true);
-        //         var customAttributes = field
-        //             .GetCustomAttributesData()
-        //             .Where(data => typeof(PropertyAttribute).IsAssignableFrom(data.AttributeType));
-        //         foreach (var propertyAttribute in customAttributes)
-        //             list.AddSorted<CustomAttributeData>(propertyAttribute, (IComparer<CustomAttributeData>)s_Comparer);
-        //     }
-        //     return list;
-        // }
 
         private static List<PropertyAttribute> GetSortedCustomPropertyAttributes(MemberInfo field)
         {

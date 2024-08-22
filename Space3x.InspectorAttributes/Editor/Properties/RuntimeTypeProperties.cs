@@ -20,59 +20,95 @@ namespace Space3x.InspectorAttributes.Editor
 
         public IPropertyNode GetValue(string key)
         {
-            var i = Keys.IndexOf(key);
+            var i = Keys.IndexOf(key ?? string.Empty);
             return i >= 0 ? Values[i] : null;
         }
 
+        private void AddPropertyTreeRoot()
+        {
+            if (Controller.SerializedObject != null)
+            {
+                Values.Add(new SerializedPropertyNodeTree()
+                {
+                    Name = string.Empty,
+                    ParentPath = Controller.ParentPath,
+                    Flags = VTypeFlags.Serializable,
+                    Controller = Controller,
+                });
+            }
+            else
+            {
+                Values.Add(new NonSerializedPropertyNodeTree()
+                {
+                    Name = string.Empty,
+                    ParentPath = Controller.ParentPath,
+                    Flags = VTypeFlags.None,
+                    Controller = Controller,
+                });
+            }
+            Keys.Add(string.Empty);
+        }
+        
         private void Bind()
         {
+            AddPropertyTreeRoot();
             for (var i = 0; i < Controller.AnnotatedType.Values.Count; i++)
             {
                 var entry = Controller.AnnotatedType.Values[i];
                 var isNodeTree = (entry.FieldType.IsClass || entry.FieldType.IsInterface) && entry.FieldType != typeof(string);
-                if (entry.IsSerializable)
+
+                if (entry.RuntimeMethod != null)
+                {
+                    Values.Add(new InvokablePropertyNode()
+                    {
+                        Name = entry.Name,
+                        ParentPath = Controller.ParentPath,
+                        Flags = entry.Node.Flags,
+                        Controller = Controller,
+                    });
+                    Keys.Add(entry.Name);
+                    continue;
+                }
+                
+                if (entry.Node.IsSerializable)
                 {
                     if (isNodeTree)
                         Values.Add(new SerializedPropertyNodeTree()
                         {
                             Name = entry.Name,
                             ParentPath = Controller.ParentPath,
-                            Flags = entry.Flags,
-                            SerializedObject = Controller.SerializedObject
+                            Flags = entry.Node.Flags,
+                            Controller = Controller,
                         });
                     else
                         Values.Add(new SerializedPropertyNode()
                         {
                             Name = entry.Name,
                             ParentPath = Controller.ParentPath,
-                            Flags = entry.Flags,
-                            SerializedObject = Controller.SerializedObject
+                            Flags = entry.Node.Flags,
+                            Controller = Controller,
                         });
                     Keys.Add(entry.Name);
                 }
                 else
                 {
-                    if (entry.IsHidden)
-                    {
-                        // Values.Add(null);
-                    }
-                    else
+                    if (!entry.Node.IsHidden || entry.Node.IncludeInInspector)
                     {
                         if (isNodeTree)
                             Values.Add(new NonSerializedPropertyNodeTree()
                             {
                                 Name = entry.Name,
                                 ParentPath = Controller.ParentPath,
-                                Flags = entry.Flags,
-                                SerializedObject = Controller.SerializedObject
+                                Flags = entry.Node.Flags,
+                                Controller = Controller,
                             });
                         else
                             Values.Add(new NonSerializedPropertyNode()
                             {
                                 Name = entry.Name,
                                 ParentPath = Controller.ParentPath,
-                                Flags = entry.Flags,
-                                SerializedObject = Controller.SerializedObject
+                                Flags = entry.Node.Flags,
+                                Controller = Controller,
                             });
                         Keys.Add(entry.Name);
                     }

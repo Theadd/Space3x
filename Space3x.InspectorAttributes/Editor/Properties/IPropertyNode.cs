@@ -9,7 +9,7 @@ namespace Space3x.InspectorAttributes.Editor
     /// IPropertyNode interface that can be used instead of (or alongside) a <see cref="SerializedProperty"/> but
     /// also works with the non-serialized properties. 
     /// </summary>
-    public interface IPropertyNode
+    public interface IPropertyNode : IEquatable<IPropertyNode>
     {
         /// <summary>
         /// The name of the property.
@@ -26,25 +26,31 @@ namespace Space3x.InspectorAttributes.Editor
         /// <see cref="SerializedProperty.propertyPath"/> on a serialized property. 
         /// </summary>
         public string PropertyPath { get; }
+
+        bool IEquatable<IPropertyNode>.Equals(IPropertyNode other)
+        {
+            if (this is IPropertyNodeIndex propertyNodeIndex && other is IPropertyNodeIndex otherPropertyNodeIndex)
+                return propertyNodeIndex.Indexer.Equals(otherPropertyNodeIndex.Indexer) && propertyNodeIndex.Index == otherPropertyNodeIndex.Index;
+            return ReferenceEquals(this, other);
+        }
     }
 
     public interface IPropertyWithSerializedObject
     {
-        public SerializedObject SerializedObject { get; }
+        public IPropertyController Controller { get; }
+        
+        public SerializedObject SerializedObject => Controller.SerializedObject;
     }
     
     /// <summary>
     /// Represents a property which is also a container for other properties. For example, an object or struct.
     /// </summary>
     [ExcludeFromDocs]
-    public interface INodeTree : IPropertyNode
-    {
-        // public IEnumerable<IPropertyNodeWithFlags> Children();
-    }
+    public interface INodeTree : IPropertyNode { }
     
     [ExcludeFromDocs]
     public interface IPropertyNodeWithFlags : IPropertyNode, IPropertyFlags { }
-    
+
     /// <summary>
     /// Base interface for properties that can be bound to a bindable object.
     /// </summary>
@@ -55,7 +61,7 @@ namespace Space3x.InspectorAttributes.Editor
     [ExcludeFromDocs]
     public interface IBindablePropertyNode : IPropertyNodeWithFlags, IPropertyWithSerializedObject
     {
-        // public VisualElement Field { get; set; }
+        public IBindableDataSource DataSource { get; set; }
     }
 
     /// <summary>
@@ -71,6 +77,7 @@ namespace Space3x.InspectorAttributes.Editor
     public interface INonSerializedPropertyNode : IBindablePropertyNode
     {
         public event Action<IPropertyNode> ValueChanged;
+        
         public void NotifyValueChanged();
     }
 
@@ -106,10 +113,17 @@ namespace Space3x.InspectorAttributes.Editor
     /// <seealso cref="ISerializedPropertyNodeIndex"/>
     [ExcludeFromDocs]
     public interface INonSerializedPropertyNodeIndex : INonSerializedPropertyNode, IPropertyNodeIndex { }
-    
+
     /// <summary>
     /// Base interface for invokable properties, such as methods annotated with any valid <see cref="UnityEngine.PropertyAttribute"/>.
     /// </summary>
     [ExcludeFromDocs]
-    public interface IInvokablePropertyNode : IBindablePropertyNode { }
+    public interface IInvokablePropertyNode : IBindablePropertyNode
+    {
+        public event Action<IInvokablePropertyNode> ValueChanged;
+        
+        public void NotifyValueChanged();
+        
+        public object Value { get; }
+    }
 }

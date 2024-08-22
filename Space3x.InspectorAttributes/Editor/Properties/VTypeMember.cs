@@ -7,12 +7,16 @@ using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
-    public class VTypeMember : IPropertyNode, IPropertyFlags
+    public class VTypeMember : IPropertyNodeWithFlags
     {
         public FieldInfo RuntimeField;
+        public MethodInfo RuntimeMethod;
         public Type FieldType;
         public List<PropertyAttribute> PropertyAttributes;
         
+        public IPropertyNodeWithFlags Node => this;
+        
+        VTypeFlags IPropertyFlags.Flags => Flags;
         public VTypeFlags Flags { get; set; }
         public string Name { get; set; }
         public string PropertyPath => string.IsNullOrEmpty(ParentPath) || string.IsNullOrEmpty(Name)
@@ -32,13 +36,6 @@ namespace Space3x.InspectorAttributes.Editor
         public PropertyAttribute PropertyDrawerOnCollectionItemsAttribute { get; private set; } = null;
         public string Tooltip => m_Tooltip ??= GetTooltipText();
 
-        public bool IsHidden => (Flags | VTypeFlags.HideInInspector) == Flags ||
-                                !((Flags | VTypeFlags.Serializable) == Flags ||
-                                  (Flags | VTypeFlags.ShowInInspector) == Flags);
-        public bool IsSerializable => (Flags | VTypeFlags.Serializable) == Flags;
-        
-        public bool IsNonReorderable => (Flags | VTypeFlags.NonReorderable) == Flags;
-
         private string GetTooltipText()
         {
             foreach (var propertyAttribute in PropertyAttributes)
@@ -50,7 +47,8 @@ namespace Space3x.InspectorAttributes.Editor
         
         private bool Rebuild()
         {
-            var isArray = IsArrayOrList(FieldType);
+            var isInvokableNode = RuntimeMethod != null;
+            var isArray = !isInvokableNode && IsArrayOrList(FieldType);
             m_DecoratorDrawers = new List<Type>(PropertyAttributes.Count);
             m_PropertyDrawerOnCollectionItems = null;
             for (var i = 0; i < PropertyAttributes.Count; i++)
@@ -76,17 +74,24 @@ namespace Space3x.InspectorAttributes.Editor
                     m_DecoratorDrawers.Add(null);
                     if (isArray && !attr.applyToCollection)
                     {
-                        m_PropertyDrawerOnCollectionItems = drawer;
-                        PropertyDrawerOnCollectionItemsAttribute = attr;
+                        if (m_PropertyDrawerOnCollectionItems == null)
+                        {
+                            m_PropertyDrawerOnCollectionItems = drawer;
+                            PropertyDrawerOnCollectionItemsAttribute = attr;
+                        }
                         continue;
                     }
-                    m_PropertyDrawer = drawer;
-                    PropertyDrawerAttribute = attr;
+                    if (m_PropertyDrawer == null)
+                    {
+                        m_PropertyDrawer = drawer;
+                        PropertyDrawerAttribute = attr;
+                    }
                 }
                 else
                     m_DecoratorDrawers.Add(null);
             }
-            m_PropertyDrawer ??= CachedDrawers.GetCustomDrawer(FieldType);
+            if (!isInvokableNode)
+                m_PropertyDrawer ??= CachedDrawers.GetCustomDrawer(FieldType);
 
             return true;
         }

@@ -8,7 +8,10 @@ namespace Space3x.InspectorAttributes.Editor
         None = 0,
         HideInInspector = 1,
         ShowInInspector = 2,
-        Serializable = 4,
-        NonReorderable = 8,
+        IncludeInInspector = 4,
+        Serializable = 8,
+        NonReorderable = 16,
+        Array = 32,
+        List = 64,
     }
 }
