@@ -362,3 +362,48 @@
 .ui3x-type-picker-instance-container > * > .unity-foldout > .unity-toggle {
     display: none;
 }
+
+/* EditorAttributes Compatibility Styles */
+
+.ui3x-property-group > .ui3x-group--row > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-property-group > .ui3x-group--column > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: visible;
+}
+
+.ui3x-property-group > .ui3x-group--none > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--row > VisualElement > .unity-property-field > .unity-base-field {
+    flex-direction: row;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--column > VisualElement > .unity-property-field > .unity-base-field {
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--none > VisualElement > .unity-property-field > .unity-base-field {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
