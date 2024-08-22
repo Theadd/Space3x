@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using Space3x.InspectorAttributes.Editor.Utilities;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -9,18 +8,9 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
 {
     public static class SerializedPropertyExtensions
     {
-        public static bool TryCreateInvokable<TIn, TOut>(
-            this SerializedProperty self,
-            string memberName, 
-            out Invokable<TIn, TOut> invokableMember)
-        {
-            invokableMember = ReflectionUtility.CreateInvokable<TIn, TOut>(memberName, self); 
-            return invokableMember != null;
-        }
-
         private static MethodInfo s_PropertyFieldReset = null;
 
-        public static void AssignToPropertyField(this SerializedProperty property, PropertyField target)
+        internal static void AssignToPropertyField(this SerializedProperty property, PropertyField target)
         {
             s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
                 "Reset", 
@@ -78,7 +68,7 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             }
         }
 
-        public static int GetParentObjectHash(this SerializedProperty prop)
+        internal static int GetParentObjectHash(this SerializedProperty prop)
         {
             var parentPath = prop.GetParentPath();
             if (string.IsNullOrEmpty(parentPath))

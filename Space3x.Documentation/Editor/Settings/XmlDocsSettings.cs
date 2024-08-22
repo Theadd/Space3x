@@ -10,17 +10,6 @@ namespace Space3x.Documentation.Settings
     {
         public const string XmlDocsSettingsPath = "Assets/Settings/Space3x/XmlDocsSettings.asset";
 
-        [SerializeField]
-        private int m_Number;
-
-        [SerializeField]
-        [EnableOn(nameof(AllVisible))]
-        private string m_SomeString;
-
-        [Green]
-        [Button(nameof(SaySomething))]
-        public float SomeFloatValue = 0.65f;
-
         [Yellow]
         [EnableOn(nameof(IsBusyGeneratingXmlDocs), Enabled = false)]
         [Button(nameof(GenerateXmlDocs))]
@@ -64,8 +53,6 @@ namespace Space3x.Documentation.Settings
             if (settings == null)
             {
                 settings = ScriptableObject.CreateInstance<XmlDocsSettings>();
-                settings.m_Number = 42;
-                settings.m_SomeString = "The answer to the universe";
                 AssetDatabase.CreateAsset(settings, XmlDocsSettingsPath);
                 AssetDatabase.SaveAssets();
             }

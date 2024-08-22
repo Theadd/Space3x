@@ -22,7 +22,7 @@ namespace Space3x.Documentation.Settings
         // [AllowExtendedAttributes]
         [NoScript]
         [SerializeReference]
-        [ListSource(nameof(GetAvailableAssemblyNames))]
+        // [ListSource(nameof(GetAvailableAssemblyNames))]
         public List<string> TargetAssemblies = new List<string>();
         
         // [ShowInInspector]
@@ -44,9 +44,10 @@ namespace Space3x.Documentation.Settings
 
         [VisibleOn(nameof(AddCoverPage))]
         [Multiline(lines: 8)]
+        [TextArea(8, 16)]
         public string CoverPage = @"# docsify-themeable
 
-> A delightfully simple theme system for [docsify.js](https://docsify.js.org)
+> A delightfully **simple theme system** for [docsify.js](https://docsify.js.org)
 
 - Based on CSS custom properties
 - No packages to install or files to build
@@ -57,15 +58,16 @@ namespace Space3x.Documentation.Settings
 [Get Started](#main)
 [GitHub](https://github.com/jhildenbiddle/docsify-themeable)
 [Unity Asset Store](https://www.npmjs.com/package/docsify-themeable)
-";
+".Replace("\r\n", "\n");
         
         [Multiline(lines: 5)]
+        [TextArea(4, 16)]
         public string ReadmePage = @"# Demo
 
 This sandbox is a demonstration of the [docsify-themeable](https://jhildenbiddle.github.io/docsify-themeable/) theme system for [docsify.js](https://docsify.js.org/). 
 
 ?> You can ignore the `package.json` file in this sandbox. This file is required by codesandbox.io, not [docsify.js](https://docsify.js.org/).
-";
+".Replace("\r\n", "\n");
         
         public string PageTitle = "Documentation Page";
         

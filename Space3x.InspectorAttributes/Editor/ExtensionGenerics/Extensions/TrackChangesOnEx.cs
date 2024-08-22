@@ -21,14 +21,8 @@ namespace Space3x.InspectorAttributes.Editor
             if (!string.IsNullOrEmpty(content.PropertyName))
             {
                 var trackedProperty = drawer.Property.GetParentProperty().FindPropertyRelative(content.PropertyName);
-                // var trackedProperty = drawer.Property.GetSerializedObject().FindProperty(content.PropertyName);
                 if (trackedProperty != null)
-                {
                     element.TrackPropertyValue(trackedProperty, _ => drawer.OnUpdate());
-                    // element.Unbind();
-                    // element.TrackPropertyValue(trackedProperty, (_) => drawer.OnUpdate());
-                    // ((IBindable) element).BindProperty(trackedProperty);
-                }
                 else
                     Debug.LogWarning($"Unable to find related property {content.PropertyName} on {drawer.Property.PropertyPath}");
             }
