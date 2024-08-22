@@ -5,8 +5,8 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(LayerAttribute), useForChildren: true)]
-    public class LayerDrawer : Drawer<LayerAttribute>
+    [CustomPropertyDrawer(typeof(LayerPickerAttribute), useForChildren: true)]
+    public class LayerDrawer : Drawer<LayerPickerAttribute>
     {
         protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {

@@ -1,5 +1,6 @@
 ﻿using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -21,12 +22,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             var container = new VisualElement();
 
             if (m_InnerField != null)
-                DebugLog.Error($"<color=#FF0000FF><b>Duplicate call on OnCreatePropertyGUI of InlineDrawer for \"{property.PropertyPath}\".");
+                DebugLog.Warning($"<color=#FF0000FF><b>Duplicate call on OnCreatePropertyGUI of InlineDrawer for \"{property.PropertyPath}\".");
 
             if (property.HasSerializedProperty())
                 m_InnerField = new PropertyField(property.GetSerializedProperty());
             else
-                m_InnerField = new BindablePropertyField(property);
+                m_InnerField = new BindablePropertyField(property).WithClasses(UssConstants.UssShowInInspector);
             InspectorContainer = new BindableElement();
             InspectorContainer.TrackPropertyValue(property, CheckInline);
             container.Add(m_InnerField);
@@ -47,7 +48,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     case SerializedPropertyType.ObjectReference:
                         if (property.objectReferenceValue != null)
                         {
-                            var inlineInspector = new InspectorElement(property.objectReferenceValue);
+                            var inlineInspector = new InspectorElement(property.objectReferenceValue).WithClasses("ui3x-as-object-reference");
                             inlineInspector.SetEnabled(Target.ContentEnabled);
                             InspectorContainer.Add(inlineInspector);
                         }
@@ -56,7 +57,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     case SerializedPropertyType.ManagedReference:
                         if (property.managedReferenceValue != null)
                         {
-                            var inlineManagedObject = new PropertyField(property);
+                            var inlineManagedObject = new PropertyField(property).WithClasses("ui3x-as-managed-reference");
                             inlineManagedObject.SetEnabled(Target.ContentEnabled);
                             InspectorContainer.Add(inlineManagedObject);
                         }
@@ -65,7 +66,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     case SerializedPropertyType.ExposedReference:
                         if (property.exposedReferenceValue != null)
                         {
-                            var inlineInspector = new InspectorElement(property.exposedReferenceValue);
+                            var inlineInspector = new InspectorElement(property.exposedReferenceValue).WithClasses("ui3x-as-exposed-reference");
                             inlineInspector.SetEnabled(Target.ContentEnabled);
                             InspectorContainer.Add(inlineInspector);
                         }
@@ -84,7 +85,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     var boxedValue = bindableDataSource.BoxedValue;
                     if (boxedValue is UnityEngine.Object unityObject)
                     {
-                        var customInspector = new InspectorElement(unityObject);
+                        var customInspector = new InspectorElement(unityObject).WithClasses("ui3x-as-non-serialized");
                         customInspector.SetEnabled(Target.ContentEnabled);
                         InspectorContainer.Add(customInspector);
                     }

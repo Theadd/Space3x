@@ -1,6 +1,7 @@
 ﻿using Space3x.Attributes.Types;
 using UnityEditor;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
@@ -22,8 +23,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 return;
             }
 
-            if (Property.TryCreateInvokable<object, object>(Property.Name, out var invokable)) 
-                invokable.Invoke();
+            if (Property.TryCreateInvokable<object, object>(Property.Name, out var invokable))
+            {
+                var result = invokable.Invoke();
+                if (Property is IInvokablePropertyNode invokablePropertyNode)
+                    invokablePropertyNode.SetValue(result);
+            }
         }
     }
 }

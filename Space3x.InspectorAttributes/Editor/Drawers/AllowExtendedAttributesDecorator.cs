@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEditorInternal;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -29,9 +31,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             var shouldRebind = childProp == null;
             if (!shouldRebind)
             {
+                if (propertyField == Field)
+                    return childProp;
+                
                 try
                 {
-                    shouldRebind = !propertyField.name.EndsWith(childProp.name);
+                    // EDIT: shouldRebind = !propertyField.name.EndsWith(childProp.name);
+                    shouldRebind = !(propertyField.bindingPath.EndsWith(childProp.name) || propertyField.name.EndsWith(childProp.name));
                 }
                 catch (Exception)   // catch (ObjectDisposedException _)
                 {
@@ -75,7 +81,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             // var parentPath = Property?.ParentPath ?? "";
             // DebugLog.Info($"<color=#00FF00FF>IN !! AllowExtendedAttributesDecorator.PopulateNonSerializedProperties: {Property?.ParentPath}; m_BindableFields.Count: {m_BindableFields.Count}</color>");
+            if (Field.ClassListContains(UssConstants.UssAttributesExtended))
+            {
+                DebugLog.Warning($"<color=#FF0000FF><b>Field: {Field.name} already has {UssConstants.UssAttributesExtended} class list item! ThisHash: {this.GetHashCode()}</b></color>");
+                // EDIT: return;
+            }
             var parentElement = Container.hierarchy.parent;
+            if (parentElement.ClassListContains(UssConstants.UssFactoryPopulated))
+            {
+                DebugLog.Info("Populated already by factory!");
+                return;
+            }
             var allFields = new Dictionary<string, VisualElement>();
             var allChildren = parentElement.hierarchy.Children().ToList();
             for (var i = 0; i < allChildren.Count; i++)
@@ -120,10 +136,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     else
                         Debug.LogWarning($"No PropertyField found for {serializedNode.Name}.");
                 }
-                else if (prop is NonSerializedPropertyNodeBase nonSerializedNode)
+                else if (prop is NonSerializedPropertyNodeBase nonSerializedNode && nonSerializedNode.IncludeInInspector())
                 {
                     var bindableField = new BindablePropertyField();
                     // nonSerializedNode.Field = bindableField;
+                    bindableField.WithClasses(nonSerializedNode.ShowInInspector(), UssConstants.UssShowInInspector);
                     bindableField.BindProperty(nonSerializedNode, applyCustomDrawers: true);
                     previousField.AddAfter(bindableField);
                     bindableField.AttachDecoratorDrawers();
@@ -133,9 +150,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         bindableField.TrackPropertyValue(nonSerializedNode, OnPropertyValueChanged);
                     // DebugLog.Info($"    <color=#66FF66FF>{nonSerializedNode.Name} SYNCED as <b>NON</b>-SERIALIZED ON: {parentPath}</color> ({nonSerializedNode.PropertyPath})");
                 }
-                else if (prop is InvokablePropertyNodeBase invokableNode)
+                else if (prop is InvokablePropertyNodeBase invokableNode && invokableNode.IncludeInInspector())
                 {
                     var invokableField = new BindablePropertyField();
+                    invokableField.WithClasses(invokableNode.ShowInInspector(), UssConstants.UssShowInInspector);
                     invokableField.BindProperty(invokableNode, applyCustomDrawers: true);
                     previousField.AddAfter(invokableField);
                     invokableField.AttachDecoratorDrawers();
@@ -146,11 +164,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     DebugLog.Info($"    <color=#66FF66FF>{invokableNode.Name} SYNCED as <b>INVOKABLE PROPERTY NODE</b> ON: {invokableNode.ParentPath}</color> ({invokableNode.PropertyPath})");
                 }
             }
+            Field.WithClasses(UssConstants.UssAttributesExtended);
         }
 
         private void OnPropertyValueChanged(IPropertyNode property)
         {
-            DebugLog.Info($"<color=#00FF00FF>Tracked change on {property.GetType().Name}: {property.PropertyPath}</color>");
             PropertyAttributeController.OnPropertyValueChanged(property);
         }
         
@@ -158,11 +176,16 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: true);
             Controller = PropertyAttributeController.GetInstance(Property);
-            #if SPACE3X_DEBUG
-            element.Add(new Button(() => OnClick()) { text = "DEBUG ME!" });
-            element.Add(new Button(OnClickAddDevTooltips) { text = "Dev Tooltips" });
+#if SPACE3X_DEBUG
+            element.Add(new Button(() => OnClick()) { text = "1", tooltip = "DEBUG ME!", style = { fontSize = 8 } });
+            element.Add(new Button(OnClickAddDevTooltips) { text = "2", tooltip = "Dev Tooltips", style = { fontSize = 8 } });
             element.SetVisible(true);
-            #endif
+            element.style.flexWrap = Wrap.Wrap;
+            element.style.left = -16;
+            element.style.position = Position.Absolute;
+            element.style.maxWidth = 4;
+            element.style.flexDirection = FlexDirection.Row;
+#endif
         }
 
         private void OnClickAddDevTooltips()
@@ -176,11 +199,51 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnClick()
         {
+            DebuggingUtility.ShowAllControllers();
+            var str = $"<b><u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
+            foreach (var parentProperty in Property.GetAllParentProperties(false))
+            {
+                str += $"\t'<b>{parentProperty.Name}</b>' @ '{parentProperty.ParentPath}' ({parentProperty.PropertyPath})\n";
+            }
+            DebugLog.Info(str);
+
+            var underlyingValue = Property.GetUnderlyingValue();
+            Debug.Log(underlyingValue);
+            var parent = Property.GetParentProperty();
+            if (parent != null)
+            {
+                var uValueParent = parent.GetUnderlyingValue();
+                Debug.Log($"<u>{uValueParent}</u>: {uValueParent} ({uValueParent.GetType().Name})");
+                if (parent is IPropertyNodeIndex propertyNodeIndex)
+                {
+                    Debug.Log($"  Index: {propertyNodeIndex.Index}");
+                }
+            }
+
+        }
+        
+        private void PreviousVersionOfOnClick()
+        {
             var allControllers = PropertyAttributeController.GetAllInstances();
             foreach (var controller in allControllers)
             {
                 Debug.Log(controller.InstanceID + " - " + controller.ParentPath);
             }
+
+            var allSheets = Resources.FindObjectsOfTypeAll<StyleSheet>();
+            
+            foreach (var sheet in allSheets)
+            {
+                Debug.Log("  - StyleSheet: " + sheet.GetHashCode() + " - " + sheet.name);
+            }
+            
+            var allAssemblies = Resources.FindObjectsOfTypeAll<AssemblyDefinitionAsset>();
+            
+            foreach (var assembly in allAssemblies)
+            {
+                Debug.Log("  - AssemblyDefinitionAsset: " + assembly.GetHashCode() + " - " + assembly.name);
+            }
+            
             LogActiveEditors();
             // if (Container.panel?.visualTree is VisualElement { childCount: >= 2 } vPanel)
             // {
@@ -218,6 +281,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 m_IsReady = true;
                 Controller ??= PropertyAttributeController.GetInstance(Property);
+                if (Controller == null)
+                {
+                    DebugLog.Error($"Controller is null at AllowExtendedAttributesDecorator.OnUpdate().  (ThisHash: {this.GetHashCode()})");
+                    return;
+                }
                 PopulateNonSerializedProperties();
                 DecoratorsCache.RebuildAll();
                 DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);

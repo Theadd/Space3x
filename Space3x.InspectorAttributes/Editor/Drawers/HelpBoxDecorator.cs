@@ -18,10 +18,10 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 style =
                 {
-                    marginBottom = 0,
-                    marginLeft = 0,
-                    marginRight = 0,
-                    marginTop = 0,
+                    // marginBottom = 0,
+                    // marginLeft = 0,
+                    // marginRight = 0,
+                    // marginTop = 0,
                     flexGrow = 1,
                     whiteSpace = WhiteSpace.Normal
                 }
