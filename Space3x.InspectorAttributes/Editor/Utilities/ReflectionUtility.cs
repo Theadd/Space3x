@@ -216,7 +216,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 
 			var serializedObjectField = FindMember(pathComponents[0], targetObjectType, BINDING_FLAGS, MemberTypes.Field) as FieldInfo;
 
-			serializedObject = serializedObjectField.GetValue(targetObject);
+			serializedObject = serializedObjectField?.GetValue(targetObject);
 
 			return serializedObject?.GetType();
 		}
@@ -313,6 +313,11 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 		{
 			var initialTarget = (object)property.GetDeclaringObject();
 			var targetObject = (object)property.GetDeclaringObject();
+			if (initialTarget == null)
+			{
+				targetObj = targetObject;
+				return null;
+			}
 
 			MemberInfo memberInfo = FindField(memberName, property, ref targetObject);
 			
@@ -358,7 +363,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
 
 			var serializedObjectField = FindMember(pathComponents[0], targetObjectType, BINDING_FLAGS, MemberTypes.Field) as FieldInfo;
 
-			serializedObject = serializedObjectField.GetValue(targetObject);
+			serializedObject = serializedObjectField?.GetValue(targetObject);
 
 			return serializedObject?.GetType();
 		}

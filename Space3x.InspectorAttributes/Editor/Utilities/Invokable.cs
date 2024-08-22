@@ -50,6 +50,9 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
         /// <returns>The value returned from the member.</returns>
         public TOut Invoke() => 
             (TOut)ReflectionUtility.GetMemberInfoValue(CallableMember, TargetObject, EmptyArgs);
+        
+        public TOut InvokeWith(object[] methodParameters) => 
+            (TOut) ReflectionUtility.GetMemberInfoValue(CallableMember, TargetObject, methodParameters);
 
         #region Irrelevant Stuff (to increase performance in some cases)
         // ReSharper disable once StaticMemberInGenericType
