@@ -239,6 +239,20 @@
     flex-basis: 90%;
 }
 
+/* No Label */
+
+.ui3x-no-label-all .unity-label {
+    display: none;
+}
+
+.ui3x-no-label > .unity-label {
+    display: none;
+}
+
+.ui3x-no-label > * > .unity-label {
+    display: none;
+}
+
 /* Space */
 
 .ui3x-group-type--row > .ui3x-property-group > .ui3x-decorator > .ui3x-space {
@@ -264,5 +278,87 @@
     transition-timing-function: ease-in-out-sine, ease-in-out-sine;
     min-height: 21px;
     max-height: 42px;
-    overflow: hidden;
+    overflow: visible;
+}
+
+/* Text Area */
+
+.ui3x-text-area {
+    flex-shrink: 1;
+    flex-grow: 1;
+}
+
+/* Editable Rich Text */
+
+.ui3x-editable-rich-text {
+    margin-right: -2px;
+}
+
+.ui3x-editable-rich-text > .unity-text-field__input {
+    display: none;
+    -unity-paragraph-spacing: 8px;
+    padding: 4px 2px 4px 4px;
+}
+
+.ui3x-editable-rich-text.ui3x-edit-mode > .unity-text-field__input {
+    display: flex;
+}
+
+.ui3x-editable-rich-text > .ui3x-editable-label {
+    display: flex;
+}
+
+.ui3x-editable-rich-text.ui3x-edit-mode > .ui3x-editable-label {
+    display: none;
+}
+
+.ui3x-editable-label.unity-help-box {
+    margin: 0;
+    padding: 4px 4px 4px 6px;
+    flex-grow: 1;
+    -unity-paragraph-spacing: 8px;
+}
+
+/* Invokable Field */
+
+.ui3x-invokable-field > .unity-base-field__input {
+    border-bottom-right-radius: 0;
+    border-right-width: 0;
+    border-top-right-radius: 0;
+}
+
+.ui3x-invokable-field > .unity-button-group__button {
+    margin-bottom: 0;
+    margin-top: 0;
+    height: auto;
+    padding: 1px 4px 0 5px;
+    font-size: 15px;
+}
+
+.ui3x-invokable-field > .unity-button-group__button:hover {
+    color: #00E000;
+}
+
+/* BindablePropertyField - Show In Inspector */
+
+.ui3x-bindable-property-field {
+    display: none;
+}
+
+.ui3x-bindable-property-field.ui3x-show-in-inspector {
+    display: flex;
+}
+
+.ui3x-bindable-property-field.ui3x-show-in-inspector.ui3x-hidden {
+    display: none;
+}
+
+/* TypePicker */
+
+.ui3x-type-picker-instance-container {
+    margin-right: 2px;
+}
+
+.ui3x-type-picker-instance-container > * > .unity-foldout > .unity-toggle {
+    display: none;
 }
