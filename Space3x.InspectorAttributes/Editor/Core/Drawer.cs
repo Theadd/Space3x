@@ -1,6 +1,7 @@
 ﻿using System;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -12,6 +13,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     public interface ICreateDrawerOnPropertyNode
     {
         public VisualElement CreatePropertyNodeGUI(IPropertyNode property);
+        
+        void SetPropertyNode(IPropertyNode property);
     }
     
     /// <summary>
@@ -88,6 +91,15 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// Override this method in order to perform any custom logic when this property drawer needs to be updated.
         /// </summary>
         public virtual void OnUpdate() { }
+
+        void ICreateDrawerOnPropertyNode.SetPropertyNode(IPropertyNode property)
+        {
+            Debug.Log($"IN Drawer.SetPropertyNode() FROM {Property.PropertyPath} TO {property.PropertyPath}");
+            // if (Property.Equals(property)) return;
+            Property = property;
+            // BindableUtility.AutoNotifyValueChangedOnNonSerialized(Container, Property);
+            OnUpdate();
+        }
         
         #region IDisposable
 
