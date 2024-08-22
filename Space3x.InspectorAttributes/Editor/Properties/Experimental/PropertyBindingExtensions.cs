@@ -1,4 +1,5 @@
 ﻿using System;
+using Space3x.Attributes.Types;
 using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -9,48 +10,66 @@ namespace Space3x.InspectorAttributes.Editor
     public static class PropertyBindingExtensions
     {
         /// <summary>
-        /// Binds a property to a field and synchronizes their values.
+        /// Binds the given <see cref="IPropertyNode"/> to a field and synchronizes their values, using the "value"
+        /// property on this field as the binding target.
         /// </summary>
-        /// <param name="field"></param>
-        /// <param name="property"></param>
-        /// <typeparam name="TValue"></typeparam>
-        public static void BindProperty<TValue>(this BaseField<TValue> field, IPropertyNode property)
+        /// <remarks>
+        /// It's an implicit drop-in replacement for <see cref="BindingExtensions.BindProperty(IBindable,SerializedProperty)"/>.
+        /// </remarks>
+        /// <seealso cref="BindingExtensions.BindProperty(IBindable,SerializedProperty)"/>
+        /// <seealso cref="BindProperty(IBindable,IPropertyNode,BindingId)"/>
+        /// <param name="field">The (<see cref="IBindable"/>) <see cref="VisualElement"/> field editing a property.</param>
+        /// <param name="property">The <see cref="IPropertyNode"/> to bind.</param>
+        public static void BindProperty(this IBindable field, IPropertyNode property) =>
+            BindProperty(field, property, "value");
+
+        /// <summary>
+        /// Binds the given <see cref="IPropertyNode"/> to a field and synchronizes their values using the specified
+        /// <paramref name="bindingId"/> as binding target on this <see cref="VisualElement"/>.
+        /// </summary>
+        /// <seealso cref="BindingExtensions.BindProperty(IBindable,SerializedProperty)"/>
+        /// <seealso cref="BindProperty(IBindable,IPropertyNode)"/>
+        /// <param name="field">The (<see cref="IBindable"/>) <see cref="VisualElement"/> field editing a property.</param>
+        /// <param name="property">The <see cref="IPropertyNode"/> to bind.</param>
+        /// <param name="bindingId">Target property on <paramref name="field"/> for the binding.</param>
+        public static void BindProperty(this IBindable field, IPropertyNode property, BindingId bindingId)
         {
-            if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
-                field.BindProperty(serializedProperty);
+            if (property.HasSerializedProperty())
+            {
+                if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
+                    BindingExtensions.BindProperty(field, serializedProperty);
+            }
             else
             {
-                field.dataSource = new BindableDataSource<TValue>(property);
-                field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
+                if (field is VisualElement element)
                 {
-                    dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
-                    bindingMode = BindingMode.TwoWay
-                });
+                    if (typeof(UnityEngine.Object).IsAssignableFrom(property.GetUnderlyingType()))
+                    {
+                        element.dataSource = new DataSourceObjectBinding(property);
+                        element.SetBinding(bindingId, new DataBinding
+                        {
+                            dataSourcePath = new PropertyPath(nameof(DataSourceObjectBinding.Value)),
+                            bindingMode = BindingMode.TwoWay
+                        });
+                    }
+                    else
+                    {
+                        element.dataSource = new DataSourceBinding(property);
+                        element.SetBinding(bindingId, new DataBinding
+                        {
+                            dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
+                            bindingMode = BindingMode.TwoWay
+                        });
+                    }
+                }
             }
         }
 
-        public static void BindProperty<TValue>(this BindableElement element, IPropertyNode property, BindingId bindingId)
-        {
-            if (property.HasSerializedProperty() && property.GetSerializedProperty() is SerializedProperty serializedProperty) 
-                element.BindProperty(serializedProperty);
-            else
-            {
-                element.dataSource = new BindableDataSource<TValue>(property);
-                element.SetBinding(bindingId, new DataBinding
-                {
-                    dataSourcePath = new PropertyPath(nameof(BindableDataSource<TValue>.Value)),
-                    bindingMode = BindingMode.TwoWay
-                });
-            }
-        }
-
-        // public static void Unbind<TValue>(this BaseField<TValue> field)
-        // {
-        //     if (field.HasBinding(nameof(BaseField<TValue>.value)))
-        //         field.ClearBinding(nameof(BaseField<TValue>.value));
-        //     BindingExtensions.Unbind((VisualElement)field);
-        // }
-
+        /// <summary>
+        /// Synchronizes the value of the given <see cref="IPropertyNode"/> on this <see cref="VisualElement"/>.
+        /// </summary>
+        /// <seealso cref="BindingExtensions.TrackPropertyValue"/>
+        /// <seealso cref="TrackSerializedObjectValue"/>
         public static void TrackPropertyValue(this VisualElement element, IPropertyNode property, Action<IPropertyNode> callback = null)
         {
             if (property.HasSerializedProperty())
@@ -65,9 +84,22 @@ namespace Space3x.InspectorAttributes.Editor
             }
         }
 
+        /// <summary>
+        /// Executes the given <paramref name="callback"/> when any value in the serialized object related to the given
+        /// <see cref="IPropertyNode"/> changes.
+        /// </summary>
+        /// <seealso cref="BindingExtensions.TrackSerializedObjectValue"/>
+        /// <seealso cref="TrackPropertyValue"/>
         public static void TrackSerializedObjectValue(this VisualElement element, IPropertyNode property, Action callback = null)
         {
-            element.TrackSerializedObjectValue(property.GetSerializedObject(), callback == null ? null : _ => callback.Invoke());
+            try
+            {
+                element.TrackSerializedObjectValue(property.GetSerializedObject(), callback == null ? null : _ => callback.Invoke());
+            }
+            catch (Exception e)
+            {
+                DebugLog.Warning(e.ToString() + Environment.NewLine + Environment.NewLine + e.StackTrace);
+            }
         }
     }
 }
