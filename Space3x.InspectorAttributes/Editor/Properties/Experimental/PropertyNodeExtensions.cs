@@ -86,9 +86,13 @@ namespace Space3x.InspectorAttributes.Editor
 
         public static object GetUnderlyingValue(this IPropertyNode property)
         {
+            object value = null;
             var allParents = property.GetAllParentProperties(skipNodeIndexes: false);
             var enumerator = allParents.GetEnumerator();
-            var value = GetUnderlyingValueRecursively(enumerator);
+            if (!enumerator.MoveNext())
+                value = property.GetSerializedObject()?.targetObject;
+            else
+                value = GetUnderlyingValueRecursively(enumerator, true);
             enumerator.Dispose();
             return value;
         }
@@ -111,14 +115,14 @@ namespace Space3x.InspectorAttributes.Editor
                         SetFieldValue(parentValue, property.Name, value);
                 }
                 else
-                    SetFieldValue(property.GetDeclaringObject(), property.Name, value); // property.GetDeclaringObject()
+                    SetFieldValue(property.GetDeclaringObject(), property.Name, value);
             }
         }
         
-        private static object GetUnderlyingValueRecursively(IEnumerator<IPropertyNode> enumerator)
+        private static object GetUnderlyingValueRecursively(IEnumerator<IPropertyNode> enumerator, bool skipMoveNext = false)
         {
-            var previousNode = enumerator.Current;
-            if (!enumerator.MoveNext())
+            var previousNode = enumerator.Current;  // it's in an invalid state when skipMoveNext is true but ignored since it's not used in such case.
+            if (!skipMoveNext && !enumerator.MoveNext())
             {
                 if (previousNode != null && previousNode is IPropertyWithSerializedObject propertyWithSerializedObject)
                     return (object) propertyWithSerializedObject.SerializedObject.targetObject;
@@ -214,36 +218,41 @@ namespace Space3x.InspectorAttributes.Editor
             return true;
         }
 
-        public static bool TrySetValue(this IPropertyNode property, object value)
+        private static bool TrySetValue(this IPropertyNode property, object value)
         {
             if (property is IBindablePropertyNode { DataSource: IBindableDataSource bindableDataSource })
             {
                 bindableDataSource.BoxedValue = value;
                 return true;
             }
-            // else property.SetUnderlyingValue(value);
             return false;
         }
         
-        public static bool TryGetValue(this IPropertyNode property, out object value)
+        private static bool TryGetValue(this IPropertyNode property, out object value)
         {
             if (property is IBindablePropertyNode { DataSource: IBindableDataSource bindableDataSource })
             {
                 value = bindableDataSource.BoxedValue;
                 return true;
             }
-            // else property.SetUnderlyingValue(value);
             value = null;
             return false;
         }
 
+        /// <summary>
+        /// Gets the value associated with this property.
+        /// </summary>
         public static object GetValue(this IPropertyNode property)
         {
             if (!property.TryGetValue(out var value))
                 value = property.GetUnderlyingValue();
             return value;
         }
-        
+
+        /// <summary>
+        /// Sets a new value for this property, automatically handling undo/redo support on serialized properties
+        /// and value changed event propagation for both serialized and non-serialized properties. 
+        /// </summary>
         public static void SetValue(this IPropertyNode property, object value)
         {
             if (property.HasSerializedProperty())

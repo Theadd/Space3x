@@ -3,6 +3,7 @@ using Space3x.Attributes.Types;
 using Unity.Properties;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -76,10 +77,19 @@ namespace Space3x.InspectorAttributes.Editor
                 element.TrackPropertyValue(property.GetSerializedProperty(), callback == null ? null : _ => callback(property));
             else
             {
-                if (callback != null && property is INonSerializedPropertyNode bindableProperty)
+                if (property.IsUnreliable() && property is BindablePropertyNode bindablePropertyNode)
                 {
-                    bindableProperty.ValueChanged -= callback;
-                    bindableProperty.ValueChanged += callback;
+                    if ((UnreliableEventHandler)bindablePropertyNode.Controller?.EventHandler is UnreliableEventHandler handler)
+                    {
+                        handler.TrackPropertyChanges(bindablePropertyNode, callback);
+                        Debug.LogWarning($"[PAC] TRACKING! UnreliableEventHandler: {property.PropertyPath}");
+                    }
+                }
+                
+                if (callback != null && property is INonSerializedPropertyNode nonSerializedPropertyNode)
+                {
+                    nonSerializedPropertyNode.ValueChanged -= callback;
+                    nonSerializedPropertyNode.ValueChanged += callback;
                 }
             }
         }
