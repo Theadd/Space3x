@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Types;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
@@ -16,6 +18,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         public void OnShow(QuickSearchElement element)
         {
+            DebugLog.Error($"<color=#FF00FFFF>[TypePickerField] OnShow(): m_ValueType is null? {m_ValueType == null}</color>");
             element.RegisterValueChangedCallback(OnSelectionChangeHandler);
             element.SetValueWithoutNotify(new List<Type>() {});
             if (m_ValueType != null)

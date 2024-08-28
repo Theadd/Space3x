@@ -11,11 +11,19 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
     public class QuickTypeSearchHandler : ITypeSearchHandler
     {
         public QuickSearchPopup Popup { get; set; }
+        
         public QuickSearchElement PopupContent { get; set; }
+        
         public IEnumerable<Type> CachedTypes { get; set; }
+        
         protected ITypePickerAttribute Target { get; set; }
+        
+        /// <summary>
+        /// Whether to include interfaces and abstract types in the search or not.
+        /// </summary>
+        public bool IncludeAbstractTypes { get; set; } = true;
 
-        protected virtual IEnumerable<Type> GetAllTypes(IPropertyNode property) => Target.GetAllTypes(property);
+        protected virtual IEnumerable<Type> GetAllTypes(IPropertyNode property) => Target.GetAllTypes(property, IncludeAbstractTypes);
         
         protected virtual void OnReload() => Target.ReloadCache();
         
@@ -24,8 +32,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         public void OnShowPopup(IPropertyNode property, IQuickTypeSearch target, VisualElement selectorField, ShowWindowMode mode)
         {
             PopupContent ??= CreateQuickSearchElement(property);
-            Popup ??= (new QuickSearchPopup() { }).WithContent(PopupContent);
-            Popup.WithSearchable(target).Show(selectorField, mode);
+            Popup ??= new QuickSearchPopup() { };
+            Popup.WithContent(PopupContent).WithSearchable(target).Show(selectorField, mode);
         }
         
         private QuickSearchElement CreateQuickSearchElement(IPropertyNode property) => 

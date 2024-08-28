@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Space3x.Attributes.Types;
 using Unity.Properties;
 using UnityEditor;
 using UnityEngine;
@@ -43,10 +44,15 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 
         public void SetValueWithoutNotify(IEnumerable<Type> newValue)
         {
+            DebugLog.Error($"<color=#FF00FFFF>[QuickSearchElement] SetValueWithoutNotify(): newValue.Count = {newValue?.Count()}</color>");
             m_Value = (newValue ?? new List<Type>()).ToList();
             m_ActiveSelection = m_Value.Select(t => new NamedSymbol(t)).ToList();
             if (m_InitialSelection == null)
+            {
                 m_InitialSelection = m_ActiveSelection.ToList();
+                if (m_ListView != null)
+                    UpdateSelectedIndicesInFilteredDatasource();
+            }
         }
 
         internal static readonly BindingId valueProperty = (BindingId) nameof (value);

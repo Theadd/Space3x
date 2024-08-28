@@ -55,15 +55,10 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
             EnableInClassList(UssConstants.UssTypePicker, true);
             // this.labelElement.AddToClassList(ObjectField.labelUssClassName);
             RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
-            this.RegisterValueChangedCallback(OnValueChangedCallback);
+            // this.RegisterValueChangedCallback(OnValueChangedCallback);
         }
 
-        private void OnValueChangedCallback(ChangeEvent<object> ev)
-        {
-            DebugLog.Info($"<b><color=#00FF00FF>WOF!</color> <color=#00FF7FFF>WOF!</color> <color=#7FFF00FF>WOF!</color> " +
-                          $"<color=#7F00FFFF>{nameof(TypePickerField)}.OnValueChangedCallback := {ev.newValue}</color></b>");
-            // SetValueFromObject(ev.newValue);
-        }
+        // private void OnValueChangedCallback(ChangeEvent<object> ev) => SetValueFromObject(ev.newValue);
 
         protected virtual void OnAttachToPanel(AttachToPanelEvent ev)
         {
@@ -80,7 +75,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
         
         protected void SetValue(Type newValue)
         {
-            DebugLog.Info($"<color=#7F00FFFF>{nameof(TypePickerField)}.SetValue := {newValue}</color>");
+            // DebugLog.Info($"<color=#AF4AFFFF>{nameof(TypePickerField)}.SetValue {this.GetHashCode()} := {newValue}</color>");
             m_ValueType = newValue;
             // EDIT
             m_TextField?.SetValueWithoutNotify(TypeRewriter.AsDisplayName(newValue, DisplayStyle));

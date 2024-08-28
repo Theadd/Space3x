@@ -11,8 +11,14 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
 {
     public static class TypePickerAttributeExtensions
     {
-        public static IEnumerable<Type> GetAllTypes(this ITypePickerAttribute self, IPropertyNode propertyNode) =>
-            ((ITypeSearchHandler)self.Handler).CachedTypes ??= self.RebuildTypes(propertyNode);
+        public static IEnumerable<Type> GetAllTypes(this ITypePickerAttribute self, IPropertyNode propertyNode, bool includeAbstractTypes = true) =>
+            ((ITypeSearchHandler)self.Handler).CachedTypes ??= self.RemoveDuplicates
+                ? includeAbstractTypes
+                    ? self.RebuildTypes(propertyNode).Distinct()
+                    : self.RebuildTypes(propertyNode).Distinct().Where(t => !t.IsAbstract && !t.IsInterface)
+                : includeAbstractTypes
+                    ? self.RebuildTypes(propertyNode)
+                    : self.RebuildTypes(propertyNode).Where(t => !t.IsAbstract && !t.IsInterface);
 
         private static IEnumerable<Type> RebuildTypes(this ITypePickerAttribute self, IPropertyNode propertyNode)
         {

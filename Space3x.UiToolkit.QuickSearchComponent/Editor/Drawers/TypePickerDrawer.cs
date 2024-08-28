@@ -11,6 +11,7 @@ using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
@@ -29,10 +30,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         private BindableElement m_InstanceContainer;
         private ElementType m_ElementType;
         public override TypePickerAttribute Target => (TypePickerAttribute) attribute;
-        public ITypeSearchHandler Handler => (ITypeSearchHandler)(Target.Handler ??= new QuickTypeSearchHandler(Target));
+        public ITypeSearchHandler Handler => (ITypeSearchHandler)(((ITypePickerAttribute)Target).Handler ??= 
+            new QuickTypeSearchHandler(Target) { IncludeAbstractTypes = m_ElementType != ElementType.Instance });
         
         protected override VisualElement OnCreatePropertyGUI(IPropertyNode property)
         {
+            DebugLog.Info($"[USK3] [TypePickerDrawer] OnCreatePropertyGUI: {property.PropertyPath}");
             m_TypeField = new TypePickerField()
             {
                 label = property.DisplayName(),
@@ -56,7 +59,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             m_ElementType = GetPropertyElementType(property);
             
             // if (property.HasSerializedProperty() || !(property.IsArrayOrList() || property.IsArrayOrListElement())) 
-                m_TypeField.TrackPropertyValue(Property, OnPropertyValueChanged);
+            m_TypeField.TrackPropertyValue(Property, OnPropertyValueChanged);
             if (property.HasSerializedProperty() || !property.IsArrayOrList())
                 OnPropertyValueChanged(property);
             if (m_ElementType == ElementType.Instance)
@@ -74,6 +77,24 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         private void OnPropertyValueChanged(IPropertyNode propertyNode)
         {
+            // TrackPropertyValue on collection elements tracks the collection property itself instead of their elements.
+            // TODO: Uncomment.
+            if (!Equals(Property, propertyNode))
+                return;
+            // {
+            //     Debug.Log($"[NOTIC3] [TypePickerDrawer] <b>NOT EQUALS!</b> OnPropertyValueChanged: {Property.PropertyPath} != {propertyNode.PropertyPath}");
+            //     // return;
+            //     if (Property.PropertyPath == propertyNode.PropertyPath)
+            //     {
+            //         Debug.Log("STOP HERE");
+            //         var areEqual = Equals(Property, propertyNode);
+            //         Debug.Log(areEqual);
+            //     }
+            // }
+            // else
+            // {
+            //     Debug.Log($"[NOTIC3] [TypePickerDrawer] <color=#00FF00FF><b>EQUALS!</b></color> OnPropertyValueChanged: {Property.PropertyPath} != {propertyNode.PropertyPath}");
+            // }
             var currentValue = Property.GetValue();
             if (Equals(currentValue, m_TypeField.value)) return;
             m_TypeField.value = currentValue;
@@ -104,7 +125,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
                 case ElementType.Serializable:
                     return new SerializableType(type);
                 case ElementType.Instance:
-                    return type?.GetConstructor(Type.EmptyTypes)?.Invoke(null);
+                    return type == null 
+                        ? null 
+                        : typeof(ScriptableObject).IsAssignableFrom(type) 
+                            ? ScriptableObject.CreateInstance(type) 
+                            : type.GetConstructor(Type.EmptyTypes)?.Invoke(null);
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -128,9 +153,13 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             };
         }
         
-        private static VisualElement CreatePropertyField(IPropertyNode property) =>
-            property.HasSerializedProperty()
+        private static VisualElement CreatePropertyField(IPropertyNode property)
+        {
+            DebugLog.Info($"[USK3] [TypePickerDrawer] CreatePropertyField: {property.PropertyPath}");
+            return property.HasSerializedProperty()
                 ? new PropertyField(property.GetSerializedProperty())
-                : new BindablePropertyField(property, property.IsArrayOrList()).WithClasses(UssConstants.UssShowInInspector);
+                : new BindablePropertyField(property, property.IsArrayOrList()).WithClasses(UssConstants
+                    .UssShowInInspector);
+        }
     }
 }
