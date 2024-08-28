@@ -26,13 +26,6 @@ namespace Space3x.InspectorAttributes.Editor
         /// <see cref="SerializedProperty.propertyPath"/> on a serialized property. 
         /// </summary>
         public string PropertyPath { get; }
-
-        bool IEquatable<IPropertyNode>.Equals(IPropertyNode other)
-        {
-            if (this is IPropertyNodeIndex propertyNodeIndex && other is IPropertyNodeIndex otherPropertyNodeIndex)
-                return propertyNodeIndex.Indexer.Equals(otherPropertyNodeIndex.Indexer) && propertyNodeIndex.Index == otherPropertyNodeIndex.Index;
-            return ReferenceEquals(this, other);
-        }
     }
 
     public interface IPropertyWithSerializedObject
@@ -78,7 +71,7 @@ namespace Space3x.InspectorAttributes.Editor
     {
         public event Action<IPropertyNode> ValueChanged;
         
-        public void NotifyValueChanged();
+        public void NotifyValueChanged(IPropertyNode propertyNode);
     }
 
     /// <summary>
