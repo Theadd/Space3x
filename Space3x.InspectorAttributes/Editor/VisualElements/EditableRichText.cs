@@ -1,4 +1,5 @@
-﻿using Space3x.InspectorAttributes.Editor.Extensions;
+﻿using System.Linq;
+using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -15,7 +16,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     [UxmlElement]
     public partial class EditableRichText : TextField
     {
-        private TextField m_TextField;
         private EditableLabel m_EditableLabel;
         
         public EditableRichText()
@@ -31,20 +31,23 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             AddToClassList(UssConstants.UssEditableRichText);
             Add(m_EditableLabel);
             this.RegisterValueChangedCallback(OnValueChange);
-            this.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
+            RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
         }
 
         private void OnAttachToPanel(AttachToPanelEvent ev)
         {
-            this.GetChildren<TextElement>().ForEach(e =>
-            {
-                var dblClick = new Clickable(OnDoubleClick);
-                dblClick.activators.Clear();
-                dblClick.activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse, clickCount = 2 });
-                e.AddManipulator(dblClick);
-            });
+            var dblClick = new Clickable(OnDoubleClick);
+            dblClick.activators.Clear();
+            dblClick.activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse, clickCount = 2 });
+            m_EditableLabel.AddManipulator(dblClick);
+            Children()
+                .FirstOrDefault(c => c is not Label && c != m_EditableLabel)
+                .GetChildren<TextElement>()
+                .ForEach(e => e.RegisterCallback<BlurEvent>(OnBlur));
         }
 
+        private void OnBlur(BlurEvent evt) => this.WithClasses(false, UssConstants.UssEditMode);
+        
         private void OnDoubleClick(EventBase ev) => ToggleInClassList(UssConstants.UssEditMode);
 
         private void OnValueChange(ChangeEvent<string> ev) => m_EditableLabel.text = ev.newValue;
@@ -66,6 +69,13 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 displayTooltipWhenElided = false,
                 enableRichText = true
             };
+        }
+        
+        public override void SetValueWithoutNotify(string newValue)
+        {
+            base.SetValueWithoutNotify(newValue);
+            if (m_EditableLabel != null)
+                m_EditableLabel.text = newValue;
         }
     }
 }

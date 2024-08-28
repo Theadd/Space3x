@@ -55,7 +55,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             if (setAsAttached)
                 m_IsAttached = true;
-            m_Label.style.display = string.IsNullOrEmpty(Text) ? DisplayStyle.None : DisplayStyle.Flex;
+            // m_Label.style.display = string.IsNullOrEmpty(Text) ? DisplayStyle.None : DisplayStyle.Flex;
             this.WithClasses(!string.IsNullOrEmpty(Text), BaseField<bool>.alignedFieldUssClassName, UssWithLabelClassName)
                 .WithClasses(string.IsNullOrEmpty(Text), UssWithNoLabelClassName)
                 .WithClasses(false, $"ui3x-group-type--{GroupType.None.ToString().ToLower()}");

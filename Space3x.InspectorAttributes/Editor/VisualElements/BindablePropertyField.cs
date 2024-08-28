@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Editor.FieldFactories;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Types;
 using Space3x.UiToolkit.Types;
@@ -37,7 +38,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         // private PropertyAttribute m_PropertyDrawerOnCollectionItemsAttribute;
         // private FieldInfo m_RuntimeField;   // Only set and used for creating instances of property drawers on collection items.
         // private Dictionary<VisualElement, ICreateDrawerOnPropertyNode> m_ElementDrawers;
-        private BindablePropertyFieldFactory m_BindablePropertyFieldFactory;
+        private FieldFactoryBuilder m_FieldFactoryBuilder;
         
         // IBindable interface
         public IBinding binding { get; set; }
@@ -93,7 +94,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 {
                     DebugLog.Error(new ArgumentException("Unexpected value.").ToString());
                     Field?.RemoveFromHierarchy();
-                    Field = new Label("WTF!");
+                    Field = new Label("Unexpected value.");
                     Add(Field);
                     return;
                 }
@@ -103,21 +104,41 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             if (applyCustomDrawers)
             {
                 var propertyDrawer = property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItems : vType.PropertyDrawer;
-                if (propertyDrawer != null && typeof(IDrawer).IsAssignableFrom(propertyDrawer))
+                if (propertyDrawer != null)
                 {
-                    try
+                    if (typeof(IDrawer).IsAssignableFrom(propertyDrawer))
                     {
-                        drawer = DrawerExtensions.CreatePropertyDrawer(
-                            propertyDrawer,
-                            property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItemsAttribute : vType.PropertyDrawerAttribute, 
-                            vType.RuntimeField, 
-                            Property.DisplayName());
+                        try
+                        {
+                            drawer = DrawerExtensions.CreatePropertyDrawer(
+                                propertyDrawer,
+                                property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItemsAttribute : vType.PropertyDrawerAttribute, 
+                                vType.RuntimeField, 
+                                Property.DisplayName());
+                        }
+                        catch (Exception e)
+                        {
+                            Debug.LogException(e);
+                            drawer = null;
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        Debug.LogException(e);
-                        drawer = null;
-                    }
+                    // else
+                    // {
+                    //     // TODO: merge if and else if they're still equivalent
+                    //     try
+                    //     {
+                    //         drawer = DrawerExtensions.CreatePropertyDrawer(
+                    //             propertyDrawer,
+                    //             property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItemsAttribute : vType.PropertyDrawerAttribute, 
+                    //             vType.RuntimeField, 
+                    //             Property.DisplayName());
+                    //     }
+                    //     catch (Exception e)
+                    //     {
+                    //         Debug.LogException(e);
+                    //         drawer = null;
+                    //     }
+                    // }
                 }
             }
 
@@ -131,7 +152,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 if (drawer is ICreateDrawerOnPropertyNode customDrawer)
                 {
                     field = customDrawer.CreatePropertyNodeGUI(Property);
-                    // EDIT: (m_ElementDrawers ??= new Dictionary<VisualElement, ICreateDrawerOnPropertyNode>())[field] = customDrawer;
+                    // Debug.LogError("<b>BindableUtility.AutoNotifyValueChangedOnNonSerialized(field, Property);</b>");
                     BindableUtility.AutoNotifyValueChangedOnNonSerialized(field, Property);
                 }
                 else
@@ -221,89 +242,107 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             
             return field;
         }
-        
-        private VisualElement BindToBuiltInField()
+
+        private bool TryGetAssignedPropertyValueAndType(out object propertyValue, out Type propertyType)
         {
             var propertyInfo = m_Controller.DeclaringObject.GetType().GetField(Property.Name, 
                 BindingFlags.Instance 
                 | BindingFlags.Static
                 | BindingFlags.NonPublic
                 | BindingFlags.Public);
-            VisualElement field = null;
-            object propertyValue = null;
-            var isCollectionItem = false;
-            if (propertyInfo == null && Property.IsArrayOrListElement())
+            if (propertyInfo == null)
             {
-                propertyValue = Property.GetUnderlyingValue();
-                isCollectionItem = true;
+                propertyValue = null;
+                propertyType = null;
+                return false;
             }
-            else
-                propertyValue = propertyInfo.GetValue(m_Controller.DeclaringObject);
-            if (propertyValue is IList list)
+            propertyValue = propertyInfo.GetValue(m_Controller.DeclaringObject);
+            propertyType = propertyValue?.GetType() ?? propertyInfo.FieldType;
+            return true;
+        }
+        
+        private VisualElement BindToBuiltInField()
+        {
+            VisualElement field = null;
+            var isCollectionElement = Property.IsArrayOrListElement();
+            var isCollection = Property.IsArrayOrList();
+            // The declared underlying element type for collections and collections elements, or the declared property type for non-collections.
+            Type declaredPropertyType = isCollectionElement
+                ? Property.GetParentProperty().GetUnderlyingElementType()
+                : isCollection
+                    ? Property.GetUnderlyingElementType()
+                    : Property.GetUnderlyingType();
+            if (!TryGetAssignedPropertyValueAndType(out object propertyValue, out Type propertyType))
+            {
+                propertyValue = Property.GetValue();
+                propertyType = propertyValue?.GetType();
+            }
+
+            if (isCollection)
             {
                 Func<VisualElement> itemFactory = () => new BindablePropertyField().WithClasses(UssConstants.UssShowInInspector);
-                field = list switch
+                field = declaredPropertyType switch
                 {
-                    IList<int> _ => ConfigureListView<int>(itemFactory, Field as ListView),
-                    IList<uint> _ => ConfigureListView<uint>(itemFactory, Field as ListView),
-                    IList<long> _ => ConfigureListView<long>(itemFactory, Field as ListView),
-                    IList<ulong> _ => ConfigureListView<ulong>(itemFactory, Field as ListView),
-                    IList<double> _ => ConfigureListView<double>(itemFactory, Field as ListView),
-                    IList<float> _ => ConfigureListView<float>(itemFactory, Field as ListView),
-                    IList<bool> _ => ConfigureListView<bool>(itemFactory, Field as ListView),
-                    IList<string> _ => ConfigureListView<string>(itemFactory, Field as ListView),
-                    IList<Color> _ => ConfigureListView<Color>(itemFactory, Field as ListView),
-                    IList<Vector2> _ => ConfigureListView<Vector2>(itemFactory, Field as ListView),
-                    IList<Vector3> _ => ConfigureListView<Vector3>(itemFactory, Field as ListView),
-                    IList<Vector4> _ => ConfigureListView<Vector4>(itemFactory, Field as ListView),
-                    IList<Rect> _ => ConfigureListView<Rect>(itemFactory, Field as ListView),
-                    IList<Bounds> _ => ConfigureListView<Bounds>(itemFactory, Field as ListView),
-                    IList<Vector2Int> _ => ConfigureListView<Vector2Int>(itemFactory, Field as ListView),
-                    IList<Vector3Int> _ => ConfigureListView<Vector3Int>(itemFactory, Field as ListView),
-                    IList<RectInt> _ => ConfigureListView<RectInt>(itemFactory, Field as ListView),
-                    IList<BoundsInt> _ => ConfigureListView<BoundsInt>(itemFactory, Field as ListView),
-                    IList<AnimationCurve> _ => ConfigureListView<AnimationCurve>(itemFactory, Field as ListView),
-                    IList<Gradient> _ => ConfigureListView<Gradient>(itemFactory, Field as ListView),
-                    IList<Hash128> _ => ConfigureListView<Hash128>(itemFactory, Field as ListView),
-                    IList<NamedType> _ => ConfigureListView<NamedType>(itemFactory, Field as ListView),
-                    IList<SerializableType> _ => ConfigureListView<SerializableType>(itemFactory, Field as ListView),
-                    IList<UnityEngine.Object> _ => ConfigureListView<UnityEngine.Object>(itemFactory, Field as ListView),
-                    not null when Property.HasChildren() => ConfigureDynamicListView(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(int) => ConfigureListView<int>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(uint) => ConfigureListView<uint>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(long) => ConfigureListView<long>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(ulong) => ConfigureListView<ulong>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(double) => ConfigureListView<double>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(float) => ConfigureListView<float>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(bool) => ConfigureListView<bool>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(string) => ConfigureListView<string>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Color) => ConfigureListView<Color>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Vector2) => ConfigureListView<Vector2>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Vector3) => ConfigureListView<Vector3>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Vector4) => ConfigureListView<Vector4>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Rect) => ConfigureListView<Rect>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Bounds) => ConfigureListView<Bounds>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Vector2Int) => ConfigureListView<Vector2Int>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Vector3Int) => ConfigureListView<Vector3Int>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(RectInt) => ConfigureListView<RectInt>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(BoundsInt) => ConfigureListView<BoundsInt>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(AnimationCurve) => ConfigureListView<AnimationCurve>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Gradient) => ConfigureListView<Gradient>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(Hash128) => ConfigureListView<Hash128>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(NamedType) => ConfigureListView<NamedType>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(SerializableType) => ConfigureListView<SerializableType>(itemFactory, Field as ListView),
+                    _ when declaredPropertyType == typeof(UnityEngine.Object) => ConfigureListView<UnityEngine.Object>(itemFactory, Field as ListView),
+                    _ when Property.HasChildren() => ConfigureDynamicListView(itemFactory, Field as ListView),
                     _ => FieldNotImplemented()
                 };
             }
             else
             {
-                var propertyType = propertyValue?.GetType() ?? (isCollectionItem ? Property.GetParentProperty().GetUnderlyingElementType() : propertyInfo.FieldType);
-                field = propertyType switch
+                DebugLog.Info($"[USK3] [BindablePropertyField] BindToBuiltInField ON ({declaredPropertyType?.Name}): {Property.PropertyPath}");
+                field = declaredPropertyType switch
                 {
-                    not null when propertyType == typeof(long) => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(ulong) => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(uint) => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(int) => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(double) => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(float) => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(bool) => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
-                    not null when propertyType == typeof(string) => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Color) => ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Vector2) => ConfigureField<Vector2Field, Vector2>(Field as Vector2Field, () => new Vector2Field(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Vector3) => ConfigureField<Vector3Field, Vector3>(Field as Vector3Field, () => new Vector3Field(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Vector4) => ConfigureField<Vector4Field, Vector4>(Field as Vector4Field, () => new Vector4Field(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Rect) => ConfigureField<RectField, Rect>(Field as RectField, () => new RectField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Bounds) => ConfigureField<BoundsField, Bounds>(Field as BoundsField, () => new BoundsField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Vector2Int) => ConfigureField<Vector2IntField, Vector2Int>(Field as Vector2IntField, () => new Vector2IntField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Vector3Int) => ConfigureField<Vector3IntField, Vector3Int>(Field as Vector3IntField, () => new Vector3IntField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(RectInt) => ConfigureField<RectIntField, RectInt>(Field as RectIntField, () => new RectIntField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(BoundsInt) => ConfigureField<BoundsIntField, BoundsInt>(Field as BoundsIntField, () => new BoundsIntField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(AnimationCurve) => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Gradient) => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
-                    not null when propertyType == typeof(Hash128) => ConfigureField<Hash128Field, Hash128>(Field as Hash128Field, () => new Hash128Field(label: Property.DisplayName())),
-                    not null when typeof(UnityEngine.Object).IsAssignableFrom(propertyType) => ConfigureObjectField<ObjectField, UnityEngine.Object>(Field as ObjectField, () => new ObjectField(label: Property.DisplayName())
+                    not null when declaredPropertyType == typeof(long) => ConfigureField<LongField, long>(Field as LongField, () => new LongField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(ulong) => ConfigureField<UnsignedLongField, ulong>(Field as UnsignedLongField, () => new UnsignedLongField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(uint) => ConfigureField<UnsignedIntegerField, uint>(Field as UnsignedIntegerField, () => new UnsignedIntegerField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(int) => ConfigureField<IntegerField, int>(Field as IntegerField, () => new IntegerField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(double) => ConfigureField<DoubleField, double>(Field as DoubleField, () => new DoubleField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(float) => ConfigureField<FloatField, float>(Field as FloatField, () => new FloatField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(bool) => ConfigureField<Toggle, bool>(Field as Toggle, () => new Toggle(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(string) => ConfigureField<TextField, string>(Field as TextField, () => new TextField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Color) => ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Vector2) => ConfigureField<Vector2Field, Vector2>(Field as Vector2Field, () => new Vector2Field(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Vector3) => ConfigureField<Vector3Field, Vector3>(Field as Vector3Field, () => new Vector3Field(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Vector4) => ConfigureField<Vector4Field, Vector4>(Field as Vector4Field, () => new Vector4Field(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Rect) => ConfigureField<RectField, Rect>(Field as RectField, () => new RectField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Bounds) => ConfigureField<BoundsField, Bounds>(Field as BoundsField, () => new BoundsField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Vector2Int) => ConfigureField<Vector2IntField, Vector2Int>(Field as Vector2IntField, () => new Vector2IntField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Vector3Int) => ConfigureField<Vector3IntField, Vector3Int>(Field as Vector3IntField, () => new Vector3IntField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(RectInt) => ConfigureField<RectIntField, RectInt>(Field as RectIntField, () => new RectIntField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(BoundsInt) => ConfigureField<BoundsIntField, BoundsInt>(Field as BoundsIntField, () => new BoundsIntField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(AnimationCurve) => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Gradient) => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
+                    not null when declaredPropertyType == typeof(Hash128) => ConfigureField<Hash128Field, Hash128>(Field as Hash128Field, () => new Hash128Field(label: Property.DisplayName())),
+                    not null when typeof(UnityEngine.Object).IsAssignableFrom(declaredPropertyType) => ConfigureObjectField<ObjectField, UnityEngine.Object>(Field as ObjectField, () => new ObjectField(label: Property.DisplayName())
                     {
-                        objectType = isCollectionItem ? Property.GetParentProperty().GetUnderlyingElementType() : propertyInfo.FieldType,
+                        objectType = declaredPropertyType,
                         allowSceneObjects = true
                     }),
-                    not null when Property.HasChildren() => ConfigureChildrenFields(propertyType),
+                    not null when Property.HasChildren() => ConfigureChildrenFields(propertyType ?? declaredPropertyType),
                     _ => FieldNotImplemented()
                 };
             }
@@ -337,14 +376,15 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         
         private VisualElement ConfigureChildrenFields(Type propertyType)
         {
+            DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureChildrenFields FOR propertyType {propertyType.Name}: {Property.PropertyPath}");
             var field = new Foldout()
             {
                 text = Property.DisplayName(),
                 value = true
             };
             var controller = PropertyAttributeController.GetOrCreateInstance(Property, propertyType, true);
-            m_BindablePropertyFieldFactory = BindablePropertyFieldFactory.Create(controller);
-            m_BindablePropertyFieldFactory.Rebuild(field.contentContainer);
+            m_FieldFactoryBuilder = new FieldFactoryBuilder(controller);
+            m_FieldFactoryBuilder.Rebuild(field.contentContainer);
             m_ValueHash = Property.GetUnderlyingValue()?.GetHashCode() ?? 0;
             this.TrackPropertyValue(Property, OnTrackedPropertyValueChanged);
 
@@ -353,6 +393,11 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 
         private void OnTrackedPropertyValueChanged(IPropertyNode trackedNode)
         {
+            if (!Equals(Property, trackedNode))
+            {
+                Debug.Log($"[PAC!] <u>[ConfigureChildrenFields] <b>NOT EQUALS!</b> OnTrackedPropertyValueChanged</u>: {Property.PropertyPath} != {trackedNode.PropertyPath}");
+                // return;
+            }
             var node = Property;
             object nodeValue = null;
             try
@@ -361,17 +406,20 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             }
             catch (ArgumentOutOfRangeException)
             {
-                m_BindablePropertyFieldFactory.Clear();
+                m_FieldFactoryBuilder.Clear();
                 return;
             }
             if ((nodeValue?.GetHashCode() ?? 0) == m_ValueHash)
                 return;
             m_ValueHash = nodeValue?.GetHashCode() ?? 0;
-            m_BindablePropertyFieldFactory.Clear();
+            m_FieldFactoryBuilder.Clear();
             if (nodeValue == null) return;
             var controller = PropertyAttributeController.GetOrCreateInstance(node, nodeValue.GetType());
-            m_BindablePropertyFieldFactory = BindablePropertyFieldFactory.Create(controller);
-            m_BindablePropertyFieldFactory.Rebuild(((Foldout)Field).contentContainer);
+            m_FieldFactoryBuilder = new FieldFactoryBuilder(controller)
+            {
+                EnableReadOnly = m_FieldFactoryBuilder.EnableReadOnly
+            };
+            m_FieldFactoryBuilder.Rebuild(((Foldout)Field).contentContainer);
         }
         
         private TField ConfigureField<TField, TValue>(
@@ -392,6 +440,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             }
             field.SetBinding(nameof(BaseField<TValue>.value), new DataBinding
             {
+                
                 dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
                 bindingMode = BindingMode.TwoWay
             });
@@ -430,6 +479,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             Func<ListView> factory = null)
             //where TValue : IList, IList<TItemValue>
         {
+            DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureListView + IList({typeof(TItemValue).Name}): {Property.PropertyPath}");
             if (listView == null)
             {
                 if (factory != null)
@@ -451,8 +501,14 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
             listView.bindItem = (element, i) =>
             {
-                Debug.Log("bindItem " + i + " @ " + Property.PropertyPath);
-                ((BindablePropertyField)element).BindProperty(Property.GetArrayElementAtIndex(i), true);
+                Debug.LogWarning("[PAC!] bindItem " + i + " @ " + Property.PropertyPath);
+                var propertyAtIndex = Property.GetArrayElementAtIndex(i);
+                if (((BindablePropertyField)element).Property?.Equals(propertyAtIndex) ?? false)
+                {
+                    Debug.LogWarning("[PAC!] <b>SKIPPING</b>bindItem " + i + " @ " + Property.PropertyPath);
+                    return;
+                }
+                ((BindablePropertyField)element).BindProperty(propertyAtIndex, true);
                 // element.dataSource = new DataSourceBinding(Property, i);
                 // element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
                 // {
@@ -468,12 +524,15 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             listView.onAdd = list =>
             {
                 Debug.Log("OnAdd @ " + Property.PropertyPath);
-                List<TItemValue> newList = new List<TItemValue>(list.itemsSource.Cast<TItemValue>());
+                List<TItemValue> newList = new List<TItemValue>(list.itemsSource?.Cast<TItemValue>() ?? new TItemValue[] {});
                 newList.Add(default);
                 ((DataSourceBinding)this.dataSource).Value = Property.IsArray()
                     ? newList.ToArray()
                     : newList.ToList();
+                // Debug.LogWarning($"[NOTIC3] [onAdd] Callback ON {property.PropertyPath} => {ev.newValue?.ToString()}");
+                // TODO: Uncomment.
                 list.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
+                // (BindingId) nameof (itemsSource);
             };
             listView.onRemove = list =>
             {
@@ -486,6 +545,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 ((DataSourceBinding)this.dataSource).Value = Property.IsArray()
                     ? newList.ToArray()
                     : newList.ToList();
+                // TODO: Uncomment.
                 list.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
             };
             this.dataSource = new DataSourceBinding(Property);
@@ -493,7 +553,44 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             listView.headerTitle = Property.DisplayName();
             listView.viewDataKey = str;
             listView.name = str;
+            
             listView.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
+            listView.SetBinding(nameof(BaseVerticalCollectionView.itemsSource), new DataBinding
+            {
+                dataSourcePath = new PropertyPath(nameof(DataSourceBinding.Value)),
+                bindingMode = BindingMode.TwoWay
+            });
+            
+            listView.TrackPropertyValue(Property, node =>
+            {
+                if (!Equals(Property, node)) return;
+                Debug.LogWarning("[PAC!] IN LISTVIEW TrackPropertyValue CALLBACK FOR " + Property.PropertyPath + " :: lvTHash: " + listView.GetHashCode());
+                // listView.itemsSource = (IList)((DataSourceBinding)this.dataSource).Value;
+                listView.itemsSource = (IList)node.GetValue();
+            });
+            
+            listView.viewController.itemsSourceChanged += () =>
+            {
+                Debug.LogWarning("[PAC!] itemsSourceChanged @ " + Property.PropertyPath + " :: lvTHash: " + listView.GetHashCode());
+            };
+
+            listView.viewController.itemIndexChanged += (srcIndex, dstIndex) =>
+            {
+                Debug.LogWarning("[PAC!] itemIndexChanged @ " + Property.PropertyPath + " :: " + srcIndex + " => " + dstIndex + " :: lvTHash: " + listView.GetHashCode());
+                IList list = (IList)Property.GetValue();
+                for (var i = 0; i < list.Count; i++)
+                {
+                    var o = list[i];
+                    Debug.LogWarning($"    {i} => {o?.ToString()}");
+                }
+
+                for (var i = Math.Min(srcIndex, dstIndex); i <= Math.Max(srcIndex, dstIndex); i++)
+                {
+                    (Property as INonSerializedPropertyNode)?.NotifyValueChanged(Property.GetArrayElementAtIndex(i));
+                }
+            };
+            // BindableUtility.AutoNotifyValueChangedOnNonSerialized(itemElement, Property)
+            Debug.LogWarning("[PAC!] LISTVIEW CONFIGURED FOR " + Property.PropertyPath + " :: lvTHash: " + listView.GetHashCode());
             
             return (VisualElement) listView;
         }
@@ -507,12 +604,12 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             Func<ListView> factory = null)
         {
             var itemType = Property.GetUnderlyingElementType();
+            DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureDynamicListView + IList({itemType?.Name}): {Property.PropertyPath}");
             s_ConfigureListViewMethod ??= typeof(BindablePropertyField).GetMethod("ConfigureListView",
                 BindingFlags.Instance | BindingFlags.NonPublic);
             var method = s_ConfigureListViewMethod!.MakeGenericMethod(itemType);
             return (VisualElement) method.Invoke(this, PublicStaticFlags, null, new object[] { itemFactory, listView, factory },
                 CultureInfo.InvariantCulture);
-
         }
     }
 }
