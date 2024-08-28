@@ -98,5 +98,27 @@ namespace Space3x.InspectorAttributes.Editor
         
         private static bool IsArrayOrList(Type listType) => 
             listType.IsArray || listType.IsGenericType && listType.GetGenericTypeDefinition() == typeof (List<>);
+
+        public bool Equals(IPropertyNode other) => ReferenceEquals(this, other);
+        
+        public static VTypeMember CreateUnreliableCopy(VTypeMember other)
+        {
+            return new VTypeMember()
+            {
+                Name = other.Name,
+                Flags = other.Flags.ToUnreliable(),
+                ParentPath = other.ParentPath,
+                m_DecoratorDrawers = other.m_DecoratorDrawers,
+                m_PropertyDrawer = other.m_PropertyDrawer,
+                m_PropertyDrawerOnCollectionItems = other.m_PropertyDrawerOnCollectionItems,
+                m_Tooltip = other.m_Tooltip,
+                RuntimeField = other.RuntimeField,
+                RuntimeMethod = other.RuntimeMethod,
+                FieldType = other.FieldType,
+                PropertyAttributes = other.PropertyAttributes,
+                PropertyDrawerAttribute = other.PropertyDrawerAttribute,
+                PropertyDrawerOnCollectionItemsAttribute = other.PropertyDrawerOnCollectionItemsAttribute
+            };
+        }
     }
 }
