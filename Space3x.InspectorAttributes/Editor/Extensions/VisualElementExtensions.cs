@@ -196,6 +196,10 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             yield break;
         }
         
+        /// <summary>
+        /// Enumerates all children fields (deriving from <see cref="BaseField{TValueType}"/>-like types) in the
+        /// correct order regardless of their nesting level.
+        /// </summary>
         public static IEnumerable<BindableElement> GetChildrenFields(this VisualElement self)
         {
             foreach (var child in self.Children())

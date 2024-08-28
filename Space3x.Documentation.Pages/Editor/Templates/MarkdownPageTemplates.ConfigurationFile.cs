@@ -82,7 +82,7 @@ namespace Space3x.Documentation.Templates
 	}},
 	""ConstructorDocItem"": {{
 		""Sections"": [
-			{InlineDocItemSections}
+			{InlineDocItemWithParametersSections}
 		]
 	}},
 	""EnumFieldDocItem"": {{
@@ -91,11 +91,6 @@ namespace Space3x.Documentation.Templates
 		]
 	}},
 	""EventDocItem"": {{
-		""Sections"": [
-			{InlineDocItemSections}
-		]
-	}},
-	""ExplicitInterfaceImplementationDocItem"": {{
 		""Sections"": [
 			{InlineDocItemSections}
 		]
@@ -142,39 +137,24 @@ namespace Space3x.Documentation.Templates
         private static string InlineDocItemSections => @"""Foldout"", ""QuickDefinition"", ""summary"", ""FoldoutDetails"", ""Definition"", ""Inheritance"", 
 			""Implement"", ""Derived"", ""seealso"", ""remarks"", ""example"", ""exception"", 
 			""Fields"", ""Properties"", ""Constructors"", ""Methods"", ""Operators"", 
-			""Events"", ""ExplicitInterfaceImplementations"", ""EndFoldout""";
+			""Events"", ""EndFoldout""";
+        
+        private static string InlineDocItemWithParametersSections => @"""Foldout"", ""QuickDefinition"", ""summary"", ""FoldoutDetails"", ""Definition"", 
+			""TypeParameters"", ""Parameters"", ""Inheritance"", 
+			""Implement"", ""Derived"", ""seealso"", ""remarks"", ""example"", ""exception"", 
+			""Fields"", ""Properties"", ""Constructors"", ""Methods"", ""Operators"", 
+			""Events"", ""EndFoldout""";
 
         private static string StandaloneDocItemSections => @"""QuickDefinition"", ""summary"", ""remarks"", ""example"", ""seealso"", 
 			""Definition"", ""Inheritance"", ""Implement"", ""Derived"", ""exception"", 
 			""Fields"", ""InheritedFields"", ""Properties"", ""InheritedProperties"", ""Constructors"", ""Methods"", ""InheritedMethods"", ""Operators"", 
-			""Events"", ""ExplicitInterfaceImplementations"", ""ExtensionMethods""";
+			""Events"", ""ExtensionMethods""";
     }
 }
-// ""FileNameFactory"": ""Name"", asdasdasd
-// ""UrlFactories"": [
-// ""DocItem""
-// 	],
-// ""NamespaceDocItem"": {{
+// , ""ExplicitInterfaceImplementations""
+
+// ""ExplicitInterfaceImplementationDocItem"": {{
 // 	""Sections"": [
-// 	""Title"",
-// 	""TableOfContents""
-// 		],
-// 	""Markdown.TableOfContentsModes"": ""{(groupMembersByKind ? "Grouped" : "IncludeKind")},IncludeSummary"",
-// 	""Markdown.NestedTypeVisibilities"": ""DeclaringType""
-// }},
-// ""NamespaceDocItem"": {{
-// 	""FileNameFactory"": ""SidebarName"",
-// 	""Sections"": [
-// 	""Sidebar""
-// 		],
-// 	""Markdown.NestedTypeVisibilities"": ""Namespace""
-// }},
-// ""AssemblyDocItem"": {{
-// 	""Sections"": [
-// 	""Title"",
-// 	""summary"",
-// 	""TableOfContents""
-// 		],
-// 	""Markdown.TableOfContentsModes"": ""{(groupMembersByKind ? "Grouped" : "IncludeKind")},IncludeSummary"",
-// 	""Markdown.NestedTypeVisibilities"": ""DeclaringType""
+// 	{InlineDocItemSections}
+// 	]
 // }},
