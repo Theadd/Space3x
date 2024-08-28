@@ -23,6 +23,12 @@ namespace Space3x.InspectorAttributes.Editor
             var i = Keys.IndexOf(key ?? string.Empty);
             return i >= 0 ? Values[i] : null;
         }
+        
+        public IPropertyNode GetNextValue(string currentKey)
+        {
+            var i = Keys.IndexOf(currentKey ?? string.Empty);
+            return i >= 0 && i < Keys.Count - 1 ? Values[i + 1] : null;
+        }
 
         private void AddPropertyTreeRoot()
         {

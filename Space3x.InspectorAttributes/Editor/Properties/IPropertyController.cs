@@ -6,7 +6,11 @@ namespace Space3x.InspectorAttributes.Editor
     {
         public string ParentPath { get; }
         
+        object DeclaringObject { get; }
+        
         public bool IsSerialized { get; }
+
+        IUnreliableEventHandler EventHandler { get; }
         
         public SerializedObject SerializedObject { get; }
 

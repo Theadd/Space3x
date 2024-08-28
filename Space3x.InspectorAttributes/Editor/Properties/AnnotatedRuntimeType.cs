@@ -19,7 +19,7 @@ namespace Space3x.InspectorAttributes.Editor
         private static Dictionary<Type, AnnotatedRuntimeType> s_Instances;
         private static Comparer<PropertyAttribute> s_Comparer;
 
-        public static AnnotatedRuntimeType GetInstance(Type declaringType)
+        public static AnnotatedRuntimeType GetInstance(Type declaringType, bool asUnreliable = false)
         {
             if (s_Instances == null)
             {
@@ -35,9 +35,18 @@ namespace Space3x.InspectorAttributes.Editor
                 s_Instances.Add(declaringType, value);
             }
 
+            return asUnreliable ? CreateUnreliableInstanceFrom(value, declaringType) : value;
+        }
+
+        private static AnnotatedRuntimeType CreateUnreliableInstanceFrom(AnnotatedRuntimeType other, Type declaringType)
+        {
+            var value = new AnnotatedRuntimeType();
+            value.Keys = other.Keys.Select(k => k).ToList();
+            value.Values = other.Values.Select(VTypeMember.CreateUnreliableCopy).ToList();
+            Debug.LogWarning($"<b>[PAC!] CreateUnreliableInstanceFrom({declaringType?.Name})</b>");
             return value;
         }
-        
+
         public VTypeMember GetValue(string key)
         {
             var i = Keys.IndexOf(key);
@@ -202,10 +211,16 @@ namespace Space3x.InspectorAttributes.Editor
                 : VTypeFlags.None)
             | (typeof(System.Collections.IList).IsAssignableFrom(vType.FieldType)
                 ? VTypeFlags.List
+                : VTypeFlags.None)
+            | (vType.RuntimeField.IsInitOnly
+                ? VTypeFlags.ReadOnly
                 : VTypeFlags.None);
 
-        private static bool IsSerializableField(FieldInfo fieldInfo) => 
-            fieldInfo.IsPublic || (!fieldInfo.IsNotSerialized && fieldInfo.IsDefined(typeof(SerializeField), false));
+        private static bool IsSerializableField(FieldInfo fieldInfo) =>
+            !fieldInfo.IsInitOnly && (fieldInfo.IsPublic 
+                                      || (!fieldInfo.IsNotSerialized 
+                                          && (fieldInfo.IsDefined(typeof(SerializeField), false) 
+                                              || fieldInfo.IsDefined(typeof(SerializeReference), false))));
 
         private static bool HasHideInInspectorAttribute(FieldInfo fieldInfo) => 
             fieldInfo.IsDefined(typeof(HideInInspector), false);

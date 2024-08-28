@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
@@ -18,6 +19,8 @@ namespace Space3x.InspectorAttributes.Editor
         public AnnotatedRuntimeType AnnotatedType { get; private set; }
         
         public RuntimeTypeProperties Properties { get; private set; }
+        
+        public IUnreliableEventHandler EventHandler { get; set; }
 
         private PropertyAttributeController(SerializedProperty property, int controllerId) : base(property, controllerId) { }
         
@@ -108,21 +111,38 @@ namespace Space3x.InspectorAttributes.Editor
         {
             SetupActiveSelection();
             var parentController = parentPropertyTreeRoot.GetController();
+            // TODO: typeof(UnityEngine.Object).IsAssignableFrom(
             var instanceId = parentController.InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode();
             PropertyAttributeController value = null;
-
+            
+            object underlyingValue = parentPropertyTreeRoot.GetValue();
+            
+            // TODO: There is a double validation on expectedType and CachedDeclaringObjectHashCode. Redundant check.
             if (s_Instances.TryGetValue(instanceId, out value) && (forceCreate || (expectedType != null && value.DeclaringType != expectedType)))
             {
-                s_Instances.Remove(instanceId);
-                value = null;
+                if (value.CachedDeclaringObjectHashCode != (underlyingValue?.GetHashCode() ?? 0))
+                {
+                    Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
+                                     $"<b><color=#FF0000FF>REMOVING EXISTING INSTANCE</color> {instanceId}</b>");
+                    s_Instances.Remove(instanceId);
+                    value = null;
+                }
+                else
+                {
+                    Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
+                                     $"<b><color=#FF005AFF>NOT REMOVING EXISTING INSTANCE, SAME HASHES!</color> {instanceId}</b>");
+                }
             }
             
             if (value == null)
             {
+                Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
+                                 $"<b><color=#5AFF5AFF>CREATING NEW INSTANCE</color> {instanceId}</b>");
                 value = new PropertyAttributeController(parentPropertyTreeRoot, instanceId);
                 if (expectedType != null && value.DeclaringType != null && value.DeclaringType != expectedType)
                     throw new ArgumentException($"Expected type {expectedType.Name} but found {value.DeclaringType?.Name}");
-                value.AnnotatedType = AnnotatedRuntimeType.GetInstance(expectedType ?? value.DeclaringType);
+                value.AnnotatedType = AnnotatedRuntimeType.GetInstance(expectedType ?? value.DeclaringType, asUnreliable: true);
+                value.EventHandler = UnreliableEventHandler.Create((BindablePropertyNode)parentPropertyTreeRoot);
                 value.Properties = new RuntimeTypeProperties(value);
                 s_Instances.Add(instanceId, value);
             }
@@ -177,7 +197,7 @@ namespace Space3x.InspectorAttributes.Editor
             s_Instances.Remove(controller.ControllerID);
 
         public IPropertyNode GetProperty(string propertyName) => 
-            Properties.GetValue(propertyName); // Properties.GetValue(propertyName.GetHashCode() ^ ParentPath.GetHashCode());
+            Properties.GetValue(propertyName);
         
         public IPropertyNode GetProperty(string propertyName, int arrayIndex)
         {
@@ -187,44 +207,25 @@ namespace Space3x.InspectorAttributes.Editor
                 return property;
 
             return null;
-            // IPropertyNode prop = null;
-            // Type elementType = indexer.GetUnderlyingElementType();
-            // var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) && elementType != typeof(string);
-            // if (indexer is ISerializedPropertyNode serializedIndexer)
-            // {
-            //     if (isNodeTree)
-            //         prop = new SerializedPropertyNodeIndexTree()
-            //         {
-            //             Indexer = serializedIndexer,
-            //             Index = arrayIndex
-            //         };
-            //     else
-            //         prop = new SerializedPropertyNodeIndex()
-            //         {
-            //             Indexer = serializedIndexer,
-            //             Index = arrayIndex
-            //         };
-            // }
-            // else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
-            // {
-            //     if (isNodeTree)
-            //         prop = new NonSerializedPropertyNodeIndexTree()
-            //         {
-            //             Indexer = nonSerializedIndexer,
-            //             Index = arrayIndex
-            //         };
-            //     else
-            //         prop = new NonSerializedPropertyNodeIndex()
-            //         {
-            //             Indexer = nonSerializedIndexer,
-            //             Index = arrayIndex
-            //         };
-            // }
-            // else
-            //     throw new ArgumentException("Unexpected value.");
-            //
-            // return prop;
         }
+        
+        /// <summary>
+        /// Returns the next sibling of the specified <see cref="IPropertyNode"/> by its name. 
+        /// </summary>
+        public IPropertyNode GetNextProperty(string propertyName) => 
+            Properties.GetNextValue(propertyName);
+        
+        public IPropertyNode GetNextVisibleProperty(string propertyName)
+        {
+            IPropertyNode next = Properties.GetNextValue(propertyName);
+            while (next != null && next.IsHidden())
+                next = Properties.GetNextValue(next.Name);
+            
+            return next;
+        }
+
+        public ReadOnlyCollection<IPropertyNode> GetAllProperties() => 
+            Properties.Values.AsReadOnly();
 
         static PropertyAttributeController() => RegisterCallbacks(true);
         

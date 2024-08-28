@@ -71,5 +71,12 @@ namespace Space3x.InspectorAttributes.Editor
         /// Properties that derive from <see cref="System.Collections.IList">IList</see>.
         /// </summary>
         public bool IsList => (Flags | VTypeFlags.List) == Flags;
+        
+        /// <summary>
+        /// Readonly fields or properties with no setter.
+        /// </summary>
+        public bool IsReadOnly => (Flags | VTypeFlags.ReadOnly) == Flags;
+        
+        internal bool IsUnreliable => (Flags | VTypeFlags.Unreliable) == Flags;
     }
 }

@@ -26,7 +26,9 @@ namespace Space3x.InspectorAttributes.Editor
         public string ParentPath { get; private set; }
         
         public bool IsSerialized { get; private set; }
-        
+
+        public int CachedDeclaringObjectHashCode { get; private set; }
+
         public SerializedObject SerializedObject { get; protected set; }
 
         public UnityEditor.Editor Editor => m_Editor ??=
@@ -67,7 +69,9 @@ namespace Space3x.InspectorAttributes.Editor
             TargetObject = parentController.TargetObject;
             InstanceID = TargetObject.GetInstanceID();
             TargetType = TargetObject.GetType();
-            DeclaringObject = parentPropertyTreeRoot.GetUnderlyingValue();
+            // DeclaringObject = parentPropertyTreeRoot.GetUnderlyingValue();
+            DeclaringObject = parentPropertyTreeRoot.GetValue();
+            CachedDeclaringObjectHashCode = DeclaringObject?.GetHashCode() ?? 0;
         }
 
         private static bool AllObjectTypesAreTheSame(IReadOnlyList<Object> targetObjects)

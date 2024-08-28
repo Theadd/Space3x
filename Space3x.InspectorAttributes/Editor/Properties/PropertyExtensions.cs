@@ -28,6 +28,16 @@ namespace Space3x.InspectorAttributes.Editor
         /// Determines whether this is the top property of the property tree.
         /// </summary>
         public static bool IsRootNode(this IPropertyNode self) => self.Name == string.Empty && self is INodeTree;
+        
+        /// <summary>
+        /// Determines whether this property is read-only, such as readonly fields or properties with no setter.
+        /// </summary>
+        public static bool IsReadOnly(this IPropertyNode self) => self is IPropertyFlags property && property.IsReadOnly;
+
+        /// <inheritdoc cref="VTypeFlags.Unreliable"/>
+        internal static bool IsUnreliable(this IPropertyNode self) =>
+            (self is IPropertyFlags property && property.IsUnreliable); 
+            // || (self.IsArrayOrListElement() && !self.GetParentProperty().HasSerializedProperty());
 
         /// <summary>
         /// Unity structures array paths like "fieldName.Array.data[i]".
@@ -180,6 +190,9 @@ namespace Space3x.InspectorAttributes.Editor
         internal static bool ShowInInspector(this IPropertyNode self) => 
             self is IPropertyFlags property && property.ShowInInspector;
         
+        public static bool IsHidden(this IPropertyNode self) => 
+            self is IPropertyFlags property && property.IsHidden;
+        
         /// <summary>
         /// On an Array or IList property, determines whether it is non-reorderable.
         /// </summary>
@@ -195,14 +208,16 @@ namespace Space3x.InspectorAttributes.Editor
                 self.GetSerializedProperty().isExpanded = expanded;
         }
 
-        public static string DisplayName(this IPropertyNode self)
-        {
-            if (self.HasSerializedProperty())
-                return self.GetSerializedProperty().displayName;
-            else
-                return ObjectNames.NicifyVariableName(self.Name);
-        }
+        public static string DisplayName(this IPropertyNode self) =>
+            self.HasSerializedProperty()
+                ? self.GetSerializedProperty().displayName
+                : self is IPropertyNodeIndex nodeIndex
+                    ? "Element " + nodeIndex.Index
+                    : ObjectNames.NicifyVariableName(self.Name);
         
+        public static string Tooltip(this IPropertyNode property) =>
+            property.GetVTypeMember()?.Tooltip ?? string.Empty;
+
         /// <summary>
         /// Tries to create an invokable of type <see cref="Invokable{TIn, TOut}"/> for the given property.
         /// </summary>
@@ -241,35 +256,6 @@ namespace Space3x.InspectorAttributes.Editor
 
             return bindableProperty.TryGetPropertyAtIndex(propertyIndex, out var propertyNode) ? propertyNode : null;
         }
-        
-        // public static object GetUnderlyingValue(this IPropertyNode property)
-        // {
-        //     if (property.IsRootNode())
-        //     {
-        //         Unity.Properties.IProperty ppp;
-        //     }
-        //     if (property.HasSerializedProperty())
-        //     {
-        //         DebugLog.Info($"IN GetUnderlyingValue: {property.Name}; IsValid: {property.IsValid()}; IsArray: {property.IsArray()}");
-        //         return property.GetSerializedProperty().boxedValue;
-        //     }
-        //     
-        //     object parentValue = null;
-        //     if (property is IPropertyNodeIndex propertyNodeIndex)
-        //     {
-        //         parentValue = propertyNodeIndex.Indexer.GetUnderlyingValue();
-        //         if (parentValue != null)
-        //             return ((IList)GetFieldValue(parentValue, property.Name))[propertyNodeIndex.Index];
-        //     }
-        //     if (property.TryGetParentProperty(out var parentProperty))
-        //     {
-        //         parentValue = parentProperty.GetUnderlyingValue();
-        //         if (parentValue != null)
-        //             return GetFieldValue(parentValue, property.Name);
-        //     }
-        //     DebugLog.Error($"RETURNING NULL FROM GetUnderlyingValue() FOR \"{property.PropertyPath}\".");
-        //     return null;
-        // }
         
         /// <summary>
         /// Tries to get the parent property of the provided property.
