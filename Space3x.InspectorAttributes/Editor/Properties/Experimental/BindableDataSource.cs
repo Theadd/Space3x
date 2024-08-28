@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Unity.Properties;
 using UnityEngine;
@@ -13,9 +14,12 @@ namespace Space3x.InspectorAttributes.Editor
         public object BoxedValue { get; set; }
 
         public IPropertyNode GetPropertyNode();
+
+        public void IncreaseVersionNumber();
     }
     
-    public abstract class BindableDataSource<T> : IDataSourceViewHashProvider, IBindableDataSource 
+    // [GeneratePropertyBag]
+    public abstract class BindableDataSource<T> : IDataSourceViewHashProvider, IBindableDataSource
         where T : class
     {
         public object DeclaringObject;
@@ -47,8 +51,6 @@ namespace Space3x.InspectorAttributes.Editor
                 Bind(property);
         }
 
-        public BindableDataSource(IPropertyNode property, int index) => Bind(property, index);
-
         private IPropertyNode AssignTo(IPropertyNode property)
         {
             if (property is IBindablePropertyNode bindableProperty)
@@ -67,18 +69,7 @@ namespace Space3x.InspectorAttributes.Editor
         {
             m_Property = property;
             if (!m_IsNodeIndex && m_Property is IBindablePropertyNode bindableProperty)
-            {
-                // TODO: remove block
-                if (bindableProperty.DataSource != null)
-                {
-                    if (bindableProperty.DataSource != this)
-                        DebugLog.Error("<b>DataSource already set to something else!</b> " + m_Property.PropertyPath + " Index: " + Index);
-                    else
-                        DebugLog.Error("<b>DataSource already set to the same object!</b> " + m_Property.PropertyPath + " Index: " + Index);
-                }
                 AssignTo(bindableProperty);
-                // bindableProperty.DataSource = this;
-            }
             DeclaringObject = property.GetDeclaringObject();
             PropertyInfo = DeclaringObject.GetType().GetField(
                 property.Name, 
@@ -104,15 +95,13 @@ namespace Space3x.InspectorAttributes.Editor
                         return (T) null;
                     }
                 }
-                else
-                {
-                    return PropertyInfo.GetValue(DeclaringObject) as T;
-                }
+
+                return PropertyInfo.GetValue(DeclaringObject) as T;
             }
             set
             {
-                Debug.Log("@BindableDataSource.Value SETTER! " + m_Property.PropertyPath + " Index: " + Index);
-                if (Equals(Value, value)) return;
+                if (Equals(Value, value))
+                    return;
                 var notify = true;
                 if (m_IsNodeIndex)
                 {
@@ -134,7 +123,6 @@ namespace Space3x.InspectorAttributes.Editor
                 if (notify)
                 {
                     ++m_ViewVersion;
-                    Debug.Log("NOTIFY");
                     NotifyValueChanged();
                 }
             }
@@ -146,6 +134,17 @@ namespace Space3x.InspectorAttributes.Editor
             set => Value = (T) value;
         }
 
-        internal void NotifyValueChanged() => (m_Property as INonSerializedPropertyNode)?.NotifyValueChanged();
+        public void IncreaseVersionNumber() => ++m_ViewVersion;
+
+        internal void NotifyValueChanged()
+        {
+            if ((m_PropertyNodeIndex ?? m_Property) is BindablePropertyNode propertyNode && propertyNode.IsUnreliable())
+                propertyNode.Controller?.EventHandler.NotifyValueChanged(propertyNode);
+            else
+            {
+                // ++m_ViewVersion;
+                (m_Property as INonSerializedPropertyNode)?.NotifyValueChanged(m_PropertyNodeIndex ?? m_Property);
+            }
+        }
     }
 }
