@@ -1,6 +1,7 @@
 ﻿using Space3x.Attributes.Types;
 using UnityEditor;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types.Editor;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers

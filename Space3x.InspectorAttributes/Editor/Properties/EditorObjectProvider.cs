@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.Properties.Types;
 using UnityEditor;
 using Object = UnityEngine.Object;
 

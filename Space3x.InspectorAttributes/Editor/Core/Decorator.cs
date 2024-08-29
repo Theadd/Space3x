@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers

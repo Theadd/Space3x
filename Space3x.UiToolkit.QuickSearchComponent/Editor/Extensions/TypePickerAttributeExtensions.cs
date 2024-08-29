@@ -5,6 +5,7 @@ using System.Reflection;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor;
 using Space3x.InspectorAttributes.Utilities;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions

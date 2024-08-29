@@ -1,0 +1,19 @@
+{
+    "name": "Space3x.Properties.Types.Editor",
+    "rootNamespace": "Space3x.Properties.Types",
+    "references": [
+        "Space3x.Properties.Types",
+        "UnityEditor.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -3,21 +3,18 @@ using System.Collections;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;
 
+namespace Space3x.Properties.Types.Editor
+{
+}
+
 namespace Space3x.InspectorAttributes.Editor
 {
-    public interface IBindableDataSource
-    {
-        public object BoxedValue { get; set; }
-
-        public IPropertyNode GetPropertyNode();
-
-        public void IncreaseVersionNumber();
-    }
-    
     // [GeneratePropertyBag]
     public abstract class BindableDataSource<T> : IDataSourceViewHashProvider, IBindableDataSource
         where T : class

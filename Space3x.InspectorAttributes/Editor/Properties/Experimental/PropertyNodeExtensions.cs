@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using Unity.Properties;
 using UnityEngine;
 using UnityEngine.UIElements;

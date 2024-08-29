@@ -2,6 +2,7 @@
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -10,13 +11,6 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    public interface ICreateDrawerOnPropertyNode
-    {
-        public VisualElement CreatePropertyNodeGUI(IPropertyNode property);
-        
-        void SetPropertyNode(IPropertyNode property);
-    }
-    
     /// <summary>
     /// The base class to derive from when implementing your custom <see cref="PropertyDrawer"/> on a
     /// <see cref="PropertyAttribute"/>.
@@ -33,7 +27,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
     /// like in a public API, post an issue on the project repo in GitHub, otherwise it won't be even considered.
     /// </remarks>
     /// <typeparam name="TAttribute">The <see cref="PropertyAttribute"/> type being decorated.</typeparam>
-    public abstract class Drawer<TAttribute> : PropertyDrawer, IDrawer<TAttribute>, ICreateDrawerOnPropertyNode
+    public abstract class Drawer<TAttribute> : PropertyDrawer, IDrawer<TAttribute>, ICreatePropertyNodeGUI
         where TAttribute : PropertyAttribute
     {
         public virtual TAttribute Target => (TAttribute) attribute;
@@ -64,7 +58,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public VisualElement CreatePropertyNodeGUI(IPropertyNode property)
         {
             if (Property != null)
-                return ((ICreateDrawerOnPropertyNode)this.CreateCopy()).CreatePropertyNodeGUI(property);
+                return ((ICreatePropertyNodeGUI)this.CreateCopy()).CreatePropertyNodeGUI(property);
             DebugLog.Info($"[CREATE DRAWER] <color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name} {this.GetHashCode()} on {property.PropertyPath}</color>");
             Property = property;
             Container = OnCreatePropertyGUI(Property);
@@ -92,14 +86,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         /// </summary>
         public virtual void OnUpdate() { }
 
-        void ICreateDrawerOnPropertyNode.SetPropertyNode(IPropertyNode property)
-        {
-            Debug.Log($"IN Drawer.SetPropertyNode() FROM {Property.PropertyPath} TO {property.PropertyPath}");
-            // if (Property.Equals(property)) return;
-            Property = property;
-            // BindableUtility.AutoNotifyValueChangedOnNonSerialized(Container, Property);
-            OnUpdate();
-        }
+        // void ICreateDrawerOnPropertyNode.SetPropertyNode(IPropertyNode property)
+        // {
+        //     Debug.Log($"IN Drawer.SetPropertyNode() FROM {Property.PropertyPath} TO {property.PropertyPath}");
+        //     // if (Property.Equals(property)) return;
+        //     Property = property;
+        //     // BindableUtility.AutoNotifyValueChangedOnNonSerialized(Container, Property);
+        //     OnUpdate();
+        // }
         
         #region IDisposable
 

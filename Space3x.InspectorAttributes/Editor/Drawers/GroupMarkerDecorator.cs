@@ -10,14 +10,6 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    // [CustomPropertyDrawer(typeof(GroupMarkerAttribute), true)]
-    // public class GroupDecorator : GroupMarkerDecorator<AutoDecorator, GroupMarkerAttribute>
-    // {
-    //     public override IGroupMarkerDecorator LinkedMarkerDecorator { get; set; } = null;
-    //     
-    //     public override GroupMarkerAttribute Target => (GroupMarkerAttribute) attribute;
-    // }
-
     public interface IGroupMarkerDecorator : IDecorator, IDrawer
     {
         GroupMarker Marker { get; set; }

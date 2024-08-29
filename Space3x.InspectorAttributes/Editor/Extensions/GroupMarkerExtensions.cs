@@ -68,6 +68,25 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
                 .Skip(beginIndex)
                 .Take(endIndex - beginIndex + 1).ToList();
             group.AddAllToGroup(rawNodes);
+            if (group.Type == GroupType.Row)
+                group.MakeFieldsOnRowGroupsNotAligned();
+        }
+
+        private static void MakeFieldsOnRowGroupsNotAligned(this PropertyGroupField group)
+        {
+            foreach (var field in group.GetChildrenFields())
+            {
+                if (field.parent.ClassListContains("ui3x-group--row") ||
+                    (field.parent?.parent?.parent?.ClassListContains("ui3x-group--row") ?? false))
+                {
+                    field.EnableInClassList(UssConstants.UssAligned, false);
+                    if (field.hierarchy.childCount > 0 && field.hierarchy[0] is Label label)
+                    {
+                        label.style.minWidth = new StyleLength(StyleKeyword.Auto);
+                        label.style.width = new StyleLength(StyleKeyword.Auto);
+                    }
+                }
+            }
         }
 
         public static PropertyGroupField GetOrCreatePropertyGroupFieldForMarker(this GroupMarker beginMarker)

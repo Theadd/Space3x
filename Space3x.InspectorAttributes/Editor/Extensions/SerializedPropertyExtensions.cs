@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Space3x.Properties.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;

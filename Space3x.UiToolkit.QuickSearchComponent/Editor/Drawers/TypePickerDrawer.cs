@@ -7,6 +7,8 @@ using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Types;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using Space3x.UiToolkit.Types;
 using UnityEditor;

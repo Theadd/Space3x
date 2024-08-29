@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;

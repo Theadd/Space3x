@@ -11,6 +11,8 @@ using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.FieldFactories;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Types;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.Types;
 using Unity.Properties;
 using UnityEditor;
@@ -106,7 +108,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
                 var propertyDrawer = property.IsArrayOrListElement() ? vType.PropertyDrawerOnCollectionItems : vType.PropertyDrawer;
                 if (propertyDrawer != null)
                 {
-                    if (typeof(IDrawer).IsAssignableFrom(propertyDrawer))
+                    if (typeof(ICreatePropertyNodeGUI).IsAssignableFrom(propertyDrawer))
                     {
                         try
                         {
@@ -149,7 +151,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             }
             else
             {
-                if (drawer is ICreateDrawerOnPropertyNode customDrawer)
+                if (drawer is ICreatePropertyNodeGUI customDrawer)
                 {
                     field = customDrawer.CreatePropertyNodeGUI(Property);
                     // Debug.LogError("<b>BindableUtility.AutoNotifyValueChangedOnNonSerialized(field, Property);</b>");
@@ -165,6 +167,8 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             Field = field;
             if (Field != null)
             {
+                // TODO: Remove next line
+                // Field.WithClasses(false, UssConstants.UssAligned);
                 Add(Field);
                 Field.tooltip = vType?.Tooltip ?? "";
             }

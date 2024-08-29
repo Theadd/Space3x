@@ -8,7 +8,9 @@
         "Space3x.UiToolkit.Types",
         "Space3x.UiToolkit.Types.Editor",
         "Space3x.Documentation.Editor",
-        "Space3x.Unstable"
+        "Space3x.Unstable",
+        "Space3x.Properties.Types",
+        "Space3x.Properties.Types.Editor"
     ],
     "includePlatforms": [
         "Editor"
