@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using Space3x.Attributes.Types.DeveloperNotes;
 
 namespace Space3x.Attributes.Types
 {
+    [ViolatesYAGNI]
     public abstract class GenericExtension
     {
         private static readonly Dictionary<Type, GenericExtension> Extensions = new Dictionary<Type, GenericExtension>();

@@ -1,0 +1,20 @@
+{
+    "name": "Space3x.Documentation.Editor",
+    "rootNamespace": "Space3x.Documentation",
+    "references": [
+        "Space3x.Attributes.Types",
+        "Space3x.UiToolkit.Types",
+        "Space3x.UiToolkit.Types.Editor"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,14 +1,13 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
     [UsedImplicitly]
-    public class ConditionEx : Extension<ICondition>
+    public class ConditionEx : Extension<IConditionEx>
     {
         public static bool TryCreateInvokable<TIn, TOut, TContent>(IExtensionContext context, TContent content, out Invokable<TIn, TOut> invokable)
             where TContent : ICondition
@@ -19,7 +18,7 @@ namespace Space3x.InspectorAttributes.Editor
                     if (drawer.Property.TryCreateInvokable<TIn, TOut>(content.Condition, out invokable)) 
                         return true;
 
-                    Debug.LogError($"Could not find member {content.Condition} on {drawer.Property.serializedObject.targetObject}");
+                    Debug.LogError($"Could not find member {content.Condition} on {drawer.Property.PropertyPath}");
                 }
 
             invokable = null;

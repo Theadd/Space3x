@@ -5,6 +5,7 @@
     flex-grow: 1;
     flex-shrink: 1;
     margin: 0;
+    flex-direction: row;
 }
 
 .ui3x-property-group {
@@ -15,12 +16,25 @@
     margin-top: 1px;
     margin-bottom: 1px;
     margin-left: 3px;
-    margin-right: -2px;
+    margin-right: -1px;
+    padding-top: 0;
 }
 
 .ui3x-property-group-field--with-label.ui3x-group-type--row > .ui3x-property-group {
     margin-top: 1px;
     margin-bottom: 1px;
+}
+
+.ui3x-group-type--row > .ui3x-property-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: row;
+}
+
+.ui3x-group-type--column > .ui3x-property-group {
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: column;
 }
 
 .ui3x-block-decorator {
@@ -29,7 +43,7 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--row {
+.ui3x-property-group > .ui3x-group--row {
     flex-grow: 1;
     flex-shrink: 1;
     margin-right: 4px;
@@ -49,12 +63,12 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--row > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--row > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
 }
 
-.ui3x-group--column {
+.ui3x-property-group > .ui3x-group--column {
     flex-grow: 1;
     flex-shrink: 1;
 }
@@ -68,12 +82,13 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--column > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--column > .unity-base-field > Label {
     flex-grow: 1;
     flex-shrink: 1;
+    overflow: visible;
 }
 
-.ui3x-group--none {
+.ui3x-property-group > .ui3x-group--none {
     flex-grow: 1;
     flex-shrink: 1;
 }
@@ -86,7 +101,309 @@
     flex-shrink: 1;
 }
 
-.ui3x-group--none > .unity-base-field > Label {
+.ui3x-property-group > .ui3x-group--none > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-no-toggle > .unity-foldout > .unity-toggle {
+    display: none;
+}
+
+.ui3x-decorator > .unity-help-box > .unity-help-box__icon {
+    max-height: 20px;
+    min-height: 20px;
+    max-width: 22px;
+    min-width: 22px;
+    margin: 4px 4px 4px 4px;
+}
+
+.ui3x-decorator > .unity-help-box > .unity-label {
+    font-size: 12px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+.ui3x-decorator > .unity-help-box {
+    align-items: flex-start;
+}
+
+.ui3x-header {
+    font-size: 13px;
+    margin-top: 13px;
+    padding-left: 1px;
+    padding-right: 2px;
+    flex-grow: 1;
+    -unity-font-style: bold;
+    white-space: nowrap;
+}
+
+/* Toggle within a BeginRow/EndRow group. */
+
+.ui3x-group--row > .unity-toggle > .unity-label {
+    flex-shrink: 0;
+    white-space: normal;
+}
+
+.ui3x-group--row > .unity-toggle > .unity-toggle__input {
+    flex-grow: 0;
+    flex-shrink: 1;
+    align-self: flex-start;
+    margin-bottom: 1px;
+    margin-left: 0;
+    margin-right: 4px;
+    margin-top: 1px;
+}
+
+.ui3x-group--row > .unity-toggle {
+    flex-direction: row-reverse;
+}
+
+/* Colors */
+
+.ui3x-color--yellow .unity-text-element {
+    color: rgba(255, 255, 0, 0.72);
+}
+
+.ui3x-color--yellow .unity-text-element:focus:enabled {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow .unity-text-element:hover:enabled {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow *:focus:enabled > .unity-text-element {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--yellow:focus:enabled > .unity-text-element {
+    color: rgba(255, 255, 0, 1.0);
+}
+
+.ui3x-color--red .unity-text-element {
+    color: rgba(255, 0, 0, 0.72);
+}
+
+.ui3x-color--red .unity-text-element:focus:enabled {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red .unity-text-element:hover:enabled {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red *:focus:enabled > .unity-text-element {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--red:focus:enabled > .unity-text-element {
+    color: rgba(255, 0, 0, 1.0);
+}
+
+.ui3x-color--green .unity-text-element {
+    color: rgba(0, 255, 0, 0.72);
+}
+
+.ui3x-color--green .unity-text-element:focus:enabled {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green .unity-text-element:hover:enabled {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green *:focus:enabled > .unity-text-element {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+.ui3x-color--green:focus:enabled > .unity-text-element {
+    color: rgba(0, 255, 0, 1.0);
+}
+
+/* Misc */
+
+.ui3x-hidden {
+    display: none;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .ui3x-block-decorator {
+    flex-basis: 90%;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .unity-property-field {
+    flex-basis: 90%;
+}
+
+.ui3x-non-proportional > .ui3x-property-group > .unity-base-field {
+    flex-basis: 90%;
+}
+
+/* No Label */
+
+.ui3x-no-label-all .unity-label {
+    display: none;
+}
+
+.ui3x-no-label > .unity-label {
+    display: none;
+}
+
+.ui3x-no-label > * > .unity-label {
+    display: none;
+}
+
+/* Space */
+
+.ui3x-group-type--row > .ui3x-property-group > .ui3x-decorator > .ui3x-space {
+    max-height: 1px;
+}
+
+.ui3x-group-type--column > .ui3x-property-group > .ui3x-decorator > .ui3x-space {
+    max-width: 1px;
+}
+
+/* Foldout Transitions */
+
+.unity-foldout:checked {
+    min-height: 42px;
+    max-height: 2000px;
+    overflow: visible;
+}
+
+.unity-foldout {
+    transition-property: max-height, min-height;
+    transition-duration: 1s, 0.25s;
+    transition-delay: 0s, 0s;
+    transition-timing-function: ease-in-out-sine, ease-in-out-sine;
+    min-height: 21px;
+    max-height: 42px;
+    overflow: visible;
+}
+
+/* Text Area */
+
+.ui3x-text-area {
+    flex-shrink: 1;
+    flex-grow: 1;
+}
+
+/* Editable Rich Text */
+
+.ui3x-editable-rich-text {
+    margin-right: -2px;
+}
+
+.ui3x-editable-rich-text > .unity-text-field__input {
+    display: none;
+    -unity-paragraph-spacing: 8px;
+    padding: 4px 2px 4px 4px;
+}
+
+.ui3x-editable-rich-text.ui3x-edit-mode > .unity-text-field__input {
+    display: flex;
+}
+
+.ui3x-editable-rich-text > .ui3x-editable-label {
+    display: flex;
+}
+
+.ui3x-editable-rich-text.ui3x-edit-mode > .ui3x-editable-label {
+    display: none;
+}
+
+.ui3x-editable-label.unity-help-box {
+    margin: 0;
+    padding: 4px 4px 4px 6px;
+    flex-grow: 1;
+    -unity-paragraph-spacing: 8px;
+}
+
+/* Invokable Field */
+
+.ui3x-invokable-field > .unity-base-field__input {
+    border-bottom-right-radius: 0;
+    border-right-width: 0;
+    border-top-right-radius: 0;
+}
+
+.ui3x-invokable-field > .unity-button-group__button {
+    margin-bottom: 0;
+    margin-top: 0;
+    height: auto;
+    padding: 1px 4px 0 5px;
+    font-size: 15px;
+}
+
+.ui3x-invokable-field > .unity-button-group__button:hover {
+    color: #00E000;
+}
+
+/* BindablePropertyField - Show In Inspector */
+
+.ui3x-bindable-property-field {
+    display: none;
+}
+
+.ui3x-bindable-property-field.ui3x-show-in-inspector {
+    display: flex;
+}
+
+.ui3x-bindable-property-field.ui3x-show-in-inspector.ui3x-hidden {
+    display: none;
+}
+
+/* TypePicker */
+
+.ui3x-type-picker-instance-container {
+    margin-right: 2px;
+}
+
+.ui3x-type-picker-instance-container > * > .unity-foldout > .unity-toggle {
+    display: none;
+}
+
+/* EditorAttributes Compatibility Styles */
+
+.ui3x-property-group > .ui3x-group--row > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-property-group > .ui3x-group--column > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+    overflow: visible;
+}
+
+.ui3x-property-group > .ui3x-group--none > VisualElement > .unity-property-field > .unity-base-field > Label {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--row > VisualElement > .unity-property-field > .unity-base-field {
+    flex-direction: row;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--column > VisualElement > .unity-property-field > .unity-base-field {
+    flex-direction: column;
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+
+.ui3x-group--none > VisualElement > .unity-property-field > .unity-base-field {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    margin-left: 0;
     flex-grow: 1;
     flex-shrink: 1;
 }

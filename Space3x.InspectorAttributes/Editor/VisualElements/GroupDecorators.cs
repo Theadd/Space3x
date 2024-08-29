@@ -9,7 +9,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     [HideInInspector]
     public abstract partial class GroupDecorator : AutoDecorator
     {
-        public new static readonly string UssClassName = "ui3x-group-decorator";
+        public static readonly string UssClassName = "ui3x-group-decorator";
         public GroupDecorator() => this.WithClasses(GroupDecorator.UssClassName);
     }
     

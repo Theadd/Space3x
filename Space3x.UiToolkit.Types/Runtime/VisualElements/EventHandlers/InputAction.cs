@@ -1,0 +1,39 @@
+﻿namespace Space3x.UiToolkit.Types
+{
+    public enum InputAction
+    {
+        MoveLeft,
+        MoveRight,
+        MoveUp,
+        MoveDown,
+        MoveLineStart,
+        MoveLineEnd,
+        SelectLineStart,
+        SelectLineEnd,
+        MovePageUp,
+        MovePageDown,
+        MoveWordLeft,
+        MoveWordRight,
+        SelectLeft,
+        SelectRight,
+        SelectUp,
+        SelectDown,
+        SelectPageUp,
+        SelectPageDown,
+        SelectWordLeft,
+        SelectWordRight,
+        Delete,
+        Backspace,
+        Cut,
+        Copy,
+        Paste,
+        SelectAll,
+        SelectNone,
+        Undo,
+        Redo,
+        AddIndent,
+        RemoveIndent,
+        EnterKey,
+        ReturnKey
+    }
+}

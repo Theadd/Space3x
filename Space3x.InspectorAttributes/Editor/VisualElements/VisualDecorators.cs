@@ -2,9 +2,9 @@
 using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
@@ -13,83 +13,48 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
     
     public interface IElementBlock { }
     
-//    [UxmlElement]
-//    public partial class DetachedDecorators : VisualElement
-//    {
-//        public VisualElement Origin { get; set; }
-//        public PropertyField RelatedField { get; set; }
-//        public DetachedDecorators() => AddToClassList($"ui3x-detached-decorators");
-//    }
+    public interface ILayoutElement { }
 
     [UxmlElement]
     [HideInInspector]
-    public partial class AutoDecorator : VisualElement, IEditorDecorator
+    public partial class AutoDecorator : BindableElement, IEditorDecorator
     {
-        public static readonly string UssClassName = "ui3x-auto-decorator";
+        protected AutoDecorator(string className, bool visible = true) =>
+            this.WithClasses(UssConstants.UssDecorator, className, visible ? "" : UssConstants.UssHidden);
 
-        public AutoDecorator() =>
-            this
-                .WithClasses(AutoDecorator.UssClassName)
-                .SetVisible(false);
+        public AutoDecorator() => this.WithClasses(UssConstants.UssDecorator, UssConstants.UssHidden);
     }
 
     [UxmlElement]
     [HideInInspector]
     public partial class BlockDecorator : AutoDecorator, IElementBlock
     {
-        public new static readonly string UssClassName = "ui3x-block-decorator";
-        public BlockDecorator() => this.WithClasses(BlockDecorator.UssClassName).SetVisible(true);
+        public BlockDecorator() : base(UssConstants.UssBlockDecorator) { }
     }
     
     [UxmlElement]
     [HideInInspector]
     public partial class GhostDecorator : AutoDecorator
     {
-        public new static readonly string UssClassName = "ui3x-ghost-decorator";
-        
         public IDecorator TargetDecorator { get; set; }
         
         public VisualElement DecoratorContainer => TargetDecorator.Container;
         
-        public GhostDecorator() => this.WithClasses(GhostDecorator.UssClassName).SetVisible(true);
+        public GhostDecorator() : base(UssConstants.UssGhostDecorator) { }
     }
     
-    [UxmlElement]
-    [HideInInspector]
-    public partial class GhostDecoratorBlock : GhostDecorator, IElementBlock
-    {
-        public new static readonly string UssClassName = "ui3x-ghost-decorator-block";
-        public GhostDecoratorBlock() => this.WithClasses(GhostDecoratorBlock.UssClassName).SetVisible(true);
-    }
-    
-//    [UxmlElement]
-//    public partial class VisualElementReference : VisualElement
-//    {
-//        public VisualElement Reference { get; set; }
-//
-//        public override VisualElement contentContainer => Reference ?? this;
-//        
-//        public VisualElementReference() => AddToClassList($"ui3x-reference");
-//
-//        public new void Add(VisualElement child) => Reference.Add(child);
-//    }
-    
+    [ExcludeFromDocs]
     [UxmlElement]
     [HideInInspector]
     public partial class GroupMarker : VisualElement
     {
-        public static readonly string UssClassName = "ui3x-group-marker";
-        public static readonly string UssUsedClassName = UssClassName + "__used";
-        
         public GroupType Type { get; set; }
         
         [UxmlAttribute]
         public string GroupName { get; set; }
         
-//        public AutoDecorator Origin { get; set; }
         public VisualElement Origin { get; set; }
         
-        // public GroupMarkerDecorator<AutoDecorator, GroupMarkerAttribute> MarkerDecorator { get; set; }
         public IGroupMarkerDecorator MarkerDecorator { get; set; }
 
         public GroupMarker LinkedMarker { get; set; } = null;
@@ -102,9 +67,6 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         
         public bool IsUsed { get; set; } = false;
 
-//        public void LinkTo<TDecorator, TGroupAttribute>(GroupMarker other)
-//            where TDecorator : AutoDecorator, new()
-//            where TGroupAttribute : GroupMarkerAttribute
         public void LinkTo(GroupMarker other)
         {
             if (MarkerDecorator is not IGroupMarkerDecorator thisDecorator)
@@ -119,14 +81,14 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
             other.LinkedMarker = this;
             IsUsed = true;
             other.IsUsed = true;
-            this.WithClasses(GroupMarker.UssUsedClassName);
-            other.WithClasses(GroupMarker.UssUsedClassName);
+            this.WithClasses(UssConstants.UssUsedGroupMarker);
+            other.WithClasses(UssConstants.UssUsedGroupMarker);
             otherDecorator.LinkedMarkerDecorator = thisDecorator;
             thisDecorator.LinkedMarkerDecorator = otherDecorator;
         }
 
         public GroupMarker() => 
             this
-                .WithClasses(UssClassName, "ui3x-id-" + RuntimeHelpers.GetHashCode(this));
+                .WithClasses(UssConstants.UssGroupMarker, "ui3x-id-" + RuntimeHelpers.GetHashCode(this));
     }
 }

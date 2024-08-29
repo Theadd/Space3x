@@ -1,14 +1,13 @@
 {
     "name": "Space3x.UiToolkit.QuickSearchComponent.Editor",
-    "rootNamespace": "Space3x.UiToolkit",
+    "rootNamespace": "Space3x.UiToolkit.QuickSearchComponent",
     "references": [
-        "Unity.VisualScripting.Core",
-        "Unity.VisualScripting.Core.Editor",
         "Space3x.Attributes.Types",
         "Space3x.InspectorAttributes",
         "Space3x.InspectorAttributes.Editor",
         "Space3x.UiToolkit.Types",
-        "Space3x.UiToolkit.SlicedText",
+        "Space3x.UiToolkit.Types.Editor",
+        "Space3x.Documentation.Editor",
         "Space3x.Unstable"
     ],
     "includePlatforms": [

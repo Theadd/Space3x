@@ -7,7 +7,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     [UxmlElement]
     [HideInInspector]
-    public partial class PropertyGroupField : BaseField<bool>
+    public partial class PropertyGroupField : BaseField<bool>, ILayoutElement
     {
         public static readonly string UssClassName = "ui3x-property-group-field";
         public static readonly string UssWithLabelClassName = UssClassName + "--with-label";
@@ -55,7 +55,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         {
             if (setAsAttached)
                 m_IsAttached = true;
-            m_Label.style.display = string.IsNullOrEmpty(Text) ? DisplayStyle.None : DisplayStyle.Flex;
+            // m_Label.style.display = string.IsNullOrEmpty(Text) ? DisplayStyle.None : DisplayStyle.Flex;
             this.WithClasses(!string.IsNullOrEmpty(Text), BaseField<bool>.alignedFieldUssClassName, UssWithLabelClassName)
                 .WithClasses(string.IsNullOrEmpty(Text), UssWithNoLabelClassName)
                 .WithClasses(false, $"ui3x-group-type--{GroupType.None.ToString().ToLower()}");

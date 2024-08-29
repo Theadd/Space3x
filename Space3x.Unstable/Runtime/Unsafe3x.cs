@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Reflection;
 using JetBrains.Annotations;
-using UnityEngine;
 
 namespace Space3x.Unstable
 {
@@ -50,7 +49,7 @@ namespace Space3x.Unstable
         {
             var method = typeof(Unsafe3x).GetMethod(
                     "CreateInstance", 
-                    BindingFlags.Static | BindingFlags.Public)
+                    BindingFlags.Static | BindingFlags.Public)!
                 .MakeGenericMethod(typeof(TIn), targetType);
             return method.Invoke(null, PublicStaticFlags, null, new object[] { value }, CultureInfo.InvariantCulture);
         }

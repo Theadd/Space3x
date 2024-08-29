@@ -2,7 +2,7 @@
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -24,7 +24,8 @@ namespace Space3x.InspectorAttributes.Editor
 
             if (context is IDrawer drawer)
             {
-                drawer.VisualTarget.SetVisible(bValue);
+                // drawer.VisualTarget.SetVisible(bValue);
+                drawer.VisualTarget.WithClasses(!bValue, UssConstants.UssHidden);
                 return true;
             }
             

@@ -1,9 +1,9 @@
-﻿using Space3x.Attributes.Types;
+﻿using System.Linq;
+using Space3x.Attributes.Types;
 using UnityEditor;
 using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using UnityEditor.UIElements;
-using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
@@ -15,7 +15,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (Field != null)
             {
                 var root = Field.GetClosestParentOfType<InspectorElement>();
-                root.Q<PropertyField>("PropertyField:m_Script").style.display = DisplayStyle.None;
+                var topPropertyField = root?.GetChildren<PropertyField>().FirstOrDefault();
+                if (topPropertyField != null && topPropertyField.bindingPath == "m_Script")
+                    topPropertyField.SetVisible(false);
             }
         }
     }

@@ -1,13 +1,11 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using UnityEngine;
-using UnityEditor;
 
 namespace Space3x.InspectorAttributes.Editor
 {
     public interface IAttributeExtensionContext
     {
-        SerializedProperty Property { get; }
+        IPropertyNode Property { get; }
     }
 
     public interface IAttributeExtensionContext<TAttribute> : IExtensionContext, IAttributeExtensionContext
@@ -21,16 +19,11 @@ namespace Space3x.InspectorAttributes.Editor
                 TValue defaultValue)
         {
             if (Target is ISealedExtension<TExtensionType> extension)
-            {
                 extension
                     .GetExtension<TExtension>()
                     .TryApply<TValue, TExtensionType>(this, Target as TExtensionType, out outValue, defaultValue);
-            }
             else
-            {
-                Debug.Log("Extension not found");
                 outValue = defaultValue;
-            }
 
             return this;
         }

@@ -10,7 +10,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override VisibleOnAttribute Target => (VisibleOnAttribute) attribute;
         public IAttributeExtensionContext<VisibleOnAttribute> Context => this;
 
-        protected override bool RedrawOnAnyValueChange => true;
+        protected override bool UpdateOnAnyValueChange => true;
         
         public override void OnUpdate()
         {

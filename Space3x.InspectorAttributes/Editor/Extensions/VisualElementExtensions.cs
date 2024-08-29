@@ -1,8 +1,12 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using Space3x.InspectorAttributes.Editor.VisualElements;
+using UnityEngine;
+using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Extensions
 {
+    [ExcludeFromDocs]
     public static class VisualElementExtensions
     {
         public static T GetClosestParentOfType<T>(this VisualElement element) where T : VisualElement
@@ -26,6 +30,24 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             {
                 if (parent is T)
                     return parent as T;
+                if (parent is TLimit)
+                    return null;
+                parent = parent.parent;
+            }
+            return null;
+        }
+        
+        public static VisualElement GetClosestParentOfAnyType<T, T2, TLimit>(this VisualElement element) 
+            where T : VisualElement
+            where T2 : VisualElement
+        {
+            VisualElement parent = element;
+            while (parent != null)
+            {
+                if (parent is T)
+                    return parent as T;
+                if (parent is T2)
+                    return parent as T2;
                 if (parent is TLimit)
                     return null;
                 parent = parent.parent;
@@ -101,6 +123,30 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return null;
         }
         
+        public static VisualElement GetNextSiblingOfType<T, T2>(this VisualElement element)
+            where T : VisualElement
+            where T2 : VisualElement
+        {
+            var parent = element.hierarchy.parent;
+            if (parent == null)
+                return null;
+            
+            var index = parent.hierarchy.IndexOf(element);
+            
+            for (var i = index + 1; i < parent.hierarchy.childCount; i++)
+            {
+                VisualElement match = parent.hierarchy.ElementAt(i) switch
+                {
+                    T m1 => m1,
+                    T2 m2 => m2,
+                    _ => null
+                };
+                if (match != null)
+                    return match;
+            }
+            return null;
+        }
+        
         /// <summary>
         /// Add a sibling before this element
         /// </summary>
@@ -137,10 +183,37 @@ namespace Space3x.InspectorAttributes.Editor.Extensions
             return self;
         }
 
-        public static VisualElement RemoveFromHierarchy(this VisualElement self)
+        public static IEnumerable<T> GetChildren<T>(this VisualElement self) where T : VisualElement
         {
-            self.hierarchy.parent?.hierarchy.Remove(self);
-            return self;
+            foreach (var child in self.Children())
+            {
+                if (child is T t)
+                    yield return t;
+                else
+                    foreach (var c in GetChildren<T>(child))
+                        yield return c;
+            }
+            yield break;
+        }
+        
+        /// <summary>
+        /// Enumerates all children fields (deriving from <see cref="BaseField{TValueType}"/>-like types) in the
+        /// correct order regardless of their nesting level.
+        /// </summary>
+        public static IEnumerable<BindableElement> GetChildrenFields(this VisualElement self)
+        {
+            foreach (var child in self.Children())
+            {
+                if (child is not ILayoutElement && child is IMixedValueSupport and BindableElement t)
+                    yield return t;
+                else
+                {
+                    var bindableElements = GetChildrenFields(child);
+                    foreach (var c in bindableElements)
+                        yield return c;
+                }
+            }
+            yield break;
         }
     }
 }

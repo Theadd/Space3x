@@ -6,7 +6,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     [UxmlElement]
     [HideInInspector]
-    public partial class PropertyGroup : VisualElement
+    public partial class PropertyGroup : VisualElement, ILayoutElement
     {
         [UxmlAttribute]
         public string GroupName { get; set; } = string.Empty;

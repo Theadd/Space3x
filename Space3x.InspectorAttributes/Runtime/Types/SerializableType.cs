@@ -66,23 +66,6 @@ namespace Space3x.InspectorAttributes.Types
 
         public static explicit operator Type(SerializableType sType) => sType.Value;
 
-        public static object ToObject(SerializableType sType)
-        {
-            Debug.LogError($"// @TODO: {sType}");
-            return sType;
-        }
-
-        public static SerializableType FromObject(object obj)
-        {
-            Debug.LogError($"// @TODO: {obj.GetType()}");
-            return obj switch
-            {
-                Type type => new SerializableType(type),
-                SerializableType sType => sType,
-                _ => throw new InvalidCastException("Cannot cast object to SerializableType")
-            };
-        }
-
         public static bool operator ==(SerializableType left, SerializableType right) => left?.Equals(right) ?? false;
 
         public static bool operator !=(SerializableType left, SerializableType right) => !(left?.Equals(right) ?? false);
