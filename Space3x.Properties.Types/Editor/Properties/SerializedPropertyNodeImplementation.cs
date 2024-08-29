@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     [InitializeOnLoad]
     public class SerializedPropertyNodeImplementation : PropertyNodeImplementationBase, IPropertyNodeImplementation, ICreatablePropertyNodeImplementation
@@ -217,6 +219,12 @@ namespace Space3x.InspectorAttributes.Editor
             get => m_SerializedProperty.enumValueIndex;
             set => m_SerializedProperty.enumValueIndex = value;
         }
+        
+        public int enumValueFlag
+        {
+            get => intValue;
+            set => intValue = value;
+        }
 
         public string[] enumNames => m_SerializedProperty.enumNames;
 
@@ -334,5 +342,15 @@ namespace Space3x.InspectorAttributes.Editor
             ((ICreatablePropertyNodeImplementation)this).Create(m_SerializedProperty.GetFixedBufferElementAtIndex(index));
 
         public uint contentHash => m_SerializedProperty.contentHash;
+
+        public VisualElement CreatePropertyField(bool bindProperty = false, string label = null)
+        {
+            var propertyField = label == null
+                ? new PropertyField(m_SerializedProperty)
+                : new PropertyField(m_SerializedProperty, label);
+            if (bindProperty)
+                propertyField.BindProperty(m_SerializedProperty);
+            return propertyField;
+        }
     }
 }

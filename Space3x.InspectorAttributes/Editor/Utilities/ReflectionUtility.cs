@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Utilities
 {

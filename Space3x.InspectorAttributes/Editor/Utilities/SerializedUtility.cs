@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using JetBrains.Annotations;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Internal;

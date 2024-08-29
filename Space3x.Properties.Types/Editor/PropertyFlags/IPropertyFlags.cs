@@ -1,6 +1,6 @@
-﻿using Space3x.Attributes.Types;
+﻿// using Space3x.Attributes.Types;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     /// <summary>
     /// Flags for <see cref="IPropertyNode"/>.
@@ -77,6 +77,6 @@ namespace Space3x.InspectorAttributes.Editor
         /// </summary>
         public bool IsReadOnly => (Flags | VTypeFlags.ReadOnly) == Flags;
         
-        internal bool IsUnreliable => (Flags | VTypeFlags.Unreliable) == Flags;
+        public bool IsUnreliable => (Flags | VTypeFlags.Unreliable) == Flags;
     }
 }

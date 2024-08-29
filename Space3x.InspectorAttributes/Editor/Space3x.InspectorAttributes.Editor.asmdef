@@ -5,7 +5,9 @@
         "Space3x.InspectorAttributes",
         "Space3x.Attributes.Types",
         "Space3x.UiToolkit.Types",
-        "Space3x.UiToolkit.Types.Editor"
+        "Space3x.UiToolkit.Types.Editor",
+        "Space3x.Properties.Types",
+        "Space3x.Properties.Types.Editor"
     ],
     "includePlatforms": [
         "Editor"

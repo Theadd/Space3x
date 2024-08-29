@@ -12,6 +12,8 @@
         public const string UssHelpBox = UnityPrefix + "help-box";
         public const string UssButtonGroupButton = UnityPrefix + "button-group__button";
         public const string UssButtonGroupButtonRight = UssButtonGroupButton + "--right";
+        public const string UssBaseField = UnityPrefix + "base-field";
+        public const string UssAligned = UssBaseField + "__aligned";
         public const string UssHidden = CustomPrefix + "hidden";
         public const string UssDecorator = CustomPrefix + "decorator";
         public const string UssBlockDecorator = CustomPrefix + "block-decorator";

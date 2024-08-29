@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEngine.Internal;
+// using Space3x.InspectorAttributes.Editor;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     [Flags]
     public enum VTypeFlags
@@ -25,17 +25,5 @@ namespace Space3x.InspectorAttributes.Editor
         /// to provide an accurate event propagation implementation.
         /// </summary>
         Unreliable = 256
-    }
-    
-    [ExcludeFromDocs]
-    public static class VTypeFlagsExtensions
-    {
-        /// <inheritdoc cref="VTypeFlags.Unreliable"/>
-        public static VTypeFlags ToUnreliable(this VTypeFlags other) => 
-            (other & ~VTypeFlags.Serializable) 
-            | VTypeFlags.Unreliable 
-            | ((other | VTypeFlags.Serializable) == other
-                ? VTypeFlags.ShowInInspector 
-                : VTypeFlags.None);
     }
 }

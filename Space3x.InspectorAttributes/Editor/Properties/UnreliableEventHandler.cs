@@ -1,12 +1,13 @@
 ﻿using System;
 using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.Properties.Types.Editor;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor
 {
     public class UnreliableEventHandler : IUnreliableEventHandler
     {
-        public BindablePropertyNode SourcePropertyNode => m_SourcePropertyNode;
+        public IBindablePropertyNode SourcePropertyNode => m_SourcePropertyNode;
         
         private BindablePropertyNode m_SourcePropertyNode; // { get; set; }
 
@@ -68,13 +69,13 @@ namespace Space3x.InspectorAttributes.Editor
         public IUnreliableEventHandler GetTopLevelEventHandler() => 
             m_SourcePropertyNode?.Controller?.EventHandler?.GetTopLevelEventHandler() ?? this;
 
-        public BindablePropertyNode GetReliablePropertyNode() => 
-            GetTopLevelEventHandler().SourcePropertyNode.GetIndexerOrItself();
+        public IBindablePropertyNode GetReliablePropertyNode() => 
+            ((BindablePropertyNode)GetTopLevelEventHandler().SourcePropertyNode).GetIndexerOrItself();
 
         public void NotifyValueChanged(IBindablePropertyNode propertyNode)
         {
             // Debug.LogWarning($"[PAC!] [NotifyValueChangedOnChildNode] {propertyNode.PropertyPath}");
-            m_ReliablePropertyNode ??= GetReliablePropertyNode();
+            m_ReliablePropertyNode ??= (BindablePropertyNode)GetReliablePropertyNode();
             // Debug.LogWarning($"[PAC!] [NotifyValueChangedOnChildNode] ReliablePropertyNode: {m_ReliablePropertyNode.PropertyPath}");
             m_ReliablePropertyNode.NotifyValueChangedOnChildNode(propertyNode);
         }

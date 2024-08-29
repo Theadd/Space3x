@@ -1,4 +1,6 @@
-﻿namespace Space3x.InspectorAttributes.Editor
+﻿using Space3x.Properties.Types.Editor;
+
+namespace Space3x.InspectorAttributes.Editor
 {
     public static class InvokablePropertyNodeExtensions
     {

@@ -1,4 +1,6 @@
-﻿namespace Space3x.InspectorAttributes.Editor.Extensions
+﻿using Space3x.Properties.Types.Editor;
+
+namespace Space3x.InspectorAttributes.Editor.Extensions
 {
     public static class BindablePropertyNodeExtensions
     {

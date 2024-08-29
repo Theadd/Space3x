@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     public abstract class PropertyNodeImplementationBase
     {
@@ -111,11 +112,7 @@ namespace Space3x.InspectorAttributes.Editor
         /// <inheritdoc cref="SerializedProperty.enumValueIndex"/>
         int enumValueIndex { get; set; }
         /// <inheritdoc cref="SerializedProperty.enumValueFlag"/>
-        public virtual int enumValueFlag
-        {
-            get => this.intValue;
-            set => this.intValue = value;
-        }
+        int enumValueFlag { get; set; }
         /// <inheritdoc cref="SerializedProperty.enumNames"/>
         string[] enumNames { get; }
         /// <inheritdoc cref="SerializedProperty.enumDisplayNames"/>
@@ -178,5 +175,10 @@ namespace Space3x.InspectorAttributes.Editor
         IPropertyNodeImplementation GetFixedBufferElementAtIndex(int index);
         /// <inheritdoc cref="SerializedProperty.contentHash"/>
         uint contentHash { get; }
+        /// <summary>
+        /// Creates a <see cref="PropertyField"/> for serialized properties or a <see cref="BindablePropertyField"/>
+        /// for non-serialized ones. Optionally bound to that property.
+        /// </summary>
+        VisualElement CreatePropertyField(bool bindProperty = false, string label = null);
     }
 }

@@ -2,13 +2,13 @@
 using System.Collections;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     public class VirtualPropertyNode : IPropertyNodeImplementation
     {
-        /* STATIC */
         public static bool EqualContents(IPropertyNodeImplementation x, IPropertyNodeImplementation y) =>
             (x?.contentHash ?? 0) == (y?.contentHash ?? 0);
         public static bool DataEquals(IPropertyNodeImplementation x, IPropertyNodeImplementation y) => 
@@ -27,14 +27,8 @@ namespace Space3x.InspectorAttributes.Editor
             defaultProvider = provider;
             currentProviderPriority = priority;
         }
-        /* END STATIC */
-        
-        private IPropertyNodeImplementation m_Impl;
 
-        // protected VirtualPropertyNode() { }
-        // protected VirtualPropertyNode(IPropertyNode property) => m_Property = property;
-        // protected VirtualPropertyNode(SerializedProperty property) => m_Property = property.GetPropertyNode();
-        // protected VirtualPropertyNode(IPropertyNodeImplementation implementation) => m_Impl = implementation.Copy();
+        private IPropertyNodeImplementation m_Impl;
 
         protected VirtualPropertyNode(object target) =>
             m_Impl = target is IPropertyNodeImplementation srcImpl
@@ -53,15 +47,7 @@ namespace Space3x.InspectorAttributes.Editor
 
         public static implicit operator VirtualPropertyNode(SerializedProperty other) => Create(other);
         public static implicit operator SerializedProperty(VirtualPropertyNode other) => other.serializedProperty;
-        public static implicit operator VirtualPropertyNode(BindablePropertyNode other) => Create(other);
         public static implicit operator VirtualPropertyNode(PropertyNodeImplementationBase other) => Create(other);
-        // public static implicit operator PropertyNodeImplementationBase(VirtualPropertyNode other) => other.m_Impl as PropertyNodeImplementationBase;
-        
-        // public static implicit operator Type(SerializableType sType) => sType.Value;
-        // public static implicit operator VirtualPropertyNode(BindablePropertyNode other) => Create(other);
-        // public static implicit operator VirtualPropertyNode(SerializedProperty serializedProperty) => Create(serializedProperty);
-        // public static implicit operator BindablePropertyNode(VirtualPropertyNode self) => self.m_Property as BindablePropertyNode;
-        // public static explicit operator IPropertyNode(VirtualPropertyNode self) => self.m_Property;
 
         public string name => m_Impl.name;
         
@@ -75,15 +61,23 @@ namespace Space3x.InspectorAttributes.Editor
             set => m_Impl.exposedReferenceValue = value;
         }
 
-        public IPropertyNodeImplementation Copy() => (VirtualPropertyNode)m_Impl.Copy();
+        IPropertyNodeImplementation IPropertyNodeImplementation.Copy() => m_Impl.Copy();
+        
+        public VirtualPropertyNode Copy() => (VirtualPropertyNode)((IPropertyNodeImplementation)this).Copy();
 
-        public IPropertyNodeImplementation FindPropertyRelative(string relativePropertyPath) => 
-            (VirtualPropertyNode)m_Impl.FindPropertyRelative(relativePropertyPath);
+        IPropertyNodeImplementation IPropertyNodeImplementation.FindPropertyRelative(string relativePropertyPath) => 
+            m_Impl.FindPropertyRelative(relativePropertyPath);
+        
+        public VirtualPropertyNode FindPropertyRelative(string relativePropertyPath) => 
+            (VirtualPropertyNode)((IPropertyNodeImplementation)this).FindPropertyRelative(relativePropertyPath);
 
         public IEnumerator GetEnumerator() => m_Impl.GetEnumerator();
 
-        public IPropertyNodeImplementation GetArrayElementAtIndex(int index) => 
-            (VirtualPropertyNode)m_Impl.GetArrayElementAtIndex(index);
+        IPropertyNodeImplementation IPropertyNodeImplementation.GetArrayElementAtIndex(int index) => 
+            m_Impl.GetArrayElementAtIndex(index);
+        
+        public VirtualPropertyNode GetArrayElementAtIndex(int index) => 
+            (VirtualPropertyNode)((IPropertyNodeImplementation)this).GetArrayElementAtIndex(index);
 
         public object boxedValue
         {
@@ -238,6 +232,12 @@ namespace Space3x.InspectorAttributes.Editor
             get => m_Impl.enumValueIndex;
             set => m_Impl.enumValueIndex = value;
         }
+        
+        public int enumValueFlag
+        {
+            get => m_Impl.enumValueFlag;
+            set => m_Impl.enumValueFlag = value;
+        }
 
         public string[] enumNames => m_Impl.enumNames;
 
@@ -321,8 +321,11 @@ namespace Space3x.InspectorAttributes.Editor
 
         public bool DeleteCommand() => m_Impl.DeleteCommand();
 
-        public IPropertyNodeImplementation GetEndProperty(bool includeInvisible = false) => 
-            (VirtualPropertyNode)m_Impl.GetEndProperty(includeInvisible);
+        IPropertyNodeImplementation IPropertyNodeImplementation.GetEndProperty(bool includeInvisible = false) => 
+            m_Impl.GetEndProperty(includeInvisible);
+        
+        public VirtualPropertyNode GetEndProperty(bool includeInvisible = false) => 
+            (VirtualPropertyNode)((IPropertyNodeImplementation)this).GetEndProperty(includeInvisible);
 
         public bool isArray => m_Impl.isArray;
 
@@ -344,9 +347,15 @@ namespace Space3x.InspectorAttributes.Editor
 
         public int fixedBufferSize => m_Impl.fixedBufferSize;
 
-        public IPropertyNodeImplementation GetFixedBufferElementAtIndex(int index) => 
-            (VirtualPropertyNode)m_Impl.GetFixedBufferElementAtIndex(index);
+        IPropertyNodeImplementation IPropertyNodeImplementation.GetFixedBufferElementAtIndex(int index) => 
+            m_Impl.GetFixedBufferElementAtIndex(index);
+        
+        public VirtualPropertyNode GetFixedBufferElementAtIndex(int index) => 
+            (VirtualPropertyNode)((IPropertyNodeImplementation)this).GetFixedBufferElementAtIndex(index);
 
         public uint contentHash => m_Impl.contentHash;
+
+        public VisualElement CreatePropertyField(bool bindProperty = false, string label = null) =>
+            m_Impl.CreatePropertyField(bindProperty, label);
     }
 }

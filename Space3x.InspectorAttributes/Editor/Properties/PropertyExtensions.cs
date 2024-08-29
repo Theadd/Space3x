@@ -9,6 +9,8 @@ using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.Internal;
@@ -113,25 +115,6 @@ namespace Space3x.InspectorAttributes.Editor
 
         public static bool HasSerializedProperty(this IPropertyNode self) => 
             self is ISerializedPropertyNode property && (property.Controller?.IsSerialized ?? true);
-
-        public static SerializedProperty GetSerializedProperty(this IPropertyNode self)
-        {
-            if (self is not ISerializedPropertyNode property)
-                return null;
-
-            try
-            {
-                return property.SerializedObject.FindProperty(property.PropertyPath);
-            }
-            catch (NullReferenceException)
-            {
-                // Can happen when switching from Debug mode to Normal mode in the inspector after editing some properties.
-                DebugLog.Warning("NullReferenceException when trying to get property: " + property.PropertyPath + Environment.NewLine
-                                 + "Can happen when switching from Debug mode to Normal mode in the inspector after editing some properties.");
-            }
-
-            return null;
-        }
 
         public static int GetParentObjectHash(this IPropertyNode property)
         {

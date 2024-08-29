@@ -1,12 +1,12 @@
-﻿namespace Space3x.InspectorAttributes.Editor
+﻿namespace Space3x.Properties.Types.Editor
 {
     public interface IUnreliableEventHandler
     {
-        BindablePropertyNode SourcePropertyNode { get; }
+        IBindablePropertyNode SourcePropertyNode { get; }
         
         IUnreliableEventHandler GetTopLevelEventHandler();
 
-        BindablePropertyNode GetReliablePropertyNode();
+        IBindablePropertyNode GetReliablePropertyNode();
         
         void NotifyValueChanged(IBindablePropertyNode propertyNode);
     }

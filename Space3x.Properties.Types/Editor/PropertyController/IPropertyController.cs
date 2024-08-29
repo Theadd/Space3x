@@ -1,6 +1,6 @@
 ﻿using UnityEditor;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.Properties.Types.Editor
 {
     public interface IPropertyController
     {

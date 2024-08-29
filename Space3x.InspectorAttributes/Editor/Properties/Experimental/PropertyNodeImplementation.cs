@@ -3,8 +3,14 @@ using System.Collections;
 using System.Linq;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
+using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
+using Space3x.Properties.Types.Editor;
+using Space3x.UiToolkit.Types;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
 {
@@ -379,6 +385,12 @@ namespace Space3x.InspectorAttributes.Editor
                     m_Property.SetValue(value);
             }
         }
+        
+        public int enumValueFlag
+        {
+            get => intValue;
+            set => intValue = value;
+        }
 
         public string[] enumNames
         {
@@ -687,5 +699,27 @@ namespace Space3x.InspectorAttributes.Editor
         public IPropertyNodeImplementation GetFixedBufferElementAtIndex(int index) => GetArrayElementAtIndex(index);
 
         public uint contentHash => serializedProperty?.contentHash ?? (uint)m_Property.GetHashCode();
+        
+        public VisualElement CreatePropertyField(bool bindProperty = false, string label = null)
+        {
+            VisualElement propertyField = null;
+            if (m_Property.HasSerializedProperty())
+            {
+                propertyField = label == null
+                    ? new PropertyField(serializedProperty)
+                    : new PropertyField(serializedProperty, label);
+                if (bindProperty)
+                    ((IBindable)propertyField).BindProperty(m_Property);
+            }
+            else
+            {
+                // TODO: label
+                propertyField = new BindablePropertyField(m_Property, applyCustomDrawers: false)
+                    .WithClasses(UssConstants.UssShowInInspector);
+                if (bindProperty)
+                    ((IBindable)((BindablePropertyField)propertyField).Field).BindProperty(m_Property);
+            }
+            return propertyField;
+        }
     }
 }

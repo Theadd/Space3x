@@ -1,5 +1,6 @@
 ﻿using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 using UnityEditor;
 using UnityEngine.UIElements;
 
