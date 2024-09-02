@@ -2,7 +2,8 @@
     "name": "Space3x.UiToolkit.Types",
     "rootNamespace": "Space3x.UiToolkit.Types",
     "references": [
-        "Space3x.Attributes.Types"
+        "Space3x.Attributes.Types",
+        "Space3x.Properties.Types"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

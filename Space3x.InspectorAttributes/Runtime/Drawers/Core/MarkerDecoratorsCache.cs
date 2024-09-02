@@ -2,12 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using UnityEditor;
+using Space3x.InspectorAttributes.Editor.Drawers;
 using UnityEngine;
 using UnityEngine.Internal;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers
+namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
     public class MarkerDecoratorsCache
@@ -152,9 +151,14 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             }
         }
         
+#if UNITY_EDITOR
+
         // TODO: Get hash of multiple selected objects.
         private int GetActiveSelectionHash() =>
-            Selection.activeObject != null ? Selection.activeObject.GetHashCode() : 0;
+            UnityEditor.Selection.activeObject != null ? UnityEditor.Selection.activeObject.GetHashCode() : 0;
+#else
+        private int GetActiveSelectionHash() => 0;
+#endif
 
         private void SetupActiveSelection()
         {

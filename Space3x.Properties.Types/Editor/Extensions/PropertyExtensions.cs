@@ -13,7 +13,7 @@ namespace Space3x.Properties.Types.Editor
 
             try
             {
-                return property.SerializedObject.FindProperty(property.PropertyPath);
+                return (property.SerializedObject as SerializedObject)?.FindProperty(property.PropertyPath);
             }
             catch (NullReferenceException)
             {

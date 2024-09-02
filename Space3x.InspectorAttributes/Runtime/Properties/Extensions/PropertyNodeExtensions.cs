@@ -31,8 +31,8 @@ namespace Space3x.InspectorAttributes
 
             public static Node Create(string propertyPath)
             {
-                var parentPath = Editor.PropertyExtensions.GetParentPath(
-                    Editor.PropertyExtensions.IsPropertyIndexer(propertyPath, out var propertyIndexerPath, out var propertyIndex) 
+                var parentPath = PropertyExtensions.GetParentPath(
+                    PropertyExtensions.IsPropertyIndexer(propertyPath, out var propertyIndexerPath, out var propertyIndex) 
                         ? propertyIndexerPath 
                         : propertyPath);
                 var propertyName = propertyIndex >= 0 
@@ -54,7 +54,7 @@ namespace Space3x.InspectorAttributes
             foreach (var node in GetAllParentNodes(self.PropertyPath))
             {
                 nodeStack.Push(node);
-                if (controller.TryGetInstance(node.ParentPath, out var parentController))
+                if (((PropertyAttributeController)controller).TryGetInstance(node.ParentPath, out var parentController))
                 {
                     controller = parentController;
                     while (nodeStack.Count > 0)
@@ -74,7 +74,7 @@ namespace Space3x.InspectorAttributes
                             }
                         }
                         
-                        parentController = property.GetController();
+                        parentController = (PropertyAttributeController)property.GetController();
                     }
                     while (propertyStack.Count > 0)
                     {

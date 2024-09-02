@@ -140,24 +140,24 @@
 
 /* Toggle within a BeginRow/EndRow group. */
 
-.ui3x-group--row > .unity-toggle > .unity-label {
-    flex-shrink: 0;
-    white-space: normal;
-}
+/*.ui3x-group--row > .unity-toggle > .unity-label {*/
+/*    flex-shrink: 0;*/
+/*    white-space: normal;*/
+/*}*/
 
-.ui3x-group--row > .unity-toggle > .unity-toggle__input {
-    flex-grow: 0;
-    flex-shrink: 1;
-    align-self: flex-start;
-    margin-bottom: 1px;
-    margin-left: 0;
-    margin-right: 4px;
-    margin-top: 1px;
-}
+/*.ui3x-group--row > .unity-toggle > .unity-toggle__input {*/
+/*    flex-grow: 0;*/
+/*    flex-shrink: 1;*/
+/*    align-self: flex-start;*/
+/*    margin-bottom: 1px;*/
+/*    margin-left: 0;*/
+/*    margin-right: 4px;*/
+/*    margin-top: 1px;*/
+/*}*/
 
-.ui3x-group--row > .unity-toggle {
-    flex-direction: row-reverse;
-}
+/*.ui3x-group--row > .unity-toggle {*/
+/*    flex-direction: row-reverse;*/
+/*}*/
 
 /* Colors */
 
@@ -251,6 +251,16 @@
 
 .ui3x-no-label > * > .unity-label {
     display: none;
+}
+
+/* Flex Align */
+
+.ui3x-align-items-flex-start {
+    align-items: flex-start;
+}
+
+.ui3x-align-items-flex-start > .ui3x-property-group {
+    align-items: flex-start;
 }
 
 /* Space */

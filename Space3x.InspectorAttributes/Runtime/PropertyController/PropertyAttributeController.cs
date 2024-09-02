@@ -4,19 +4,13 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using UnityEngine;
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Space3x.InspectorAttributes
 {
 #if UNITY_EDITOR
-    [InitializeOnLoad]
+    [UnityEditor.InitializeOnLoad]
 #endif
     public class PropertyAttributeController : PropertyControllerBase, IPropertyController
     {
@@ -31,7 +25,7 @@ namespace Space3x.InspectorAttributes
         public IUnreliableEventHandler EventHandler { get; set; }
 
 #if UNITY_EDITOR
-        private PropertyAttributeController(SerializedProperty property, int controllerId) : base(property, controllerId) { }
+        private PropertyAttributeController(UnityEditor.SerializedProperty property, int controllerId) : base(property, controllerId) { }
 #endif
         private PropertyAttributeController(IPropertyNode parentPropertyTreeRoot, int controllerId) : base(parentPropertyTreeRoot, controllerId) { }
         
@@ -46,12 +40,12 @@ namespace Space3x.InspectorAttributes
         public static int[] GetAllInstanceKeys() => s_Instances.Keys.ToArray();
 
 #if UNITY_EDITOR
-        public static PropertyAttributeController GetInstance(SerializedProperty prop)
+        public static PropertyAttributeController GetInstance(UnityEditor.SerializedProperty prop)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
 
-            var instanceId = prop.GetParentObjectHash();
+            var instanceId = GetParentObjectHash(prop);
             if (instanceId == 0)
                 return null;
 
@@ -71,6 +65,15 @@ namespace Space3x.InspectorAttributes
             }
             
             return value;
+        }
+        
+        private static int GetParentObjectHash(UnityEditor.SerializedProperty prop)
+        {
+            var parentPath = prop.GetParentPath();
+            if (string.IsNullOrEmpty(parentPath))
+                return prop.serializedObject.targetObject.GetInstanceID() * 397;
+            else
+                return prop.serializedObject.targetObject.GetInstanceID() * 397 ^ parentPath.GetHashCode();
         }
 #endif
         
@@ -125,7 +128,7 @@ namespace Space3x.InspectorAttributes
             return value;
         }
         
-        internal static PropertyAttributeController GetInstance(int instanceId)
+        public static PropertyAttributeController GetInstance(int instanceId)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -157,7 +160,7 @@ namespace Space3x.InspectorAttributes
             SetupActiveSelection();
             var parentController = parentPropertyTreeRoot.GetController();
             // TODO: typeof(UnityEngine.Object).IsAssignableFrom(
-            var instanceId = parentController.InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode();
+            var instanceId = ((PropertyAttributeController)parentController).InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode();
             PropertyAttributeController value = null;
             
             object underlyingValue = parentPropertyTreeRoot.IsRuntimeUI() 
@@ -207,8 +210,8 @@ namespace Space3x.InspectorAttributes
             }
 
             var controller = prop.GetController() ??
-                             GetInstance(prop.GetTargetObjectInstanceID() * 397 ^ prop.PropertyPath.GetHashCode());
-            controller?.Rebuild(prop);
+                             GetInstance((prop.GetTargetObject()?.GetInstanceID() ?? 0) * 397 ^ prop.PropertyPath.GetHashCode());
+            ((PropertyAttributeController)controller)?.Rebuild(prop);
             // GetInstance(prop.GetTargetObjectInstanceID() * 397 ^ prop.PropertyPath.GetHashCode())?.Rebuild(prop);
         }
 

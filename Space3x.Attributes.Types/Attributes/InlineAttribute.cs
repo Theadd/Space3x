@@ -10,7 +10,7 @@ namespace Space3x.Attributes.Types
     public class InlineAttribute : PropertyAttribute
     {
         /// <summary>
-        /// Whether to show as enabled, not the property field itself, but it's inlined content UI.
+        /// Whether to show as enabled, not the property field itself, but its inlined content UI.
         /// </summary>
         public bool ContentEnabled { get; } = true;
     }

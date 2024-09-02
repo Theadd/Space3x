@@ -12,7 +12,9 @@ namespace Space3x.Attributes.Types
         IEnableEx<EnableAttribute>
     {
         public bool Enabled { get; set; }
+
+        protected EnableAttribute(bool applyToCollection, bool enable) : base(applyToCollection: applyToCollection) => Enabled = enable;
         
-        public EnableAttribute(bool enable = true) => Enabled = enable;
+        public EnableAttribute(bool enable = true) : base(applyToCollection: true) => Enabled = enable;
     }
 }

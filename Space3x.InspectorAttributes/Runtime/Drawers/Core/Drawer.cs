@@ -1,13 +1,11 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers
+namespace Space3x.InspectorAttributes
 {
     /// <summary>
     /// The base class to derive from when implementing your custom <see cref="PropertyDrawer"/> on a
@@ -60,7 +58,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public VisualElement CreatePropertyNodeGUI(IPropertyNode property)
         {
             if (Property != null)
-                return ((ICreatePropertyNodeGUI)this.CreateCopy()).CreatePropertyNodeGUI(property);
+                return ((ICreatePropertyNodeGUI)DrawerUtility.CopyPropertyDrawer(this)).CreatePropertyNodeGUI(property);
             DebugLog.Info($"[CREATE DRAWER] <color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name} {this.GetHashCode()} on {property.PropertyPath}</color>");
             Property = property;
             Container = OnCreatePropertyGUI(Property);

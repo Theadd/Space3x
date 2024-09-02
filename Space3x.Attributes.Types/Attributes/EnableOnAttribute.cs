@@ -12,8 +12,12 @@ namespace Space3x.Attributes.Types
         IEnableOnEx<EnableOnAttribute>
     {
         public bool Enabled { get; set; } = true;
-        public string Condition { get; private set; }
+        public string Condition { get; protected set; }
         
-        public EnableOnAttribute(string condition) => Condition = condition;
+        protected EnableOnAttribute() : base(applyToCollection: false) { }
+        
+        protected EnableOnAttribute(bool applyToCollection) : base(applyToCollection: applyToCollection) { }
+        
+        public EnableOnAttribute(string condition) : base(applyToCollection: true) => Condition = condition;
     }
 }

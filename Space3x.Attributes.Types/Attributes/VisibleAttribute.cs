@@ -13,6 +13,8 @@ namespace Space3x.Attributes.Types
     {
         public bool Visible { get; private set; }
         
+        protected VisibleAttribute(bool applyToCollection, bool visible) : base(applyToCollection: applyToCollection) => Visible = visible;
+        
         public VisibleAttribute(bool visible = true) => Visible = visible;
     }
 }

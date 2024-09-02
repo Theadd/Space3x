@@ -1,10 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -27,7 +24,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         void RebuildGroupMarker();
 
-        public GroupMarkerAttribute GetGroupMarkerAttribute() => (GroupMarkerAttribute) (((DecoratorDrawer) this).attribute);
+        public GroupMarkerAttribute GetGroupMarkerAttribute() => (GroupMarkerAttribute) (((DecoratorDrawerAdapter) this).attribute);
     }
 
     public abstract class GroupMarkerDecorator<TDecorator, TGroupAttribute> : 
@@ -91,7 +88,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             var isValid = Container != null && Field != null;
             if (isValid)
             {
-                if (Container.GetNextSiblingOfType<PropertyField, BindablePropertyField>() != Field)
+#if UNITY_EDITOR
+                if (Container.GetNextSiblingOfType<UnityEditor.UIElements.PropertyField, BindablePropertyField>() != Field)
+#else
+                if (Container.GetNextSiblingOfType<BindablePropertyField>() != Field)
+#endif
                 {
                     isValid = false;
                     if (Container.GetNextSibling<AutoDecorator>() is PropertyGroupField pgf)
@@ -99,12 +100,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                         if (pgf.contentContainer.hierarchy.childCount > 0)
                         {
                             var firstElement = pgf.contentContainer.hierarchy.ElementAt(0);
-                            if (firstElement is PropertyField pf)
-                                isValid = pf == Field;
-                            else if (firstElement is BindablePropertyField bpf)
+                            if (firstElement is BindablePropertyField bpf)
                                 isValid = bpf == Field;
+#if UNITY_EDITOR
+                            else if (firstElement is UnityEditor.UIElements.PropertyField pf)
+                                isValid = pf == Field;
                             else
-                                isValid = firstElement.GetNextSiblingOfType<PropertyField, BindablePropertyField>() == Field;
+                                isValid = firstElement.GetNextSiblingOfType<UnityEditor.UIElements.PropertyField, BindablePropertyField>() == Field;
+#else
+                            else
+                                isValid = firstElement.GetNextSiblingOfType<BindablePropertyField>() == Field;
+#endif
                         }
                     }
                 }
@@ -126,10 +132,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             VisualElement match = null;
             while (next != null && match == null)
             {
-                if (next is PropertyField pf)
-                    match = pf;
-                else if (next is BindablePropertyField bpf)
+                if (next is BindablePropertyField bpf)
                     match = bpf;
+#if UNITY_EDITOR
+                else if (next is UnityEditor.UIElements.PropertyField pf)
+                    match = pf;
+#endif
                 else if (next is PropertyGroupField pgf)
                     if (pgf.contentContainer.hierarchy.childCount > 0)
                         match = GetNextClosestPropertyFieldOf(pgf.contentContainer.hierarchy.ElementAt(0));

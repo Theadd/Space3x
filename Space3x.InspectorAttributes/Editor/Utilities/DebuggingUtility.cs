@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Space3x.Properties.Types;
 using Space3x.Properties.Types.Editor;
 using UnityEngine;
 
@@ -25,7 +26,7 @@ namespace Space3x.InspectorAttributes.Editor.Utilities
         private static string StringifyController(PropertyAttributeController controller)
         {
             var str = @$"IID: {controller.InstanceID}, ParentPath: ""{controller.ParentPath}"",
-TargetObject.name: {controller.TargetObject?.name}, SO.target.IID: {controller.SerializedObject?.targetObject?.GetInstanceID()},
+TargetObject.name: {controller.TargetObject?.name}, SO.target.IID: {controller.TargetObject?.GetInstanceID()},
 TargetType: {controller.TargetType?.Name}, DeclaringType: {controller.DeclaringType?.Name},
 Editor.target.InstanceID: {controller.Editor?.target?.GetInstanceID()}, Editor.serializedObject.target.InstanceID: {controller.Editor?.serializedObject?.targetObject?.GetInstanceID()},
 DeclaringObject: {controller.DeclaringObject}
@@ -48,22 +49,3 @@ DeclaringObject: {controller.DeclaringObject}
         }
     }
 }
-
-// public int InstanceID { get; private set; }
-//
-// public Object TargetObject { get; private set; }    // TODO: rename
-//         
-// public Type TargetType { get; private set; }    // TODO: rename
-//         
-// public object DeclaringObject { get; protected set; }
-//
-// public Type DeclaringType => DeclaringObject?.GetType();
-//         
-// public string ParentPath { get; private set; }
-//         
-// public SerializedObject SerializedObject { get; protected set; }
-//
-// public UnityEditor.Editor Editor => m_Editor ??=
-//     ActiveEditorTracker.sharedTracker.activeEditors.FirstOrDefault(
-//         e => e.target.GetInstanceID() == InstanceID);
-

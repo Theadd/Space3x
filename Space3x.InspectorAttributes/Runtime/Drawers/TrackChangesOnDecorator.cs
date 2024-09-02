@@ -1,12 +1,13 @@
 ﻿using Space3x.Attributes.Types;
-using UnityEditor;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 using Space3x.Properties.Types.Editor;
-using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(TrackChangesOnAttribute), useForChildren: false)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(TrackChangesOnAttribute), false)]
+#endif
+    [CustomRuntimeDrawer(typeof(TrackChangesOnAttribute), false)]
     public class TrackChangesOnDecorator : Decorator<AutoDecorator, TrackChangesOnAttribute>, IAttributeExtensionContext<TrackChangesOnAttribute>
     {
         public override TrackChangesOnAttribute Target => (TrackChangesOnAttribute) attribute;

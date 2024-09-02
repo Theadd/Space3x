@@ -154,7 +154,11 @@ namespace Space3x.Properties.Types.Editor
         /// <summary>
         /// Retrieves the SerializedProperty that defines the end range of this property.
         /// </summary>
-        IPropertyNodeImplementation GetEndProperty(bool includeInvisible = false);
+        IPropertyNodeImplementation GetEndProperty();
+        /// <summary>
+        /// Retrieves the SerializedProperty that defines the end range of this property.
+        /// </summary>
+        IPropertyNodeImplementation GetEndProperty(bool includeInvisible);
         /// <inheritdoc cref="SerializedProperty.isArray"/>
         bool isArray { get; }
         /// <inheritdoc cref="SerializedProperty.arraySize"/>
@@ -180,5 +184,9 @@ namespace Space3x.Properties.Types.Editor
         /// for non-serialized ones. Optionally bound to that property.
         /// </summary>
         VisualElement CreatePropertyField(bool bindProperty = false, string label = null);
+        /// <summary>
+        /// Gets the IPropertyNode related to this property. 
+        /// </summary>
+        IPropertyNode GetPropertyNode();
     }
 }

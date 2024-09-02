@@ -1,10 +1,12 @@
 ﻿using Space3x.Attributes.Types;
-using UnityEditor;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(EnableOnAttribute), useForChildren: true)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(EnableOnAttribute), true)]
+#endif
+    [CustomRuntimeDrawer(typeof(EnableOnAttribute), true)]
     public class EnableOnDecorator : Decorator<AutoDecorator, EnableOnAttribute>, IAttributeExtensionContext<EnableOnAttribute>
     {
         public override EnableOnAttribute Target => (EnableOnAttribute) attribute;

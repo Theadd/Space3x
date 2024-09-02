@@ -1,12 +1,10 @@
-﻿// using UnityEditor;
-
-using Space3x.Properties.Types.Editor;
-
-namespace Space3x.Properties.Types
+﻿namespace Space3x.Properties.Types
 {
     public interface IPropertyController
     {
         public string ParentPath { get; }
+        
+        UnityEngine.Object TargetObject { get; }
         
         object DeclaringObject { get; }
         

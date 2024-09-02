@@ -1,5 +1,4 @@
 ﻿using System;
-using Space3x.InspectorAttributes.Utilities;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes.Types

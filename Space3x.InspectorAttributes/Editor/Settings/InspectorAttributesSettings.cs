@@ -8,11 +8,17 @@ namespace Space3x.InspectorAttributes.Editor.Settings
 {
     public class InspectorAttributesSettings : ScriptableObject
     {
-        [AllowExtendedAttributes]
+        [AllowExtendedAttributes] 
         [NoScript]
+        [NoLabel]
+        [EditableRichText]
+        public string Description = "";
+
         [SerializeReference]
+        private List<StyleSheet> m_ActiveStylesheets;
+        
         // [ListSource(nameof(GetAvailableAssemblyNames))]
-        public List<StyleSheet> ActiveStylesheets = new List<StyleSheet>()
+        public List<StyleSheet> ActiveStylesheets => m_ActiveStylesheets ??= new List<StyleSheet>()
         {
             Resources.Load<StyleSheet>("Space3x.InspectorAttributes.Stylesheet")
         };

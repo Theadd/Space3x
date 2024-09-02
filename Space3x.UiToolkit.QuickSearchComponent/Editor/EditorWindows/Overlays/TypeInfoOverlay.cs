@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Space3x.Documentation;
+using Space3x.InspectorAttributes;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
 using Space3x.UiToolkit.Types;

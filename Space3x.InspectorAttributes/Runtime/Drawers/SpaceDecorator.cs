@@ -1,12 +1,14 @@
-﻿using Space3x.InspectorAttributes.Editor.VisualElements;
+﻿using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(SpaceAttribute), useForChildren: false)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(SpaceAttribute), false)]
+#endif
+    [CustomRuntimeDrawer(typeof(SpaceAttribute), false)]
     public class SpaceDecorator : Decorator<BlockDecorator, SpaceAttribute>, IAttributeExtensionContext<SpaceAttribute>
     {
         public override SpaceAttribute Target => (SpaceAttribute) attribute;

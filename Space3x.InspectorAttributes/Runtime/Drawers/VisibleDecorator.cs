@@ -1,10 +1,12 @@
 ﻿using Space3x.Attributes.Types;
-using UnityEditor;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(VisibleAttribute), useForChildren: true)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(VisibleAttribute), true)]
+#endif
+    [CustomRuntimeDrawer(typeof(VisibleAttribute), true)]
     public class VisibleDecorator : Decorator<AutoDecorator, VisibleAttribute>, IAttributeExtensionContext<VisibleAttribute>
     {
         public override VisibleAttribute Target => (VisibleAttribute) attribute;

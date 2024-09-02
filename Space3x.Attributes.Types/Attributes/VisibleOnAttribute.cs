@@ -14,6 +14,10 @@ namespace Space3x.Attributes.Types
         public bool Visible { get; set; } = true;
         public string Condition { get; private set; }
         
-        public VisibleOnAttribute(string condition) => Condition = condition;
+        protected VisibleOnAttribute() : base(applyToCollection: false) { }
+        
+        protected VisibleOnAttribute(bool applyToCollection) : base(applyToCollection: applyToCollection) { }
+        
+        public VisibleOnAttribute(string condition) : base(applyToCollection: true) => Condition = condition;
     }
 }

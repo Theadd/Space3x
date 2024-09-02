@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Space3x.UiToolkit.Types;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 using SplitterContainer = Space3x.UiToolkit.Types.SplitterContainer;
 // using ToolbarSearchField = Space3x.UiToolkit.SlicedText.InputFields.ToolbarSearchField;
@@ -12,6 +13,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 {
     [UxmlElement]
     [Serializable]
+    [HideInInspector]
     public partial class QuickSearchElement : BindableElement
     {
         private SplitterContainer m_Splitter;

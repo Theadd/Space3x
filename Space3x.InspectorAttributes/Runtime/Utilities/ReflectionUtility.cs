@@ -271,15 +271,15 @@ namespace Space3x.InspectorAttributes
 		// 	return null;
 		// }
 		//
-		// public static object GetMemberInfoValue(MemberInfo memberInfo, object targetObject, object[] methodParameters = null)
-		// 	=>
-		// 		memberInfo switch
-		// 		{
-		// 			FieldInfo fieldInfo => fieldInfo.GetValue(targetObject),
-		// 			PropertyInfo propertyInfo => propertyInfo.GetValue(targetObject),
-		// 			MethodInfo methodInfo => methodInfo.Invoke(targetObject, methodParameters),
-		// 			_ => null
-		// 		};
+		public static object GetMemberInfoValue(MemberInfo memberInfo, object targetObject, object[] methodParameters = null)
+			=>
+				memberInfo switch
+				{
+					FieldInfo fieldInfo => fieldInfo.GetValue(targetObject),
+					PropertyInfo propertyInfo => propertyInfo.GetValue(targetObject),
+					MethodInfo methodInfo => methodInfo.Invoke(targetObject, methodParameters),
+					_ => null
+				};
 		//
 		// public static Invokable<TIn, TOut> CreateInvokable<TIn, TOut>(string memberName, SerializedProperty property)
 		// {

@@ -1,18 +1,14 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.FieldFactories;
-using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
 {
     /// <summary>
-    /// Like <see cref="PropertyField"/> but for non-serialized properties (<see cref="IPropertyNode"/>).
+    /// Like <see cref="UnityEditor.UIElements.PropertyField"/> but for non-serialized properties (<see cref="IPropertyNode"/>).
     /// </summary>
     [UxmlElement]
     public partial class BindablePropertyField : VisualElement, IBindable
@@ -65,7 +61,7 @@ namespace Space3x.InspectorAttributes
                 if (Property.IsArrayOrListElement())
                 {
                     var collectionProperty = Property.GetParentProperty();
-                    vType = collectionProperty.GetController().AnnotatedType.GetValue(collectionProperty.Name);
+                    vType = ((PropertyAttributeController)collectionProperty.GetController()).AnnotatedType.GetValue(collectionProperty.Name);
                 }
                 else
                 {
@@ -81,7 +77,12 @@ namespace Space3x.InspectorAttributes
                 {
                     if (Property.IsArrayOrListElement() && (vType.PropertyAttributes[i].applyToCollection || vType.PropertyAttributes[i] is HeaderAttribute)) continue;
                     if (Property.IsArrayOrList() && vType.PropertyAttributes[i] is not HeaderAttribute && !vType.PropertyAttributes[i].applyToCollection) continue;
-                    var drawer = DrawerExtensions.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
+#if UNITY_EDITOR
+                    var drawer = (UnityEditor.DecoratorDrawer)
+#else
+                    var drawer = (PropertyDrawerAdapter)
+#endif
+                        DrawerUtility.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
                     if (drawer.CreatePropertyGUI() is VisualElement decoratorElement)
                         DecoratorDrawersContainer.Add(decoratorElement);
                 }

@@ -11,11 +11,11 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.FieldFactories
+namespace Space3x.InspectorAttributes.Editor
 {
     public class FieldFactoryExtender : FieldFactoryBase
     {
-        public PropertyField PropertyFieldOrigin { get; set; } = null;
+        public VisualElement PropertyFieldOrigin { get; set; } = null;
 
         private VisualElement m_PreviousField { get; set; } = null;
 
@@ -82,7 +82,7 @@ namespace Space3x.InspectorAttributes.Editor.FieldFactories
             return bindableField;
         }
 
-        private Dictionary<string, VisualElement> GetExistingFields(PropertyField propertyFieldOrigin)
+        private Dictionary<string, VisualElement> GetExistingFields(VisualElement propertyFieldOrigin)
         {
             var allFields = new Dictionary<string, VisualElement>();
             foreach (var element in Container.hierarchy.Children().ToList())
@@ -94,8 +94,10 @@ namespace Space3x.InspectorAttributes.Editor.FieldFactories
                     // Avoid rebinding the property field where this call is coming from to avoid an infinite loop
                     if (propertyField != propertyFieldOrigin)
                     {
-                        propertyField.Unbind();
-                        propertyField.Bind(Controller.SerializedObject);
+#if UNITY_EDITOR
+                        UnityEditor.UIElements.BindingExtensions.Unbind(propertyField);
+                        UnityEditor.UIElements.BindingExtensions.Bind(propertyField, Controller.SerializedObject as UnityEditor.SerializedObject);
+#endif
                     }
                     serializedProperty = propertyField.GetSerializedProperty();
                 }

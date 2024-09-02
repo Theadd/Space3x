@@ -1,8 +1,7 @@
 ﻿using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using UnityEngine.Internal;
 
-namespace Space3x.InspectorAttributes.Editor
+namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
     public static class VTypeFlagsExtensions

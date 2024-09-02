@@ -1,7 +1,7 @@
 ﻿using System;
 // using Space3x.InspectorAttributes.Editor;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
     [Flags]
     public enum VTypeFlags

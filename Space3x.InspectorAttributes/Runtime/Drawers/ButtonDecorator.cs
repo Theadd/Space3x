@@ -1,12 +1,13 @@
 ﻿using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Utilities;
-using Space3x.InspectorAttributes.Editor.VisualElements;
-using UnityEditor;
+using Space3x.Properties.Types;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(ButtonAttribute), useForChildren: false)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(ButtonAttribute), false)]
+#endif
+    [CustomRuntimeDrawer(typeof(ButtonAttribute), false)]
     public class ButtonDecorator : Decorator<BlockDecorator, ButtonAttribute>, IAttributeExtensionContext<ButtonAttribute>
     {
         public override ButtonAttribute Target => (ButtonAttribute) attribute;
@@ -19,7 +20,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         {
             m_Button = new Button(OnClick)
             {
-                text = string.IsNullOrEmpty(Target.Text) ? ObjectNames.NicifyVariableName(Target.MethodName) : Target.Text,
+#if UNITY_EDITOR
+                text = string.IsNullOrEmpty(Target.Text) ? UnityEditor.ObjectNames.NicifyVariableName(Target.MethodName) : Target.Text,
+#else
+                text = string.IsNullOrEmpty(Target.Text) ? Target.MethodName : Target.Text,
+#endif
                 name = "ui-button_" + Target.MethodName,
                 style =
                 {

@@ -1,13 +1,11 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using UnityEngine;
-using UnityEngine.UIElements;
-using Space3x.InspectorAttributes.Editor.VisualElements;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
+using UnityEngine;
+using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers
+namespace Space3x.InspectorAttributes
 {
     /// <summary>
     /// The base class to derive from when implementing your custom <see cref="DecoratorDrawer"/> on a <see cref="PropertyAttribute"/>.
@@ -99,7 +97,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (GhostContainer != null || m_TotallyRemoved)
             {
                 // DebugLog.Info($"  <b><color=#6666FFFF>[CREATE COPY!]</color> ThisHash: {this.GetHashCode()}</b>");
-                return this.CreateCopy().CreatePropertyGUI();
+                return ((DecoratorDrawerAdapter)DrawerUtility.CopyDecoratorDrawer(this)).CreatePropertyGUI();
+
             }
             // DebugLog.Info($"<color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name}, NºGh: {numGhosts}, NullGh: {GhostContainer == null}, " +
             //               $"NullCT: {Container == null}, NullP: {Property == null}, THash: {this.GetHashCode()}, Rem: {m_Removed}, " +
@@ -309,19 +308,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnGeometryChanged()
         {
-            // Debug.Log($"Property is null: {Property == null}; m_OnUpdateCalled = {m_OnUpdateCalled}; m_TotallyRemoved = {m_TotallyRemoved}; ThisHash: {this.GetHashCode()}");
-            // Debug.Log("BBBBB " + Property?.PropertyPath + " IsValid: " + Property?.IsValid() + $"; ThisHash: {this.GetHashCode()}");
-            // Debug.LogError($"<color=#FF007FFF>OnGeometryChanged()</color> m_OnUpdateCalled: {m_OnUpdateCalled}, m_TotallyRemoved: {m_TotallyRemoved}, IsValid: {Property.IsValid()}");
             if (Property == null)
-            {
-                Debug.LogError($"STOP HERE! <b>Property IS null!</b> THash: {this.GetHashCode()} <color=#FF007FFF>OnGeometryChanged()</color> m_OnUpdateCalled: {m_OnUpdateCalled}, m_TotallyRemoved: {m_TotallyRemoved}, IsValid: {Property?.IsValid()}");
                 return;
-            }
-            // EDIT: Added "|| !Property.IsValid()"
             if (m_OnUpdateCalled || !Property.IsValid()) return;
             m_OnUpdateCalled = true;
             if (m_TotallyRemoved) return;
-            // Debug.LogWarning($"       <color=#000000FF><b>[WARNING] CALLING UPDATE!</b></color> ...");
             OnUpdate();
         }
 

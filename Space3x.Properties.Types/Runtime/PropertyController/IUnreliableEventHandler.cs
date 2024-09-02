@@ -1,11 +1,11 @@
-﻿using Space3x.Properties.Types.Editor;
-
-namespace Space3x.Properties.Types
+﻿namespace Space3x.Properties.Types
 {
     public interface IUnreliableEventHandler
     {
         IBindablePropertyNode SourcePropertyNode { get; }
-        
+
+        bool IsTopLevelRuntimeEventHandler { get; }
+
         IUnreliableEventHandler GetTopLevelEventHandler();
 
         IBindablePropertyNode GetReliablePropertyNode();

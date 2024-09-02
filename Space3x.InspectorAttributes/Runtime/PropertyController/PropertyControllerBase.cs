@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Space3x.InspectorAttributes.Editor;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.Properties.Types;
 using UnityEngine;
 
@@ -76,7 +74,7 @@ namespace Space3x.InspectorAttributes
             SerializedObject = parentController.SerializedObject;
             IsSerialized = !Application.isPlaying && parentPropertyTreeRoot.HasSerializedProperty();
             ParentPath = parentPropertyTreeRoot.PropertyPath;
-            IsEditingMultipleObjects = parentController.IsEditingMultipleObjects;
+            IsEditingMultipleObjects = ((PropertyAttributeController)parentController).IsEditingMultipleObjects;
             TargetObject = parentController.TargetObject;
             InstanceID = TargetObject.GetInstanceID();
             TargetType = TargetObject.GetType();

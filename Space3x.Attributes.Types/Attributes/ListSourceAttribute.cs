@@ -15,7 +15,7 @@ namespace Space3x.Attributes.Types
     public class ListSourceAttribute : PropertyAttribute
     {
         /// <summary>
-        /// Any method, field or property name of Type List{string} (or the Type of it's return value).
+        /// Any method, field or property name of Type List{string} (or the Type of its return value).
         /// </summary>
         public string MemberName { get; }
 
@@ -31,7 +31,7 @@ namespace Space3x.Attributes.Types
         /// populated using reflection over the provided MemberName, while the value on the property itself only
         /// holds those selected values.
         /// </summary>
-        /// <param name="memberName">Any method, field or property name of Type List{string} (or the Type of it's return value).</param>
+        /// <param name="memberName">Any method, field or property name of Type List{string} (or the Type of its return value).</param>
         public ListSourceAttribute(string memberName) : base(applyToCollection: true) => MemberName = memberName;
     }
 }

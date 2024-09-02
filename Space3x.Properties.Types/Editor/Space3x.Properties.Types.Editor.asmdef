@@ -2,8 +2,7 @@
     "name": "Space3x.Properties.Types.Editor",
     "rootNamespace": "Space3x.Properties.Types",
     "references": [
-        "Space3x.Properties.Types",
-        "UnityEditor.UI"
+        "Space3x.Properties.Types"
     ],
     "includePlatforms": [
         "Editor"

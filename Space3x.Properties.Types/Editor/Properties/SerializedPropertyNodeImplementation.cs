@@ -14,7 +14,7 @@ namespace Space3x.Properties.Types.Editor
         private SerializedProperty m_SerializedProperty;
 
         static SerializedPropertyNodeImplementation() =>
-            VirtualPropertyNode.RegisterImplementationProvider(new SerializedPropertyNodeImplementation(), 0);
+            PropertyAdapter.RegisterImplementationProvider(new SerializedPropertyNodeImplementation(), 0);
         
         IPropertyNodeImplementation ICreatablePropertyNodeImplementation.Create(object property)
         {
@@ -52,13 +52,13 @@ namespace Space3x.Properties.Types.Editor
             if (this.isArray)
             {
                 for (int i = 0; i < this.arraySize; ++i)
-                    yield return (VirtualPropertyNode) this.GetArrayElementAtIndex(i);
+                    yield return (PropertyAdapter) this.GetArrayElementAtIndex(i);
             }
             else
             {
                 IPropertyNodeImplementation end = this.GetEndProperty();
-                while (this.NextVisible(true) && !VirtualPropertyNode.EqualContents(this, end))
-                    yield return (VirtualPropertyNode) this;
+                while (this.NextVisible(true) && !PropertyAdapter.EqualContents(this, end))
+                    yield return (PropertyAdapter) this;
                 end = null;
             }
         }
@@ -308,7 +308,8 @@ namespace Space3x.Properties.Types.Editor
 
         public bool DeleteCommand() => m_SerializedProperty.DeleteCommand();
 
-        public IPropertyNodeImplementation GetEndProperty(bool includeInvisible = false)
+        public IPropertyNodeImplementation GetEndProperty() => GetEndProperty(false);
+        public IPropertyNodeImplementation GetEndProperty(bool includeInvisible)
         {
             IPropertyNodeImplementation endProperty = this.Copy();
             if (includeInvisible)
@@ -352,5 +353,7 @@ namespace Space3x.Properties.Types.Editor
                 propertyField.BindProperty(m_SerializedProperty);
             return propertyField;
         }
+
+        public IPropertyNode GetPropertyNode() => null;
     }
 }

@@ -1,10 +1,12 @@
 ﻿using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.VisualElements;
-using UnityEditor;
+using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(EndRowAttribute), true)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(EndRowAttribute), true)]
+#endif
+    [CustomRuntimeDrawer(typeof(EndRowAttribute), true)]
     public class EndRowDecorator : GroupMarkerDecorator<EndRowGroup, EndRowAttribute>
     {
         public override IGroupMarkerDecorator LinkedMarkerDecorator { get; set; } = null;

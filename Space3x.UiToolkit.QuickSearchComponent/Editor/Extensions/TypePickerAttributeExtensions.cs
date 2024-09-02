@@ -1,34 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor;
-using Space3x.InspectorAttributes.Utilities;
-using Space3x.Properties.Types;
+using Space3x.InspectorAttributes;
+using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions
 {
     public static class TypePickerAttributeExtensions
     {
-        public static IEnumerable<Type> GetAllTypes(this ITypePickerAttribute self, IPropertyNode propertyNode, bool includeAbstractTypes = true) =>
+        public static IEnumerable<Type> GetAllTypes(this ITypePickerAttribute self, IDrawer drawer, bool includeAbstractTypes = true) =>
             ((ITypeSearchHandler)self.Handler).CachedTypes ??= self.RemoveDuplicates
                 ? includeAbstractTypes
-                    ? self.RebuildTypes(propertyNode).Distinct()
-                    : self.RebuildTypes(propertyNode).Distinct().Where(t => !t.IsAbstract && !t.IsInterface)
+                    ? self.RebuildTypes(drawer).Distinct()
+                    : self.RebuildTypes(drawer).Distinct().Where(t => !t.IsAbstract && !t.IsInterface)
                 : includeAbstractTypes
-                    ? self.RebuildTypes(propertyNode)
-                    : self.RebuildTypes(propertyNode).Where(t => !t.IsAbstract && !t.IsInterface);
+                    ? self.RebuildTypes(drawer)
+                    : self.RebuildTypes(drawer).Where(t => !t.IsAbstract && !t.IsInterface);
 
-        private static IEnumerable<Type> RebuildTypes(this ITypePickerAttribute self, IPropertyNode propertyNode)
+        private static IEnumerable<Type> RebuildTypes(this ITypePickerAttribute self, IDrawer drawer)
         {
-            IEnumerable<Type> rawTypes = null;
-            if (!string.IsNullOrEmpty(self.PropertyName) && propertyNode.TryCreateInvokable<object, Type[]>(self.PropertyName, out var invokable))
-                rawTypes = (IEnumerable<Type>)invokable.Invoke();
+            ReadOnlyCollection<Type> rawTypes = null;
+            if (!string.IsNullOrEmpty(self.PropertyName) && drawer.Property.TryCreateInvokable<object, Type[]>(self.PropertyName, out var invokable, drawer: drawer))
+                rawTypes = (invokable.Parameters == null ? invokable.Invoke() : invokable.InvokeWith(invokable.Parameters))?.ToList().AsReadOnly();
 
             if (rawTypes == null)
-                rawTypes = self.Types ?? Type.EmptyTypes;
+                rawTypes = (self.Types ?? Type.EmptyTypes).ToList().AsReadOnly();
 
             if (!rawTypes.Any()) return rawTypes;
             var hasGenerics = (self.GenericParameterTypes?.Length ?? 0) > 0;

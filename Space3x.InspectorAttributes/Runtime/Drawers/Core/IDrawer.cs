@@ -1,11 +1,10 @@
 ﻿using System;
-using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.Properties.Types;
-using UnityEngine.UIElements;
 using UnityEngine;
 using UnityEngine.Internal;
+using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers
+namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
     public interface IDrawer : IDisposable

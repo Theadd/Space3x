@@ -1,6 +1,8 @@
-﻿using System;
+﻿#define SIMULATE_RUNTIME_BUILD
+using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Space3x.Properties.Types;
 using UnityEngine.Rendering;
 
 namespace Space3x.InspectorAttributes
@@ -12,26 +14,35 @@ namespace Space3x.InspectorAttributes
 
         static CachedDrawers() => Initialize();
 
-// #if UNITY_EDITOR
-//         private static void Initialize()
-//         {
-//             s_GetDrawerTypeForType = Type
-//                 .GetType("UnityEditor.ScriptAttributeUtility, UnityEditor")!
-//                 .GetMethod(
-//                     "GetDrawerTypeForType", 
-//                     BindingFlags.NonPublic | BindingFlags.Static,
-//                     null,
-//                     new Type[] { typeof(Type), typeof(Type[]), typeof(bool) },
-//                     null);
-//             s_Instances = new Dictionary<Type, Type>();
-//         }
-// #else
+#if UNITY_EDITOR && !SIMULATE_RUNTIME_BUILD
         private static void Initialize()
         {
-            
+            s_GetDrawerTypeForType = Type
+                .GetType("UnityEditor.ScriptAttributeUtility, UnityEditor")!
+                .GetMethod(
+                    "GetDrawerTypeForType", 
+                    BindingFlags.NonPublic | BindingFlags.Static,
+                    null,
+                    new Type[] { typeof(Type), typeof(Type[]), typeof(bool) },
+                    null);
+            s_Instances = new Dictionary<Type, Type>();
         }
-        
-// #endif
+#else
+        private static void Initialize()
+        {
+            s_Instances = new Dictionary<Type, Type>();
+            foreach (var drawer in TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer)))
+            {
+                foreach (var attr in drawer.GetCustomAttributes(typeof(CustomRuntimeDrawer), false))
+                {
+                    foreach (var type in ((CustomRuntimeDrawer)attr).Types)
+                    {
+                        s_Instances[type] = (Type)drawer;
+                    }
+                }
+            }
+        }
+#endif
         
         public static Type GetCustomDrawer(Type type)
         {
@@ -39,7 +50,7 @@ namespace Space3x.InspectorAttributes
             if (s_Instances.TryGetValue(type, out var value))
                 return value;
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR && !SIMULATE_RUNTIME_BUILD
             var renderPipelineAssetTypes = GraphicsSettings.isScriptableRenderPipelineEnabled
                 ? new[] { GraphicsSettings.currentRenderPipelineAssetType }
                 : null;

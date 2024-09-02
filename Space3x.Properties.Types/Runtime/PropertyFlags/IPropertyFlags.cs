@@ -1,6 +1,6 @@
 ﻿// using Space3x.Attributes.Types;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
     /// <summary>
     /// Flags for <see cref="IPropertyNode"/>.

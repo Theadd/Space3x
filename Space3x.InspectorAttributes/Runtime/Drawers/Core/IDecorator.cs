@@ -1,9 +1,8 @@
 ﻿using System;
-using Space3x.InspectorAttributes.Editor.VisualElements;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
 
-namespace Space3x.InspectorAttributes.Editor.Drawers
+namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
     public interface IDecorator : IDrawer

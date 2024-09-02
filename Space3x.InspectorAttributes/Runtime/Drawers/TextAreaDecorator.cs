@@ -1,15 +1,16 @@
 ﻿using System.Linq;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.InspectorAttributes.Extensions;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(TextAreaAttribute), useForChildren: true)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(TextAreaAttribute), true)]
+#endif
+    [CustomRuntimeDrawer(typeof(TextAreaAttribute), true)]
     public class TextAreaDecorator : Decorator<AutoDecorator, TextAreaAttribute>, IAttributeExtensionContext<TextAreaAttribute>
     {
         public override TextAreaAttribute Target => (TextAreaAttribute) attribute;

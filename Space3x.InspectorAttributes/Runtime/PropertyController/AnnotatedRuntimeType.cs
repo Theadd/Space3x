@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor;
-using Space3x.InspectorAttributes.Editor.Extensions;
+using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes

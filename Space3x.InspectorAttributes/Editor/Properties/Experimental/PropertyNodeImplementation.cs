@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Linq;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Extensions;
 using Space3x.InspectorAttributes.Editor.Utilities;
-using Space3x.InspectorAttributes.Editor.VisualElements;
 using Space3x.Properties.Types;
 using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.Types;
@@ -22,7 +22,7 @@ namespace Space3x.InspectorAttributes.Editor
         private bool m_HasValidSerializedProperty;
         
         static PropertyNodeImplementation() =>
-            VirtualPropertyNode.RegisterImplementationProvider(new PropertyNodeImplementation(), -1);
+            PropertyAdapter.RegisterImplementationProvider(new PropertyNodeImplementation(), -1);
 
         IPropertyNodeImplementation ICreatablePropertyNodeImplementation.Create(object property)
         {
@@ -59,29 +59,34 @@ namespace Space3x.InspectorAttributes.Editor
             set => boxedValue = value;
         }
 
-        public IPropertyNodeImplementation Copy() => ((ICreatablePropertyNodeImplementation)this).Create(m_Property);
+        public IPropertyNodeImplementation Copy() => ((ICreatablePropertyNodeImplementation)this).Create(
+            m_Property.HasSerializedProperty() ? serializedProperty?.Copy() : m_Property);
 
-        public IPropertyNodeImplementation FindPropertyRelative(string relativePropertyPath) => 
-            ((ICreatablePropertyNodeImplementation)this).Create(m_Property.FindPropertyRelative(relativePropertyPath));
+        public IPropertyNodeImplementation FindPropertyRelative(string relativePropertyPath) =>
+            ((ICreatablePropertyNodeImplementation)this).Create(m_Property.HasSerializedProperty()
+                ? serializedProperty?.FindPropertyRelative(relativePropertyPath)
+                : m_Property.FindPropertyRelative(relativePropertyPath));
 
         public IEnumerator GetEnumerator()
         {
             if (this.isArray)
             {
                 for (int i = 0; i < this.arraySize; ++i)
-                    yield return (VirtualPropertyNode) this.GetArrayElementAtIndex(i);
+                    yield return (PropertyAdapter) this.GetArrayElementAtIndex(i);
             }
             else
             {
                 IPropertyNodeImplementation end = this.GetEndProperty();
-                while (this.NextVisible(true) && !VirtualPropertyNode.EqualContents(this, end))
-                    yield return (VirtualPropertyNode) this;
+                while (this.NextVisible(true) && !PropertyAdapter.EqualContents(this, end))
+                    yield return (PropertyAdapter) this;
                 end = null;
             }
         }
 
         public IPropertyNodeImplementation GetArrayElementAtIndex(int index) =>
-            ((ICreatablePropertyNodeImplementation)this).Create(m_Property.GetArrayElementAtIndex(index));
+            ((ICreatablePropertyNodeImplementation)this).Create(m_Property.HasSerializedProperty()
+                ? serializedProperty?.GetArrayElementAtIndex(index)
+                : m_Property.GetArrayElementAtIndex(index));
 
         public object boxedValue
         {
@@ -93,19 +98,29 @@ namespace Space3x.InspectorAttributes.Editor
         {
             if (enterChildren && m_Property.HasChildren())
             {
-                if (m_Property.GetController().TryGetInstance(m_Property.PropertyPath, out var controller))
+                PropertyAttributeController controller = null;
+                if (((PropertyAttributeController)m_Property.GetController()).TryGetInstance(m_Property.PropertyPath, out controller))
                 {
                     m_Property = controller.GetNextVisibleProperty(string.Empty);
+                    m_HasValidSerializedProperty = false;
                 }
                 else
                 {
-                    throw new NotImplementedException(
-                        "Couldn't get controller for children properties on " + m_Property);
+                    controller = PropertyAttributeController.GetOrCreateInstance(m_Property,
+                        m_Property.GetValue()?.GetType() ?? m_Property.GetUnderlyingType(), forceCreate: false);
+                    if (controller != null)
+                    {
+                        m_Property = controller.GetNextVisibleProperty(string.Empty);
+                        m_HasValidSerializedProperty = false;
+                    }
+                    else
+                        throw new NotImplementedException("Couldn't get controller for children properties on " + m_Property);
                 }
             }
             else
             {
-                m_Property = m_Property.GetController().GetNextVisibleProperty(m_Property.Name);
+                m_Property = ((PropertyAttributeController)m_Property.GetController()).GetNextVisibleProperty(m_Property.Name);
+                m_HasValidSerializedProperty = false;
             }
 
             return m_Property != null;
@@ -116,7 +131,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (m_Property.HasSerializedProperty())
                 serializedProperty.ClearArray();
             else if (m_Property.IsArrayOrList())
-                SerializedUtility.ClearArray(m_Property);
+                ArrayPropertyUtility.ClearArray(m_Property);
         }
 
         public void Dispose() { }
@@ -155,7 +170,7 @@ namespace Space3x.InspectorAttributes.Editor
 
         public bool isInstantiatedPrefab => serializedProperty?.isInstantiatedPrefab ??
                                             PrefabUtility.IsPartOfPrefabInstance(
-                                                m_Property.GetSerializedObject()?.targetObject);
+                                                m_Property.GetTargetObject());
 
         // TODO: prefabOverride
         public bool prefabOverride
@@ -557,29 +572,55 @@ namespace Space3x.InspectorAttributes.Editor
         {
             if (enterChildren && m_Property.HasChildren())
             {
-                if (m_Property.GetController().TryGetInstance(m_Property.PropertyPath, out var controller))
+                PropertyAttributeController controller = null;
+                if (((PropertyAttributeController)m_Property.GetController()).TryGetInstance(m_Property.PropertyPath, out controller))
                 {
                     m_Property = controller.GetNextProperty(string.Empty);
+                    m_HasValidSerializedProperty = false;
                 }
                 else
                 {
-                    throw new NotImplementedException(
-                        "Couldn't get controller for children properties on " + m_Property);
+                    controller = PropertyAttributeController.GetOrCreateInstance(m_Property,
+                        m_Property.GetValue()?.GetType() ?? m_Property.GetUnderlyingType(), forceCreate: false);
+                    if (controller != null)
+                    {
+                        m_Property = controller.GetNextProperty(string.Empty);
+                        m_HasValidSerializedProperty = false;
+                    }
+                    else
+                        throw new NotImplementedException("Couldn't get controller for children properties on " + m_Property);
                 }
             }
             else
             {
-                m_Property = m_Property.GetController().GetNextProperty(m_Property.Name);
+                m_Property = ((PropertyAttributeController)m_Property.GetController()).GetNextProperty(m_Property.Name);
+                m_HasValidSerializedProperty = false;
             }
 
             return m_Property != null;
         }
 
+        /// <summary>
+        /// It doesn't produce the exact same result as <see cref="SerializedProperty.Reset"/> does, the original
+        /// method resets the serialized property to the serialized object's `Base` property and by calling .Next(true)
+        /// or .NextVisible(true), advances within the SerializedObject internal properties or the m_Script property
+        /// when calling .NextVisible(true), followed by the actual properties on its targetObject.
+        ///
+        /// Current PropertyAttributeController's implementation constructs the list of children properties using
+        /// reflection on the actual underlying value of a given property and those SerializedObject internal properties
+        /// doesn't exist as members of the underlying value's Type.
+        ///
+        /// So, after calling .Reset() on a property, the .propertyPath is an empty string, the same as after calling
+        /// .Reset() on a SerializedProperty but the after the first call to .NextVisible(true), .propertyPath will
+        /// be the path of the first visible property declared on that Type, while on a SerializedProperty, it would be
+        /// <c>m_Script</c> instead.
+        /// </summary>
         public void Reset()
         {
-            if (m_Property.GetController().TryGetInstance(string.Empty, out var controller))
+            if (((PropertyAttributeController)m_Property.GetController()).TryGetInstance(string.Empty, out var controller))
             {
-                m_Property = controller.GetNextProperty(string.Empty);
+                m_Property = controller.GetProperty(string.Empty);
+                m_HasValidSerializedProperty = false;
             }
             else
             {
@@ -590,8 +631,7 @@ namespace Space3x.InspectorAttributes.Editor
 
         public int CountRemaining()
         {
-            return m_Property
-                .GetController()
+            return ((PropertyAttributeController)m_Property.GetController())
                 .GetAllProperties()
                 .SkipWhile(n => n.Name != m_Property.Name)
                 .Skip(1)
@@ -601,7 +641,7 @@ namespace Space3x.InspectorAttributes.Editor
         public int CountInProperty()
         {
             if (!m_Property.HasChildren()) return 1;
-            if (m_Property.GetController().TryGetInstance(m_Property.PropertyPath, out var controller))
+            if (((PropertyAttributeController)m_Property.GetController()).TryGetInstance(m_Property.PropertyPath, out var controller))
             {
                 return 1 + controller
                     .GetAllProperties()
@@ -620,7 +660,7 @@ namespace Space3x.InspectorAttributes.Editor
                 return serializedProperty.DuplicateCommand();
             if (m_Property.IsArrayOrListElement() && m_Property is IPropertyNodeIndex itemNode)
             {
-                SerializedUtility.InsertArrayElementAtIndex(itemNode.Indexer, itemNode.Index + 1);
+                ArrayPropertyUtility.InsertArrayElementAtIndex(itemNode.Indexer, itemNode.Index + 1);
                 itemNode.Indexer.GetArrayElementAtIndex(itemNode.Index + 1).SetValue(m_Property.GetValue());
                 return true;
             }
@@ -633,13 +673,15 @@ namespace Space3x.InspectorAttributes.Editor
                 return serializedProperty.DeleteCommand();
             if (m_Property.IsArrayOrListElement() && m_Property is IPropertyNodeIndex itemNode)
             {
-                SerializedUtility.DeleteArrayElementInProperty(itemNode.Indexer, itemNode.Index);
+                ArrayPropertyUtility.DeleteArrayElementInProperty(itemNode.Indexer, itemNode.Index);
                 return true;
             }
             return false;
         }
 
-        public IPropertyNodeImplementation GetEndProperty(bool includeInvisible = false)
+        public IPropertyNodeImplementation GetEndProperty() => GetEndProperty(false);
+        
+        public IPropertyNodeImplementation GetEndProperty(bool includeInvisible)
         {
             IPropertyNodeImplementation endProperty = this.Copy();
             if (includeInvisible)
@@ -661,7 +703,7 @@ namespace Space3x.InspectorAttributes.Editor
                 if (m_Property.HasSerializedProperty())
                     serializedProperty.arraySize = value;
                 else
-                    SerializedUtility.ResizeArrayInProperty(m_Property, value);
+                    ArrayPropertyUtility.ResizeArrayInProperty(m_Property, value);
             }
         }
 
@@ -672,7 +714,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (m_Property.HasSerializedProperty())
                 serializedProperty.InsertArrayElementAtIndex(index);
             else
-                SerializedUtility.InsertArrayElementAtIndex(m_Property, index);
+                ArrayPropertyUtility.InsertArrayElementAtIndex(m_Property, index);
         }
 
         public void DeleteArrayElementAtIndex(int index)
@@ -680,7 +722,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (m_Property.HasSerializedProperty())
                 serializedProperty.DeleteArrayElementAtIndex(index);
             else
-                SerializedUtility.DeleteArrayElementInProperty(m_Property, index);
+                ArrayPropertyUtility.DeleteArrayElementInProperty(m_Property, index);
         }
 
         public bool MoveArrayElement(int srcIndex, int dstIndex)
@@ -688,7 +730,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (m_Property.HasSerializedProperty())
                 return serializedProperty.MoveArrayElement(srcIndex, dstIndex);
             
-            return SerializedUtility.MoveArrayElement(m_Property, srcIndex, dstIndex);
+            return ArrayPropertyUtility.MoveArrayElement(m_Property, srcIndex, dstIndex);
         }
 
         // TODO: isFixedBuffer
@@ -716,10 +758,24 @@ namespace Space3x.InspectorAttributes.Editor
                 // TODO: label
                 propertyField = new BindablePropertyField(m_Property, applyCustomDrawers: false)
                     .WithClasses(UssConstants.UssShowInInspector);
-                if (bindProperty)
-                    ((IBindable)((BindablePropertyField)propertyField).Field).BindProperty(m_Property);
+                if (bindProperty && propertyField is BindablePropertyField bindableField)
+                {
+                    ((IBindable)bindableField.Field).BindProperty(m_Property);
+                    bindableField.TrackPropertyValue(m_Property, changedProperty =>
+                    {
+                        if (!Equals(m_Property, changedProperty))
+                            DebugLog.Error($"{nameof(PropertyNodeImplementation)} -> TrackPropertyValue <b>NOT EQUALS!</b> '{m_Property.PropertyPath}' != '{changedProperty.PropertyPath}'");
+                        else
+                        {
+                            DebugLog.Error($"{nameof(PropertyNodeImplementation)} -> TrackPropertyValue -> SetValueWithoutNotify <color=#00FF00FF><b>EQUALS!</b></color> -> SetValueWithoutNotify: '{m_Property.PropertyPath}' == '{changedProperty.PropertyPath}'");
+                            BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
+                        }
+                    });
+                }
             }
             return propertyField;
         }
+
+        public IPropertyNode GetPropertyNode() => m_Property;
     }
 }

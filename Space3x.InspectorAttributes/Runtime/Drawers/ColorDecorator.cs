@@ -1,11 +1,13 @@
 ﻿using Space3x.Attributes.Types;
-using UnityEditor;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes.Editor.Drawers
 {
-    [CustomPropertyDrawer(typeof(ColorAttribute), useForChildren: true)]
+#if UNITY_EDITOR
+    [UnityEditor.CustomPropertyDrawer(typeof(ColorAttribute), true)]
+#endif
+    [CustomRuntimeDrawer(typeof(ColorAttribute), true)]
     public class ColorDecorator : Decorator<AutoDecorator, ColorAttribute>, IAttributeExtensionContext<ColorAttribute>
     {
         public override ColorAttribute Target => (ColorAttribute) attribute;

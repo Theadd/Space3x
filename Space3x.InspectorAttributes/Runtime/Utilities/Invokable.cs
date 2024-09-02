@@ -1,5 +1,4 @@
 ﻿using System.Reflection;
-using Space3x.InspectorAttributes.Editor.Utilities;
 
 namespace Space3x.InspectorAttributes
 {

@@ -2,14 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine.Internal;
 
-namespace Space3x.InspectorAttributes.Utilities
+namespace Space3x.InspectorAttributes
 {
     /// <summary>
     /// Extension methods for <see cref="Type"/>, named after the fantastic Type extension
     /// methods from Unity's VisualScripting package team.
     /// <see cref="Unity.VisualScripting.TypeUtility"/>
     /// </summary>
+    [ExcludeFromDocs]
     public static class TypeUtilityExtensions
     {
         /// <summary>
@@ -83,6 +85,35 @@ namespace Space3x.InspectorAttributes.Utilities
                                 (f, s) => s.IsAssignableFrom(f))
                             .All(z => z)))
                     .ToList();
+        }
+
+        private static IEnumerable<Assembly> GetCustomAssembliesReferencing(Assembly referencedAssembly)
+        {
+            var definedIn = referencedAssembly.GetName().Name;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                if (assembly.GlobalAssemblyCache) continue;
+                if (assembly.GetName().Name == definedIn) yield return assembly;
+                if (assembly.GetName().Name.Length >= 5 && assembly.GetName().Name.Substring(0, 5) == "Unity") continue;
+                if (assembly.GetReferencedAssemblies().Any(a => a.Name == definedIn))
+                    yield return assembly;
+            }
+            yield break;
+        }
+        
+        public static IEnumerable<TypeInfo> GetTypesWithAttributeInCustomAssemblies(Type attributeType)
+        {
+            foreach (var assembly in GetCustomAssembliesReferencing(attributeType.Assembly))
+            {
+                foreach (var typeInfo in assembly.DefinedTypes)
+                {
+                    if (typeInfo.IsDefined(attributeType, false))
+                    {
+                        yield return typeInfo;
+                    }
+                }
+            }
+            yield break;
         }
         
         private static string SimplifyFast(string typeName)

@@ -1,4 +1,6 @@
 ﻿using System;
+using Space3x.Properties.Types.Internal;
+
 // using UnityEditor;
 
 namespace Space3x.Properties.Types
@@ -24,5 +26,29 @@ namespace Space3x.Properties.Types
         /// <see cref="SerializedProperty.propertyPath"/> on a serialized property. 
         /// </summary>
         public string PropertyPath { get; }
+    }
+    
+    public interface IControlledProperty
+    {
+        public IPropertyController Controller { get; }
+    
+        // public SerializedObject SerializedObject => Controller.SerializedObject;
+        public object SerializedObject => Controller.SerializedObject;
+    }
+    
+    [ExcludeFromDocs]
+    public interface IPropertyNodeWithFlags : IPropertyNode, IPropertyFlags { }
+
+    /// <summary>
+    /// Base interface for properties that can be bound to a bindable object.
+    /// </summary>
+    /// <seealso cref="ISerializedPropertyNode"/>
+    /// <seealso cref="ISerializedPropertyNodeIndex"/>
+    /// <seealso cref="INonSerializedPropertyNode"/>
+    /// <seealso cref="INonSerializedPropertyNodeIndex"/>
+    [ExcludeFromDocs]
+    public interface IBindablePropertyNode : IPropertyNodeWithFlags, IControlledProperty
+    {
+        public IBindableDataSource DataSource { get; set; }
     }
 }

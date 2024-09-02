@@ -2,11 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Space3x.InspectorAttributes.Editor;
-using Space3x.InspectorAttributes.Editor.Drawers;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.Utilities;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
 using Space3x.Properties.Types.Editor;
 using UnityEngine.Internal;
@@ -127,23 +123,32 @@ namespace Space3x.InspectorAttributes
                 return instanceId * 397 ^ parentPath.GetHashCode();
         }
         
+#if UNITY_EDITOR
         public static IPropertyNode GetPropertyNode(this VisualElement element)
         {
-#if UNITY_EDITOR
             if (element is UnityEditor.UIElements.PropertyField propertyField)
             {
                 var prop = propertyField.GetSerializedProperty();
                 return prop == null ? null : PropertyAttributeController.GetInstance(prop)?.GetProperty(prop.name);
             }
-#endif
             if (element is BindablePropertyField bindablePropertyField)
                 return bindablePropertyField.Property;
             if (element.dataSource is IBindableDataSource bindableDataSource)
                 return bindableDataSource.GetPropertyNode();
 
-            throw new ArgumentException(
-                $"Type {element.GetType().Name} is not valid in {nameof(GetPropertyNode)}.", nameof(element));
+            return null;
         }
+#else
+        public static IPropertyNode GetPropertyNode(this VisualElement element)
+        {
+            if (element is BindablePropertyField bindablePropertyField)
+                return bindablePropertyField.Property;
+            if (element.dataSource is IBindableDataSource bindableDataSource)
+                return bindableDataSource.GetPropertyNode();
+
+            return null;
+        }
+#endif
         
         /// <summary>
         /// Determines whether this property is an array.
@@ -235,7 +240,7 @@ namespace Space3x.InspectorAttributes
         {
             List<object> parameters = new List<object>();
             // If memberName property is a method accepting IPropertyNode as parameter, create that invokable with the relative property as parameter. (outdated)
-            if (self.GetController().AnnotatedType.GetValue(memberName) is VTypeMember vType && vType?.RuntimeMethod != null)
+            if (((PropertyAttributeController)self.GetController()).AnnotatedType.GetValue(memberName) is VTypeMember vType && vType?.RuntimeMethod != null)
             {
                 if (vType.RuntimeMethod.GetParameters().Any(p => p.ParameterType == typeof(IPropertyNode)))
                 {
@@ -356,7 +361,7 @@ namespace Space3x.InspectorAttributes
                 // Ignore
             }
             
-            if (property.GetController().TryGetInstance(property.PropertyPath, out var controller))
+            if (((PropertyAttributeController)property.GetController()).TryGetInstance(property.PropertyPath, out var controller))
             {
                 return controller.GetProperty(relativePath);
             }
@@ -443,8 +448,9 @@ namespace Space3x.InspectorAttributes
                     : null;
 
         private static VTypeMember GetVTypeMember(this IPropertyNode property) =>
-            property.GetController()?.AnnotatedType.GetValue(property.Name);
+            ((PropertyAttributeController)property.GetController())?.AnnotatedType.GetValue(property.Name);
         
+#if UNITY_EDITOR
         /// <summary>
         /// Gets access to the controller instance shared by all properties on the same object. Many other extension
         /// methods on properties make use of it since property instances are barely empty shells.
@@ -453,9 +459,15 @@ namespace Space3x.InspectorAttributes
         /// It provides access to internal objects which are not included in the public API documentation, so they are
         /// subject to changes.
         /// </remarks>
-        public static PropertyAttributeController GetController(this IPropertyNode property) => 
-            property is IControlledProperty { Controller: PropertyAttributeController controller } 
+        public static IPropertyController GetController(this IPropertyNode property) =>
+            property is IControlledProperty { Controller: PropertyAttributeController controller }
                 ? controller
+#if SPACE3X_DEBUG && RUNTIME_UITOOLKIT_DRAWERS
+                : throw new Exception($"{nameof(IPropertyNode)}.{nameof(GetController)} follows an unexpected " +
+                                      $"path that would differ from the one in runtime builds.");
+#else
                 : PropertyAttributeController.GetInstance(property);
+#endif
+#endif
     }
 }

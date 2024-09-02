@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace Space3x.Properties.Types.Editor
 {
-    public class PropertyWrapper : IPropertyNodeImplementation
+    public class PropertyAdapter : IPropertyNodeImplementation
     {
         public static bool EqualContents(IPropertyNodeImplementation x, IPropertyNodeImplementation y) =>
             (x?.contentHash ?? 0) == (y?.contentHash ?? 0);
@@ -23,31 +23,31 @@ namespace Space3x.Properties.Types.Editor
             if (provider is not ICreatablePropertyNodeImplementation)
                 throw new Exception($"Specified {nameof(IPropertyNodeImplementation)} does not implement " +
                                     $"required {nameof(ICreatablePropertyNodeImplementation)} interface in " +
-                                    $"{nameof(PropertyWrapper)}.{nameof(RegisterImplementationProvider)}.");
+                                    $"{nameof(PropertyAdapter)}.{nameof(RegisterImplementationProvider)}.");
             defaultProvider = provider;
             currentProviderPriority = priority;
         }
 
         private IPropertyNodeImplementation m_Impl;
 
-        protected PropertyWrapper(object target) =>
+        protected PropertyAdapter(object target) =>
             m_Impl = target is IPropertyNodeImplementation srcImpl
                 ? srcImpl
                 : defaultProvider is ICreatablePropertyNodeImplementation instancer
                     ? instancer.Create(target)
                     : throw new NotImplementedException(
-                        $"No valid implementation provider registered in {nameof(PropertyWrapper)}.");
+                        $"No valid implementation provider registered in {nameof(PropertyAdapter)}.");
 
-        public static PropertyWrapper Create(object target) =>
+        public static PropertyAdapter Create(object target) =>
             target switch
             {
-                PropertyWrapper other => other,
-                _ => new PropertyWrapper(target)
+                PropertyAdapter other => other,
+                _ => new PropertyAdapter(target)
             };
 
-        public static implicit operator PropertyWrapper(SerializedProperty other) => Create(other);
-        public static implicit operator SerializedProperty(PropertyWrapper other) => other.serializedProperty;
-        public static implicit operator PropertyWrapper(PropertyNodeImplementationBase other) => Create(other);
+        public static implicit operator PropertyAdapter(SerializedProperty other) => Create(other);
+        public static implicit operator SerializedProperty(PropertyAdapter other) => other.serializedProperty;
+        public static implicit operator PropertyAdapter(PropertyNodeImplementationBase other) => Create(other);
 
         public string name => m_Impl.name;
         
@@ -63,21 +63,21 @@ namespace Space3x.Properties.Types.Editor
 
         IPropertyNodeImplementation IPropertyNodeImplementation.Copy() => m_Impl.Copy();
         
-        public PropertyWrapper Copy() => (PropertyWrapper)((IPropertyNodeImplementation)this).Copy();
+        public PropertyAdapter Copy() => Create(((IPropertyNodeImplementation)this).Copy());
 
         IPropertyNodeImplementation IPropertyNodeImplementation.FindPropertyRelative(string relativePropertyPath) => 
             m_Impl.FindPropertyRelative(relativePropertyPath);
         
-        public PropertyWrapper FindPropertyRelative(string relativePropertyPath) => 
-            (PropertyWrapper)((IPropertyNodeImplementation)this).FindPropertyRelative(relativePropertyPath);
+        public PropertyAdapter FindPropertyRelative(string relativePropertyPath) => 
+            Create(((IPropertyNodeImplementation)this).FindPropertyRelative(relativePropertyPath));
 
         public IEnumerator GetEnumerator() => m_Impl.GetEnumerator();
 
         IPropertyNodeImplementation IPropertyNodeImplementation.GetArrayElementAtIndex(int index) => 
             m_Impl.GetArrayElementAtIndex(index);
         
-        public PropertyWrapper GetArrayElementAtIndex(int index) => 
-            (PropertyWrapper)((IPropertyNodeImplementation)this).GetArrayElementAtIndex(index);
+        public PropertyAdapter GetArrayElementAtIndex(int index) => 
+            Create(((IPropertyNodeImplementation)this).GetArrayElementAtIndex(index));
 
         public object boxedValue
         {
@@ -321,11 +321,14 @@ namespace Space3x.Properties.Types.Editor
 
         public bool DeleteCommand() => m_Impl.DeleteCommand();
 
-        IPropertyNodeImplementation IPropertyNodeImplementation.GetEndProperty(bool includeInvisible = false) => 
+        IPropertyNodeImplementation IPropertyNodeImplementation.GetEndProperty() => 
+            m_Impl.GetEndProperty();
+        
+        IPropertyNodeImplementation IPropertyNodeImplementation.GetEndProperty(bool includeInvisible) => 
             m_Impl.GetEndProperty(includeInvisible);
         
-        public PropertyWrapper GetEndProperty(bool includeInvisible = false) => 
-            (PropertyWrapper)((IPropertyNodeImplementation)this).GetEndProperty(includeInvisible);
+        public PropertyAdapter GetEndProperty(bool includeInvisible = false) => 
+            Create(((IPropertyNodeImplementation)this).GetEndProperty(includeInvisible));
 
         public bool isArray => m_Impl.isArray;
 
@@ -350,12 +353,14 @@ namespace Space3x.Properties.Types.Editor
         IPropertyNodeImplementation IPropertyNodeImplementation.GetFixedBufferElementAtIndex(int index) => 
             m_Impl.GetFixedBufferElementAtIndex(index);
         
-        public PropertyWrapper GetFixedBufferElementAtIndex(int index) => 
-            (PropertyWrapper)((IPropertyNodeImplementation)this).GetFixedBufferElementAtIndex(index);
+        public PropertyAdapter GetFixedBufferElementAtIndex(int index) => 
+            Create(((IPropertyNodeImplementation)this).GetFixedBufferElementAtIndex(index));
 
         public uint contentHash => m_Impl.contentHash;
 
         public VisualElement CreatePropertyField(bool bindProperty = false, string label = null) =>
             m_Impl.CreatePropertyField(bindProperty, label);
+
+        public IPropertyNode GetPropertyNode() => m_Impl.GetPropertyNode();
     }
 }

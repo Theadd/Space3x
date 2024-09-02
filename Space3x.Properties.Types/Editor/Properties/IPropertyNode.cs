@@ -1,37 +1,15 @@
 ﻿using System;
-using UnityEditor;
+using Space3x.Properties.Types.Editor;
+// using UnityEditor;
 using UnityEngine.Internal;
 
 namespace Space3x.Properties.Types.Editor
 {
-    public interface IPropertyWithSerializedObject
-    {
-        public IPropertyController Controller { get; }
-        
-        public SerializedObject SerializedObject => Controller.SerializedObject;
-    }
-
     /// <summary>
     /// Represents a property which is also a container for other properties. For example, an object or struct.
     /// </summary>
     [ExcludeFromDocs]
     public interface INodeTree : IPropertyNode { }
-
-    [ExcludeFromDocs]
-    public interface IPropertyNodeWithFlags : IPropertyNode, IPropertyFlags { }
-
-    /// <summary>
-    /// Base interface for properties that can be bound to a bindable object.
-    /// </summary>
-    /// <seealso cref="ISerializedPropertyNode"/>
-    /// <seealso cref="ISerializedPropertyNodeIndex"/>
-    /// <seealso cref="INonSerializedPropertyNode"/>
-    /// <seealso cref="INonSerializedPropertyNodeIndex"/>
-    [ExcludeFromDocs]
-    public interface IBindablePropertyNode : IPropertyNodeWithFlags, IPropertyWithSerializedObject
-    {
-        public IBindableDataSource DataSource { get; set; }
-    }
 
     /// <summary>
     /// Base interface for serialized properties.
