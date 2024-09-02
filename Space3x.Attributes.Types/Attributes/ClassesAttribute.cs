@@ -40,5 +40,9 @@ namespace Space3x.Attributes.Types
             Enabled = enabled;
             ClassNames = classNames.ToList();
         }
+        
+        protected ClassesAttribute() : base(applyToCollection: false) { }
+        
+        protected ClassesAttribute(bool applyToCollection) : base(applyToCollection: applyToCollection) { }
     }
 }

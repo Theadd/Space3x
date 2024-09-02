@@ -239,8 +239,10 @@ namespace Space3x.InspectorAttributes
             IDrawer drawer = null)
         {
             List<object> parameters = new List<object>();
+            VTypeMember annotatedMember = ((PropertyAttributeController)self.GetController()).AnnotatedType.GetValue(memberName) 
+                                          ?? ((PropertyAttributeController)self.GetController()).AnnotatedType.GetMissingValue(memberName, self.GetDeclaringObject());
             // If memberName property is a method accepting IPropertyNode as parameter, create that invokable with the relative property as parameter. (outdated)
-            if (((PropertyAttributeController)self.GetController()).AnnotatedType.GetValue(memberName) is VTypeMember vType && vType?.RuntimeMethod != null)
+            if (annotatedMember is VTypeMember vType && vType?.RuntimeMethod != null)
             {
                 if (vType.RuntimeMethod.GetParameters().Any(p => p.ParameterType == typeof(IPropertyNode)))
                 {

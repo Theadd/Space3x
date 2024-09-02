@@ -19,6 +19,38 @@ namespace Space3x.InspectorAttributes
         private static Dictionary<Type, AnnotatedRuntimeType> s_Instances;
         private static Comparer<PropertyAttribute> s_Comparer;
 
+        public VTypeMember GetMissingValue(string memberName, object declaringObject)
+        {
+            var keyIndex = Keys.IndexOf(memberName);
+            if (keyIndex == -1) keyIndex = Keys.IndexOf($"<{memberName}>k__BackingField");
+            if (keyIndex >= 0) return Values[keyIndex];
+            var memberInfo = declaringObject?.GetType()
+                .GetMember(memberName, BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+                .FirstOrDefault();
+            if (memberInfo == null) return null;
+            VTypeMember item = null;
+            switch (memberInfo)
+            {
+                case MethodInfo methodInfo:
+                    item = new VTypeMember()
+                    {
+                        FieldType = methodInfo.ReturnType,
+                        Name = methodInfo.Name,
+                        PropertyAttributes = new List<PropertyAttribute>(),
+                        RuntimeMethod = methodInfo,
+                        Flags = VTypeFlags.IncludeInInspector
+                    };
+                    break;
+                default:
+                    // Other member types shouldn't be missing.
+                    return null;
+            }
+
+            Values.Add(item);
+            Keys.Add(memberInfo.Name);
+            return item;
+        }
+
         public static AnnotatedRuntimeType GetInstance(Type declaringType, bool asUnreliable = false)
         {
             if (s_Instances == null)

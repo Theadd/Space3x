@@ -28,10 +28,16 @@ namespace Space3x.InspectorAttributes
         {
             if (TryCreateInvokable<TValue, TValue, TContent>(context, content, out var invokable))
             {
-                if (!((invokable.Parameters == null ? invokable.Invoke() : invokable.InvokeWith(invokable.Parameters)) is TValue value)) 
+                var v = invokable.Parameters == null
+                    ? invokable.Invoke()
+                    : invokable.InvokeWith(invokable.Parameters);
+                if (v == null && Nullable.GetUnderlyingType(typeof(TValue)) != null)
+                    outValue = default(TValue);
+                else if (v is TValue value) 
+                    outValue = value;
+                else
                     throw new Exception(nameof(ConditionEx) + " expects an out value to be of type " + typeof(TValue).Name + ".");
                 
-                outValue = value;
                 return true;
             }
 

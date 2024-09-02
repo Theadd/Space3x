@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.Internal;
@@ -17,12 +18,33 @@ namespace Space3x.InspectorAttributes
 
     [UxmlElement]
     [HideInInspector]
-    public partial class AutoDecorator : BindableElement, IEditorDecorator
+    public abstract partial class AutoDecoratorBase : BindableElement, IEditorDecorator
     {
-        protected AutoDecorator(string className, bool visible = true) =>
+        protected AutoDecoratorBase(string className, bool visible = true) =>
             this.WithClasses(UssConstants.UssDecorator, className, visible ? "" : UssConstants.UssHidden);
 
-        public AutoDecorator() => this.WithClasses(UssConstants.UssDecorator, UssConstants.UssHidden);
+        public AutoDecoratorBase() => this.WithClasses(UssConstants.UssDecorator, UssConstants.UssHidden);
+    }
+    
+    [UxmlElement]
+    [HideInInspector]
+    public partial class AutoDecorator : AutoDecoratorBase
+    {
+        public AutoDecorator(string className, bool visible = true) : base(className, visible) { }
+
+        public AutoDecorator() : base() { }
+
+        public void BindProperty(IPropertyNode property) => ThrowInvalidBinding();
+        
+        public void BindProperty(IPropertyNode property, BindingId bindingId) => ThrowInvalidBinding();
+        
+        public void TrackPropertyValue(IPropertyNode property, Action<IPropertyNode> callback = null) => ThrowInvalidBinding();
+        
+        public void TrackSerializedObjectValue(IPropertyNode property, Action callback = null) => ThrowInvalidBinding();
+        
+        private static void ThrowInvalidBinding([CallerMemberName] string memberName = null) => 
+            Debug.LogException(new InvalidOperationException($"Use Decorator's GhostContainer instead of Container to call {memberName} on it."));
+
     }
 
     [UxmlElement]
@@ -34,7 +56,7 @@ namespace Space3x.InspectorAttributes
     
     [UxmlElement]
     [HideInInspector]
-    public partial class GhostDecorator : AutoDecorator
+    public partial class GhostDecorator : AutoDecoratorBase
     {
         public IDecorator TargetDecorator { get; set; }
         

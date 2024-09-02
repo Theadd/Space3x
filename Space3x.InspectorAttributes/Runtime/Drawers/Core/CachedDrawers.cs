@@ -1,4 +1,4 @@
-﻿#define SIMULATE_RUNTIME_BUILD
+﻿// #define SIMULATE_RUNTIME_BUILD
 using System;
 using System.Collections.Generic;
 using System.Reflection;

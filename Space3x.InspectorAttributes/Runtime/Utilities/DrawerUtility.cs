@@ -34,7 +34,7 @@ namespace Space3x.InspectorAttributes
         /// </summary>
         /// <returns>A clean copy.</returns>
         public static object CopyPropertyDrawer(object propertyDrawer) =>
-            s_Implementation?.CopyDecoratorDrawer(propertyDrawer);
+            s_Implementation?.CopyPropertyDrawer(propertyDrawer);
 
         public static object CreateDecoratorDrawer(Type decoratorType, PropertyAttribute attribute) =>
             s_Implementation?.CreateDecoratorDrawer(decoratorType, attribute);

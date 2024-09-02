@@ -417,3 +417,15 @@
     flex-grow: 1;
     flex-shrink: 1;
 }
+
+/* --- */
+
+/* Space3x.UiToolkit.Runtime */
+
+.ui3x-valid {
+    background-color: green;
+}
+
+.ui3x-invalid {
+    background-color: red;
+}

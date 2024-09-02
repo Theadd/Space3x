@@ -56,7 +56,7 @@ namespace Space3x.InspectorAttributes
         
         /// <summary>
         /// Override this in order to make the decorator call <see cref="OnUpdate">OnUpdate()</see> on any value change
-        /// on the serialized object being inspected. Defaults to false.
+        /// on the property's declaring object. Defaults to false.
         /// </summary>
         protected virtual bool UpdateOnAnyValueChange => false;
 
@@ -92,17 +92,17 @@ namespace Space3x.InspectorAttributes
         
         public sealed override VisualElement CreatePropertyGUI()
         {
-            // var numGhosts = GhostContainer?.hierarchy.parent?.hierarchy.childCount ?? -1;
-            // DebugLog.Info("IN CreatePropertyGUI(); numGhosts: " + numGhosts + $"; ThisHash: {this.GetHashCode()}");
+            var numGhosts = GhostContainer?.hierarchy.parent?.hierarchy.childCount ?? -1;
+            DebugLog.Info("IN CreatePropertyGUI(); numGhosts: " + numGhosts + $"; ThisHash: {this.GetHashCode()}");
             if (GhostContainer != null || m_TotallyRemoved)
             {
-                // DebugLog.Info($"  <b><color=#6666FFFF>[CREATE COPY!]</color> ThisHash: {this.GetHashCode()}</b>");
+                DebugLog.Info($"  <b><color=#6666FFFF>[CREATE COPY!]</color> ThisHash: {this.GetHashCode()}</b>");
                 return ((DecoratorDrawerAdapter)DrawerUtility.CopyDecoratorDrawer(this)).CreatePropertyGUI();
 
             }
-            // DebugLog.Info($"<color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name}, NºGh: {numGhosts}, NullGh: {GhostContainer == null}, " +
-            //               $"NullCT: {Container == null}, NullP: {Property == null}, THash: {this.GetHashCode()}, Rem: {m_Removed}, " +
-            //               $"Add: {m_Added}, TotallyRemoved: {m_TotallyRemoved}</color>");
+            DebugLog.Info($"<color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name}, NºGh: {numGhosts}, NullGh: {GhostContainer == null}, " +
+                          $"NullCT: {Container == null}, NullP: {Property == null}, THash: {this.GetHashCode()}, Rem: {m_Removed}, " +
+                          $"Add: {m_Added}, TotallyRemoved: {m_TotallyRemoved}</color>");
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
             GhostContainer.WithDevTools(this);
             m_Ready = false;

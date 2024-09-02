@@ -106,27 +106,27 @@ namespace Space3x.InspectorAttributes
             return value;
         }
         
-        public static PropertyAttributeController GetInstance(IPropertyNode prop)
-        {
-            if (s_Instances == null)
-                s_Instances = new Dictionary<int, PropertyAttributeController>();
-
-            if (prop is IControlledProperty { Controller: PropertyAttributeController controller })
-                return controller;
-
-            var instanceId = prop.GetParentObjectHash();
-            if (instanceId == 0)
-                return null;
-
-            SetupActiveSelection();
-            if (!s_Instances.TryGetValue(instanceId, out var value))
-            {
-                throw new ArgumentException(
-                    $"{nameof(PropertyAttributeController)} instance {instanceId} not found for property with path: {prop.PropertyPath}.");
-            }
-
-            return value;
-        }
+        // public static PropertyAttributeController GetInstance(IPropertyNode prop)
+        // {
+        //     if (s_Instances == null)
+        //         s_Instances = new Dictionary<int, PropertyAttributeController>();
+        //
+        //     if (prop is IControlledProperty { Controller: PropertyAttributeController controller })
+        //         return controller;
+        //
+        //     var instanceId = prop.GetParentObjectHash();
+        //     if (instanceId == 0)
+        //         return null;
+        //
+        //     SetupActiveSelection();
+        //     if (!s_Instances.TryGetValue(instanceId, out var value))
+        //     {
+        //         throw new ArgumentException(
+        //             $"{nameof(PropertyAttributeController)} instance {instanceId} not found for property with path: {prop.PropertyPath}.");
+        //     }
+        //
+        //     return value;
+        // }
         
         public static PropertyAttributeController GetInstance(int instanceId)
         {
