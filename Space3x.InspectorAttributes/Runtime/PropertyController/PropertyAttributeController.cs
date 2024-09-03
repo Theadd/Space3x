@@ -81,7 +81,7 @@ namespace Space3x.InspectorAttributes
         /// GetInstance overload for Runtime UI on topmost level object. No safe checks implemented since Runtime UI
         /// could also be populated when not in play mode if ExecuteAlways or ExecuteInEditMode are used.
         /// </summary>
-        public static PropertyAttributeController GetInstance(UnityEngine.Object target)
+        public static PropertyAttributeController GetInstance(UnityEngine.Object target, IPropertyNode propertyNode = null)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -95,11 +95,14 @@ namespace Space3x.InspectorAttributes
             {
                 value = new PropertyAttributeController(target, instanceId)
                 {
-                    IsRuntimeUI = true
+                    // IsRuntimeUI = true
+                    IsRuntimeUI = propertyNode?.IsRuntimeUI() ?? true
                 };
-                value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType, asUnreliable: true);
+                bool isUnreliable = propertyNode == null || Application.isPlaying; // || propertyNode.IsRuntimeUI();
+                value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType, asUnreliable: isUnreliable);
                 value.Properties = new RuntimeTypeProperties(value);
-                value.EventHandler = UnreliableEventHandler.Create((BindablePropertyNode)value.GetProperty(string.Empty), true);
+                if (isUnreliable)
+                    value.EventHandler = UnreliableEventHandler.Create((BindablePropertyNode)value.GetProperty(string.Empty), true);
                 s_Instances.Add(instanceId, value);
             }
 
@@ -157,6 +160,9 @@ namespace Space3x.InspectorAttributes
         
         public static PropertyAttributeController GetOrCreateInstance(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false)
         {
+            if (typeof(UnityEngine.Object).IsAssignableFrom(parentPropertyTreeRoot.GetUnderlyingType()))
+                return GetInstance((UnityEngine.Object)parentPropertyTreeRoot.GetValue(), parentPropertyTreeRoot);
+            
             SetupActiveSelection();
             var parentController = parentPropertyTreeRoot.GetController();
             // TODO: typeof(UnityEngine.Object).IsAssignableFrom(

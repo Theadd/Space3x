@@ -1,7 +1,6 @@
 ﻿using System;
 using Space3x.Attributes.Types;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 
 namespace Space3x.InspectorAttributes
 {

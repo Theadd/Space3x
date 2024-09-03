@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;

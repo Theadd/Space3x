@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
 

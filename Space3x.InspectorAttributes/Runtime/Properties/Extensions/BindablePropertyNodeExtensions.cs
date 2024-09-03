@@ -1,4 +1,4 @@
-﻿using Space3x.Properties.Types.Editor;
+﻿using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes
 {

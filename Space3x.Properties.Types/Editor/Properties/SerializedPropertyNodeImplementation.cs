@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
     [InitializeOnLoad]
     public class SerializedPropertyNodeImplementation : PropertyNodeImplementationBase, IPropertyNodeImplementation, ICreatablePropertyNodeImplementation

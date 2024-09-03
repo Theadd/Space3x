@@ -5,7 +5,6 @@ using System.Reflection;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Utilities;
 using Space3x.Properties.Types;
-using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -86,7 +85,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 Debug.Log($"    {key.Name}: {value.Name}");
             }
             DebuggingUtility.ShowAllControllers();
-            var str = $"<b><u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
+            var str = $"<b>{((PropertyAttributeController)Property.GetController()).InstanceID} <u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
             foreach (var parentProperty in Property.GetAllParentProperties(false))
             {
                 str += $"\t'<b>{parentProperty.Name}</b>' @ '{parentProperty.ParentPath}' ({parentProperty.PropertyPath})\n";

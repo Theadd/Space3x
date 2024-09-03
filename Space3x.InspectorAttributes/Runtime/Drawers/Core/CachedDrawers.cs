@@ -11,6 +11,8 @@ namespace Space3x.InspectorAttributes
     {
         private static MethodInfo s_GetDrawerTypeForType;
         private static Dictionary<Type, Type> s_Instances;
+        
+        private static Func<Type, Type[], bool, Type> s_GetDrawerTypeForTypeDelegate;
 
         static CachedDrawers() => Initialize();
 
@@ -26,6 +28,8 @@ namespace Space3x.InspectorAttributes
                     new Type[] { typeof(Type), typeof(Type[]), typeof(bool) },
                     null);
             s_Instances = new Dictionary<Type, Type>();
+            s_GetDrawerTypeForTypeDelegate = (Func<Type, Type[], bool, Type>)
+                s_GetDrawerTypeForType!.CreateDelegate(typeof(Func<Type, Type[], bool, Type>));
         }
 #else
         private static void Initialize()
@@ -59,8 +63,11 @@ namespace Space3x.InspectorAttributes
             //      This type is for fields that have the SerializeReference attribute,
             //      otherwise the object is stored inline (SerializedPropertyType.Generic).
             // So, if that field has a [SerializeReference] it can't be a NonSerialised one.
-            // Hence, isPropertyTypeAManagedReference is always false here.
-            value = (Type) s_GetDrawerTypeForType.Invoke(null, new object[] { type, renderPipelineAssetTypes, false });
+            // Hence, isPropertyTypeAManagedReference (3rd param) is always false here.
+            
+            // value = (Type) s_GetDrawerTypeForType.Invoke(null, new object[] { type, renderPipelineAssetTypes, false });
+            value = s_GetDrawerTypeForTypeDelegate(type, renderPipelineAssetTypes, false);
+            
             s_Instances.Add(type, value);
             return value;
 #else

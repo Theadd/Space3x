@@ -2,9 +2,9 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
-    public static class PropertyExtensions
+    public static class SerializedPropertyExtensions
     {
         public static SerializedProperty GetSerializedProperty(this IPropertyNode self)
         {

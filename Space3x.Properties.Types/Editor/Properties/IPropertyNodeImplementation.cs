@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
     public abstract class PropertyNodeImplementationBase
     {

@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
-namespace Space3x.Properties.Types.Editor
+namespace Space3x.Properties.Types
 {
     public class PropertyAdapter : IPropertyNodeImplementation
     {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor;
-using Space3x.Properties.Types.Editor;
+using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using Unity.Properties;
 using UnityEngine;
