@@ -9,6 +9,7 @@ using Space3x.Properties.Types.Editor;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -48,7 +49,18 @@ namespace Space3x.InspectorAttributes.Editor
                             continue;
                         }
                         if (propertyNode.HasChildren() && !propertyNode.IsArrayOrList())
-                            existingField.TrackPropertyValue(propertyNode, PropertyAttributeController.OnPropertyValueChanged);
+                            // EDIT: ORIGINAL = existingField.TrackPropertyValue(propertyNode, PropertyAttributeController.OnPropertyValueChanged);
+                        {
+                            try
+                            {
+                                existingField.TrackPropertyValue(propertyNode,
+                                    PropertyAttributeController.OnPropertyValueChanged);
+                            }
+                            catch (NotSupportedException ex)
+                            {
+                                Debug.LogError(ex.Message + $" @ <color=#00FF00FF>{propertyNode}</color>\n{ex.StackTrace}");
+                            }
+                        }
                         m_PreviousField = existingField;
                         break;
                     }
