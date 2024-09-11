@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -128,6 +129,9 @@ namespace Space3x.UiToolkit.Types
                 StyleTag.Light.Wrap(Prefix(".", NJoin(" .", self.GetClasses())))
             });
         
+        public static string AsStringForDebugger(this VisualElement self) =>
+            StripTags(self.AsString());
+        
         [HideInCallstack]
         public static VisualElement LogThis(this VisualElement self, string message = null, int indentLevel = 1)
         {
@@ -169,6 +173,9 @@ namespace Space3x.UiToolkit.Types
 
             return string.Join('\n', ancestors);
         }
+        
+        public static string AsSimplifiedParentHierarchyStringForDebugger(this VisualElement self, int depth = 5) =>
+            StripTags(self.AsSimplifiedParentHierarchyString(depth));
 
         private static bool ShouldIterateOnChildren(VisualElement element)
         {
@@ -191,6 +198,9 @@ namespace Space3x.UiToolkit.Types
                     .Select(e => e.AsHierarchyString(depth - 1, indentLevel + 1)))
                 : string.Empty);
         
+        public static string AsHierarchyStringForDebugger(this VisualElement self, int depth = 999, int indentLevel = 0) =>
+            StripTags(self.AsHierarchyString(depth, indentLevel));
+        
         [HideInCallstack]
         public static string AsFullHierarchyString(this VisualElement self, int depth = 999, int indentLevel = 0) =>
             string.Join("", Enumerable.Repeat("<color=#FFFFFF33>|</color> ", indentLevel))
@@ -198,8 +208,38 @@ namespace Space3x.UiToolkit.Types
             + (depth > 0 && self.hierarchy.childCount > 0
                 ? "\n" + string.Join('\n', self.hierarchy
                     .Children()
-                    .Select(e => e.AsHierarchyString(depth - 1, indentLevel + 1)))
+                    .Select(e => e.AsFullHierarchyString(depth - 1, indentLevel + 1)))
                 : string.Empty);
+
+        public static string AsFullHierarchyStringForDebugger(this VisualElement self, int depth = 999, int indentLevel = 0) =>
+            StripTags(self.AsFullHierarchyString(depth, indentLevel));
+        
+        private static string StripTags(string richStr)
+        {
+            var sb = new System.Text.StringBuilder(richStr.Length);
+            try
+            {
+                var tag = false;
+                for (var index = 0; index < richStr.Length; index++)
+                {
+                    var c = richStr[index];
+                    if (tag)
+                        tag = c == '>' ? false : tag;
+                    else 
+                        if (c == '<')
+                            tag = true;
+                        else
+                            sb.Append(c);
+                }
+                // return sb.ToString();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogException(ex);
+                // return "";
+            }
+            return sb.ToString();
+        }
 
         [HideInCallstack]
         private static string Prefix(string prefix, string value, string postfix = null) => 
@@ -211,6 +251,7 @@ namespace Space3x.UiToolkit.Types
         
 #else
         public static VisualElement LogThis(this VisualElement self, string message = null, int indentLevel = 1) => self;        
+        public static string AsString(this VisualElement self) => string.Empty;
 #endif
     }
 }

@@ -3,11 +3,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Unity.Properties;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
 {
     [UxmlElement]
+    [HideInInspector]
     public partial class QuickListView : BindableElement, INotifyValueChanged<IEnumerable<int>>
     {
         private Columns m_Columns;

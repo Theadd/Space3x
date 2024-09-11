@@ -13,6 +13,7 @@
         public const string UssButtonGroupButton = UnityPrefix + "button-group__button";
         public const string UssButtonGroupButtonRight = UssButtonGroupButton + "--right";
         public const string UssBaseField = UnityPrefix + "base-field";
+        public const string UssDecoratorDrawersContainer = UnityPrefix + "decorator-drawers-container";
         public const string UssAligned = UssBaseField + "__aligned";
         public const string UssHidden = CustomPrefix + "hidden";
         public const string UssDecorator = CustomPrefix + "decorator";

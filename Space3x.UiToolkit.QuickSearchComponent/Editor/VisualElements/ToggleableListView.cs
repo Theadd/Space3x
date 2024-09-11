@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
@@ -19,6 +20,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements
     }
 
     [UxmlElement]
+    [HideInInspector]
     public partial class ToggleableListView : BindableElement
     {
         private ListView m_ListView;
