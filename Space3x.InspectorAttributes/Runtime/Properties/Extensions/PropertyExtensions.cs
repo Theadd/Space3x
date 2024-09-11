@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using JetBrains.Annotations;
 using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
 using UnityEngine.Internal;
@@ -10,7 +11,7 @@ using UnityEngine.UIElements;
 namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
-    public static class PropertyExtensions
+    public static partial class PropertyExtensions
     {
         /// <summary>
         /// Determines whether the property is also a container for other properties. For example, an object or struct.
@@ -111,16 +112,16 @@ namespace Space3x.InspectorAttributes
         public static bool HasSerializedProperty(this IPropertyNode self) => 
             self is ISerializedPropertyNode property && (property.Controller?.IsSerialized ?? true);
 
-        public static int GetParentObjectHash(this IPropertyNode property)
-        {
-            var parentPath = property.ParentPath;
-            var instanceId = property.GetTargetObjectInstanceID();
-            if (instanceId == 0) return 0;
-            if (string.IsNullOrEmpty(parentPath))
-                return instanceId * 397;
-            else
-                return instanceId * 397 ^ parentPath.GetHashCode();
-        }
+        // public static int GetParentObjectHash(this IPropertyNode property)
+        // {
+        //     var parentPath = property.ParentPath;
+        //     var instanceId = property.GetTargetObjectInstanceID();
+        //     if (instanceId == 0) return 0;
+        //     if (string.IsNullOrEmpty(parentPath))
+        //         return instanceId * 397;
+        //     else
+        //         return instanceId * 397 ^ parentPath.GetHashCode();
+        // }
         
 #if UNITY_EDITOR
         public static IPropertyNode GetPropertyNode(this VisualElement element)
@@ -148,31 +149,7 @@ namespace Space3x.InspectorAttributes
             return null;
         }
 #endif
-        
-        /// <summary>
-        /// Determines whether this property is an array.
-        /// </summary>
-        public static bool IsArray(this IPropertyNode self) => 
-            // EDIT: (self is IPropertyFlags property && property.IsArray) || (self.HasSerializedProperty() && self.GetSerializedProperty().isArray);
-            self is IPropertyFlags property && property.IsArray;
-        
-        /// <summary>
-        /// Determines whether this property derives from <see cref="System.Collections.IList">IList</see>.
-        /// </summary>
-        public static bool IsList(this IPropertyNode self) => 
-            self is IPropertyFlags property && property.IsList;
-        
-        /// <summary>
-        /// Determines whether this property is an array or IList.
-        /// </summary>
-        public static bool IsArrayOrList(this IPropertyNode self) => self.IsArray() || self.IsList();
-        
-        /// <summary>
-        /// Determines whether this property is an element of an array or IList.
-        /// </summary>
-        public static bool IsArrayOrListElement(this IPropertyNode property) =>
-            property is IPropertyNodeIndex;
-        
+
         internal static bool IncludeInInspector(this IPropertyNode self) => 
             self is IPropertyFlags property && property.IncludeInInspector;
         
@@ -189,12 +166,17 @@ namespace Space3x.InspectorAttributes
             self is IPropertyFlags property && property.IsNonReorderable;
         
         public static bool IsExpanded(this IPropertyNode self) => 
-            self.GetSerializedProperty()?.isExpanded ?? false;
+#if UNITY_EDITOR
+            self.GetSerializedProperty()?.isExpanded ?? 
+#endif
+            false;
 
         public static void SetExpanded(this IPropertyNode self, bool expanded)
         {
+#if UNITY_EDITOR
             if (self.HasSerializedProperty())
                 self.GetSerializedProperty().isExpanded = expanded;
+#endif
         }
 
 #if UNITY_EDITOR
@@ -290,35 +272,39 @@ namespace Space3x.InspectorAttributes
             return bindableProperty.TryGetPropertyAtIndex(propertyIndex, out var propertyNode) ? propertyNode : null;
         }
         
-        /// <summary>
-        /// Tries to get the parent property of the provided property.
-        /// </summary>
-        /// <seealso cref="GetParentProperty"/>
-        /// <param name="parentProperty">The parent property as an out parameter, or null if not found.</param>
-        /// <returns>True if the parent property was found.</returns>
-        public static bool TryGetParentProperty(this IPropertyNode property, out IPropertyNode parentProperty)
-        {
-            parentProperty = property.GetParentProperty();
-            return parentProperty != null;
-        }
+        // /// <summary>
+        // /// Tries to get the parent property of the provided property.
+        // /// </summary>
+        // /// <seealso cref="GetParentProperty"/>
+        // /// <param name="parentProperty">The parent property as an out parameter, or null if not found.</param>
+        // /// <returns>True if the parent property was found.</returns>
+        // public static bool TryGetParentProperty(this IPropertyNode property, out IPropertyNode parentProperty)
+        // {
+        //     parentProperty = property.GetParentProperty();
+        //     return parentProperty != null;
+        // }
 
         /// <summary>
         /// Gets the parent property of the provided property.
         /// </summary>
-        /// <seealso cref="TryGetParentProperty"/>
         public static IPropertyNode GetParentProperty(this IPropertyNode property) =>
             property is IPropertyNodeIndex propertyNodeIndex
                 ? propertyNodeIndex.Indexer
-                : property.FindProperty(property.ParentPath);
+                : property.GetAllParentProperties(false).Skip(1).FirstOrDefault();
+                // : property.FindProperty(property.ParentPath);
 
         /// <summary>
         /// Finds a property using the provided property path and returns it, or null if not found.
         /// Should work the same way as <see cref="UnityEditor.SerializedObject.FindProperty"/> does, including non-serialized
         /// properties.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="propertyPath"/> is relative to the closest parent object deriving from <see cref="UnityEngine.Object"/>.
+        /// </remarks>
         /// <seealso cref="FindPropertyRelative"/>
         /// <param name="propertyPath">Target property path.</param>
         /// <returns>The property, or null if not found.</returns>
+        [UsedImplicitly]
         public static IPropertyNode FindProperty(this IPropertyNode property, string propertyPath)
         {
             property.PropertyBreakdownOnPath(
@@ -347,36 +333,18 @@ namespace Space3x.InspectorAttributes
         /// <returns>The relative property, or null if not found.</returns>
         public static IPropertyNode FindPropertyRelative(this IPropertyNode property, string relativePath)
         {
-            try
-            {
-                var relativeProperty = property.FindProperty(property.PropertyPath.Length == 0
-                    ? relativePath
-                    : property.PropertyPath + (relativePath.StartsWith('.')
-                        ? relativePath
-                        : "." + relativePath));
-                if (relativeProperty != null)
-                    return relativeProperty;
-            }
-            catch (ArgumentException)
-            {
-                // Ignore
-            }
-            
             if (((PropertyAttributeController)property.GetController()).TryGetInstance(property.PropertyPath, out var controller))
-            {
                 return controller.GetProperty(relativePath);
-            }
-            else
-            {
-                controller = PropertyAttributeController.GetOrCreateInstance(property);
-                if (controller != null)
-                {
-                    return controller.GetProperty(relativePath);
-                }
-            }
-
-            return null;
+            return PropertyAttributeController.GetOrCreateInstance(property)?.GetProperty(relativePath) ?? null;
         }
+
+        /// <summary>
+        /// Gets the <see cref="IPropertyNode"/> with name <paramref name="propertyName"/> from the same declaring
+        /// object as this property.
+        /// </summary>
+        [UsedImplicitly]
+        public static IPropertyNode GetProperty(this IPropertyNode property, string propertyName) =>
+            property.GetController().GetProperty(propertyName);
 
         public static string GetParentPath(string propertyPath)
         {
@@ -404,7 +372,7 @@ namespace Space3x.InspectorAttributes
         {
             parentPath = GetParentPath(
                 IsPropertyIndexer(propertyPath, out propertyIndexerPath, out propertyIndex) 
-                    ? propertyIndexerPath 
+                    ? propertyIndexerPath
                     : propertyPath);
             propertyName = propertyIndex >= 0 
                 ? propertyIndexerPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..] 
@@ -426,14 +394,6 @@ namespace Space3x.InspectorAttributes
                 return 0;
             }
         }
-
-        private static object GetFieldValue(object declaringObject, string fieldName) =>
-            declaringObject
-                .GetType()
-                .GetField(
-                    fieldName, 
-                    BindingFlags.Instance | BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
-                ?.GetValue(declaringObject);
 
         public static FieldInfo GetUnderlyingField(this IPropertyNode property) =>
             property.GetVTypeMember()?.RuntimeField;
@@ -467,8 +427,11 @@ namespace Space3x.InspectorAttributes
                 : throw new Exception($"{nameof(IPropertyNode)}.{nameof(GetController)} follows an unexpected " +
                                       $"path that would differ from the one in runtime builds.");
 #else
-                : PropertyAttributeController.GetInstance(property);
+                : null; // EDIT: PropertyAttributeController.GetInstance(property);
 #endif
+#else
+        public static IPropertyController GetController(this IPropertyNode property) =>
+            (property as IControlledProperty)?.Controller;
 #endif
     }
 }

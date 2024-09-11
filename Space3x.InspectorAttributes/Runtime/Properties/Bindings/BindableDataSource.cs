@@ -63,11 +63,6 @@ namespace Space3x.InspectorAttributes
             if (!m_IsNodeIndex && m_Property is IBindablePropertyNode bindableProperty)
                 AssignTo(bindableProperty);
             DeclaringObject = property.GetDeclaringObject();
-            // TODO: remove block
-            if (DeclaringObject == null)
-            {
-                Debug.Log("STOP");
-            }
             PropertyInfo = DeclaringObject.GetType().GetField(
                 property.Name, 
                 BindingFlags.Instance 
@@ -97,7 +92,7 @@ namespace Space3x.InspectorAttributes
             }
             set
             {
-                DebugLog.Error("SETTER " + (m_PropertyNodeIndex ?? m_Property).PropertyPath);
+                // DebugLog.Error("SETTER " + (m_PropertyNodeIndex ?? m_Property).PropertyPath);
                 if (Equals(Value, value))
                     return;
                 var notify = true;
@@ -120,7 +115,7 @@ namespace Space3x.InspectorAttributes
                 }
                 if (notify)
                 {
-                    DebugLog.Error("NOTIFY " + (m_PropertyNodeIndex ?? m_Property).PropertyPath);
+                    // DebugLog.Error("NOTIFY " + (m_PropertyNodeIndex ?? m_Property).PropertyPath);
                     ++m_ViewVersion;
                     NotifyValueChanged();
                 }

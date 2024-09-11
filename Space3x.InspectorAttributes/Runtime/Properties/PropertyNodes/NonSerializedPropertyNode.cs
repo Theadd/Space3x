@@ -1,5 +1,6 @@
 ﻿using System;
 using Space3x.Properties.Types;
+using UnityEngine;
 
 namespace Space3x.InspectorAttributes
 {
@@ -20,8 +21,19 @@ namespace Space3x.InspectorAttributes
         public event Action<IPropertyNode> ValueChanged
         {
             add => ((INonSerializedPropertyNode)Indexer).ValueChanged += value;
-            remove => ((INonSerializedPropertyNode)Indexer).ValueChanged -= value;
+            remove
+            {
+                try
+                {
+                    ((INonSerializedPropertyNode)Indexer).ValueChanged -= value;
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogException(ex);
+                }
+            }
         }
+
         public void NotifyValueChanged(IPropertyNode propertyNode) => ((INonSerializedPropertyNode)Indexer).NotifyValueChanged(propertyNode);
         public override VTypeFlags Flags => Indexer.Flags & ~(VTypeFlags.List | VTypeFlags.Array);
         public override string Name => "Array.data[" + Index + "]";

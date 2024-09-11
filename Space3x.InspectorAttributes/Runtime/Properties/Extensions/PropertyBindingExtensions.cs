@@ -1,10 +1,7 @@
 ﻿using System;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor;
 using Space3x.Properties.Types;
 using Unity.Properties;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -37,12 +34,14 @@ namespace Space3x.InspectorAttributes
         /// <param name="bindingId">Target property on <paramref name="field"/> for the binding.</param>
         public static void BindProperty(this IBindable field, IPropertyNode property, BindingId bindingId)
         {
+#if UNITY_EDITOR                
             if (property.HasSerializedProperty())
             {
-                if (property.GetSerializedProperty() is SerializedProperty serializedProperty)
-                    BindingExtensions.BindProperty(field, serializedProperty);
+                if (property.GetSerializedProperty() is UnityEditor.SerializedProperty serializedProperty)
+                    UnityEditor.UIElements.BindingExtensions.BindProperty(field, serializedProperty);
             }
             else
+#endif
             {
                 if (field is VisualElement element)
                 {
@@ -75,9 +74,11 @@ namespace Space3x.InspectorAttributes
         /// <seealso cref="TrackSerializedObjectValue"/>
         public static void TrackPropertyValue(this VisualElement element, IPropertyNode property, Action<IPropertyNode> callback = null)
         {
+#if UNITY_EDITOR            
             if (property.HasSerializedProperty())
-                element.TrackPropertyValue(property.GetSerializedProperty(), callback == null ? null : _ => callback(property));
+                UnityEditor.UIElements.BindingExtensions.TrackPropertyValue(element, property.GetSerializedProperty(), callback == null ? null : _ => callback(property));
             else
+#endif
             {
                 if (property.IsUnreliable() && property is BindablePropertyNode bindablePropertyNode)
                 {
@@ -108,16 +109,26 @@ namespace Space3x.InspectorAttributes
         {
             try
             {
-                if (property.GetController().IsRuntimeUI)
+                if (property.GetController().IsRuntimeUI && Application.isPlaying)
                 {
                     if (property.GetController().EventHandler is not UnreliableEventHandler handler)
-                        throw new NotImplementedException();
-                    if (callback != null)
-                        ((BindablePropertyNode)handler.SourcePropertyNode).ValueChangedOnChildNode += _ => callback.Invoke();
+                    {
+                        Debug.LogException(new NotImplementedException($"<color=#FF007FFF>{nameof(TrackSerializedObjectValue)}() for a runtime controller where it's EventHandler is not an UnreliableEventHandler is <u>not implemented</b>.</color>"));
+                    }
+                    else if (callback != null)
+                        ((BindablePropertyNode)handler.SourcePropertyNode).ValueChangedOnChildNode += _ =>
+                        {
+                            if (element.panel != null)
+                                callback.Invoke();
+                        };
                     return;
                 }
 #if UNITY_EDITOR
-                element.TrackSerializedObjectValue(property.GetSerializedObject(), callback == null ? null : _ => callback.Invoke());
+                UnityEditor.UIElements.BindingExtensions.TrackSerializedObjectValue(element, property.GetSerializedObject(), callback == null ? null : _ =>
+                {
+                    if (element.panel != null)
+                        callback.Invoke();
+                });
 #endif
             }
             catch (Exception e)

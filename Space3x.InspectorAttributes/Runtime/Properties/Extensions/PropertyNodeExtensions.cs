@@ -126,10 +126,12 @@ namespace Space3x.InspectorAttributes
 
         public static void SetUnderlyingValue(this IPropertyNode property, object value)
         {
+#if UNITY_EDITOR
             if (property.HasSerializedProperty() && property is ISerializedPropertyNode serializedPropertyNode &&
                 serializedPropertyNode.IsValid())
                 serializedPropertyNode.GetSerializedProperty().boxedValue = value;
             else
+#endif
             {
                 var allParents = property.GetAllParentProperties(skipNodeIndexes: false);
                 var firstParent = allParents.Skip(1).FirstOrDefault();
@@ -152,11 +154,13 @@ namespace Space3x.InspectorAttributes
             if (!skipMoveNext && !enumerator.MoveNext())
                 return (object)previousNode?.GetDeclaringObject();  // .GetTargetObject();
             IPropertyNode currentNode = enumerator.Current;
+#if UNITY_EDITOR
             if (currentNode.HasSerializedProperty() && currentNode is ISerializedPropertyNode serializedPropertyNode &&
                 serializedPropertyNode.IsValid() && !currentNode.IsArrayOrList())   // an array cannot be read with boxedValue.
                 return serializedPropertyNode.GetSerializedProperty().boxedValue;
+#endif
             if (currentNode is IControlledProperty controlledNode && controlledNode.Controller.IsRuntimeUI &&
-                (controlledNode.Controller.EventHandler?.IsTopLevelRuntimeEventHandler ?? true))
+                (controlledNode.Controller.EventHandler?.IsTopLevelRuntimeEventHandler ?? true) && currentNode is not IPropertyNodeIndex)
                 return string.IsNullOrEmpty(currentNode.Name) 
                     ? controlledNode.Controller.DeclaringObject 
                     : GetFieldValueOrThrow(controlledNode.Controller.DeclaringObject, currentNode.Name);
@@ -215,9 +219,10 @@ namespace Space3x.InspectorAttributes
         public static bool TryGetPropertyAtIndex(this IBindablePropertyNode indexer, int propertyIndex,
             out IPropertyNode property)
         {
+            // if (indexer is not INodeTree) throw new ArgumentException("Not an array-like property.");
             Type elementType = indexer.GetUnderlyingElementType();
             var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) && elementType != typeof(string);
-            if (indexer.HasSerializedProperty() && indexer is ISerializedPropertyNode serializedIndexer)
+            if (indexer is INodeTree && indexer.HasSerializedProperty() && indexer is ISerializedPropertyNode serializedIndexer)
             {
                 if (isNodeTree)
                     property = new SerializedPropertyNodeIndexTree()
@@ -232,18 +237,19 @@ namespace Space3x.InspectorAttributes
                         Index = propertyIndex
                     };
             }
-            else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
+            // else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
+            else if (indexer is INodeTree)
             {
                 if (isNodeTree)
                     property = new NonSerializedPropertyNodeIndexTree()
                     {
-                        Indexer = nonSerializedIndexer,
+                        Indexer = indexer,
                         Index = propertyIndex
                     };
                 else
                     property = new NonSerializedPropertyNodeIndex()
                     {
-                        Indexer = nonSerializedIndexer,
+                        Indexer = indexer,
                         Index = propertyIndex
                     };
             }
