@@ -1,0 +1,27 @@
+{
+  "name": "com.space3x.inspectorattributes",
+  "version": "0.1.0",
+  "displayName": "Inspector Attributes",
+  "description": "Inspector Attributes also for non-serialized properties and in runtime UI (UI Toolkit).",
+  "unity": "2020.3",
+  "unityRelease": "7f1",
+  "documentationUrl": "https://github.com/Theadd/Space3x",
+  "changelogUrl": "https://github.com/Theadd/Space3x/blob/main/CHANGELOG.md",
+  "licensesUrl": "https://github.com/Theadd/Space3x/blob/main/LICENSE",
+  "dependencies": {},
+  "keywords": [
+    "properties"
+  ],
+  "samples": [
+    {
+      "displayName": "Custom Runtime UI Sample",
+      "description": "Customized Runtime UI Sample",
+      "path": "Samples~/CustomRuntimeUISample"
+    }
+  ],
+  "author": {
+    "name": "R. Beltran",
+    "email": "rbeltran8000@gmail.com",
+    "url": "https://www.github.com/Theadd"
+  }
+}

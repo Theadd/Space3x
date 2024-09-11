@@ -1,0 +1,195 @@
+.unity-base-field {
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    background-color: rgba(239, 255, 255, 0.06);
+    color: rgb(224, 224, 224);
+    -unity-font-style: normal;
+    -unity-text-align: middle-left;
+    white-space: pre-wrap;
+    text-overflow: ellipsis;
+    padding-left: 8px;
+    letter-spacing: 4px;
+    font-size: 12px;
+    opacity: 0.8;
+    min-height: 28px;
+    /*margin-left: 4px;*/
+}
+
+.unity-base-field__input {
+    background-color: rgba(0, 0, 0, 0.47);
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 1px;
+    border-left-color: rgba(0, 0, 0, 0.22);
+    border-right-color: rgba(0, 0, 0, 0.22);
+    border-top-color: rgba(0, 0, 0, 0.22);
+    border-bottom-color: rgba(0, 0, 0, 0.22);
+    border-top-right-radius: 3px;
+    border-bottom-right-radius: 3px;
+    padding-left: 10px;
+    text-overflow: clip;
+    padding-top: 3px;
+    padding-right: 10px;
+    padding-bottom: 3px;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: 0;
+}
+
+.unity-base-field:hover {
+    color: rgb(255, 223, 76);
+    opacity: 1;
+}
+
+.unity-base-field:focus {
+    color: rgb(0, 128, 255);
+    text-shadow: -0.2px -0.2px 1px rgb(0, 0, 0);
+    opacity: 1;
+}
+
+.unity-base-field > .unity-base-field__label {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+.unity-base-field:focus:enabled > .unity-base-field__label {
+    color: rgb(0, 128, 255);
+    text-shadow: -0.2px -0.2px 1px rgb(0, 0, 0);
+    opacity: 1;
+}
+
+.unity-base-field > .unity-base-field__input > .unity-toggle__checkmark {
+    height: 12px;
+    width: 12px;
+    margin-left: 2px;
+    background-color: rgba(0, 0, 0, 0.68);
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+}
+
+.unity-base-field > .unity-base-field__input:checked > .unity-toggle__checkmark {
+    background-color: rgba(0, 0, 0, 0);
+    -unity-background-image-tint-color: rgb(224, 224, 224);
+}
+
+.unity-base-field:focus:enabled > .unity-base-field__input:checked > .unity-toggle__checkmark {
+    -unity-background-image-tint-color: rgb(0, 128, 255);
+}
+
+.unity-base-field > .unity-base-field__input:hover > .unity-toggle__checkmark {
+    border-top-width: 2px;
+    border-right-width: 2px;
+    border-bottom-width: 2px;
+    border-left-width: 2px;
+    border-left-color: rgba(0, 255, 37, 0.52);
+    border-right-color: rgba(0, 255, 37, 0.52);
+    border-top-color: rgba(0, 255, 37, 0.52);
+    border-bottom-color: rgba(0, 255, 37, 0.52);
+}
+
+.unity-base-field > .unity-base-field__input > .unity-foldout__checkmark {
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    background-color: rgba(0, 0, 0, 0);
+    color: rgba(0, 0, 0, 0);
+    opacity: 1;
+    -unity-background-image-tint-color: rgba(255, 255, 255, 0.74);
+    width: 16px;
+    height: 14px;
+}
+
+.unity-base-field > .unity-base-field__input:hover > .unity-foldout__checkmark {
+    -unity-background-image-tint-color: rgba(0, 255, 37, 0.52);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+}
+
+.unity-foldout > .unity-foldout__toggle {
+    background-color: rgba(255, 255, 255, 0);
+    padding-left: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    margin-bottom: 1px;
+}
+
+.unity-foldout > .unity-foldout__toggle > .unity-foldout__input {
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    /*border-bottom-width: 1px;*/
+    border-bottom-width: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border-left-color: rgba(172, 255, 184, 0.53);
+    border-right-color: rgba(172, 255, 184, 0.53);
+    border-top-color: rgba(172, 255, 184, 0.53);
+    border-bottom-color: rgba(172, 255, 184, 0.53);
+    padding-top: 8px;
+}
+
+.unity-foldout > .unity-foldout__toggle > .unity-foldout__input > .unity-foldout__text {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+/* Grouping */
+
+.ui3x-property-group-field {
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.ui3x-property-group-field > .ui3x-property-group {
+    background-color: rgba(0, 0, 0, 0);
+    border-left-width: 0;
+    border-right-width: 0;
+    border-top-width: 0;
+    border-bottom-width: 0;
+    padding-left: 0;
+    margin-left: 0;
+}
+
+.ui3x-property-group-field > .ui3x-property-group > * {
+    margin-left: 4px;
+}
+
+/* Foldout Content */
+
+.unity-foldout > .unity-foldout__content {
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-bottom-left-radius: 3px;
+    border-bottom-right-radius: 3px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    border-left-color: rgba(239, 255, 255, 0.06);
+    border-right-color: rgba(239, 255, 255, 0.06);
+    border-top-color: rgba(239, 255, 255, 0.06);
+    border-bottom-color: rgba(239, 255, 255, 0.06);
+    background-color: rgba(0, 0, 0, 0.29);
+    margin-left: 4px;
+    padding: 8px;
+}
