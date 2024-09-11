@@ -44,15 +44,21 @@ namespace Space3x.InspectorAttributes
                 .WithClasses(BaseField<TItemValue>.alignedFieldUssClassName);
             listView.bindItem = (element, i) =>
             {
+                // // EDIT: runtime patch
+                // if (this.Field?.panel is IRuntimePanel && !Application.isPlaying)
+                // {
+                //     DebugLog.Warning($"IGNORE attempt to bind a collection element to a runtime visual element when not in play mode. {Property.PropertyPath}");
+                //     // return;
+                // }
                 var propertyAtIndex = Property.GetArrayElementAtIndex(i);
-                Debug.LogWarning("[PAC!] [lV!] bindItem " + i + " @ " + propertyAtIndex.PropertyPath + " -- <b><u>IS UNRELIABLE</u>: " + propertyAtIndex.IsUnreliable() + "</b>");
+                // Debug.LogWarning("[PAC!] [lV!] bindItem " + i + " @ " + propertyAtIndex.PropertyPath + " -- <b><u>IS UNRELIABLE</u>: " + propertyAtIndex.IsUnreliable() + "</b>");
                 if (((BindablePropertyField)element).Property?.Equals(propertyAtIndex) ?? false)
                 {
                     // (RETURN STATEMENT COMMENTED) SO-NO-
-                    Debug.LogWarning("[PAC!] [lV!] <b>SKIPPING</b>bindItem " + i + " @ " + propertyAtIndex.PropertyPath + " VALUE: " + propertyAtIndex.GetValue());
+                    // Debug.LogWarning("[PAC!] [lV!] <b>SKIPPING</b>bindItem " + i + " @ " + propertyAtIndex.PropertyPath + " VALUE: " + propertyAtIndex.GetValue());
                     return;
                 }
-                DebugLog.Error($" [lV!]  =====>>>>  .BindProperty WITH CUSTOM DRAWERS: {propertyAtIndex.PropertyPath}; #{i}; {propertyAtIndex.GetValue()}");
+                // DebugLog.Error($" [lV!]  =====>>>>  .BindProperty WITH CUSTOM DRAWERS: {propertyAtIndex.PropertyPath}; #{i}; "); // {propertyAtIndex.GetValue()}
                 // Needs more testing in order to see in which cases an early return is preferred. Currently I've only
                 // detected one drawer (IngredientDrawerUIE example from "Compatibility - Custom PropertyDrawers" docs page)
                 // that benefits from such lousy workaround while moving items in a non-serialized list. Not even a
@@ -62,7 +68,7 @@ namespace Space3x.InspectorAttributes
                 ((BindablePropertyField)element).BindProperty(propertyAtIndex, true);
                 // EDIT: added AttachDecoratorDrawers call
                 ((BindablePropertyField)element).AttachDecoratorDrawers();
-                element.EnableInClassList("ARRAY_ELEMENT_" + i, true);
+                // element.EnableInClassList("ARRAY_ELEMENT_" + i, true);
                 // element.dataSource = new DataSourceBinding(Property, i);
                 // element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding
                 // {

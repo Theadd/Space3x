@@ -80,7 +80,7 @@ namespace Space3x.InspectorAttributes
 #if UNITY_EDITOR
                     var drawer = (UnityEditor.DecoratorDrawer)
 #else
-                    var drawer = (PropertyDrawerAdapter)
+                    var drawer = (DecoratorDrawerAdapter)
 #endif
                         DrawerUtility.CreateDecoratorDrawer(decorator, vType.PropertyAttributes[i]);
                     if (drawer.CreatePropertyGUI() is VisualElement decoratorElement)

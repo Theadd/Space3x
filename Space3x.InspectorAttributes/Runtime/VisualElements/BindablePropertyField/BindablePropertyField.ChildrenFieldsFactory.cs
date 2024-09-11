@@ -13,33 +13,22 @@ namespace Space3x.InspectorAttributes
         private VisualElement ConfigureChildrenFields(Type propertyType, bool isNullValue = false)
         {
             DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureChildrenFields FOR propertyType {propertyType.Name}: {Property.PropertyPath}");
-            var field = new Foldout()
-            {
-                text = Property.DisplayName(),
-                value = true
-            };
+            var field = TreeRendererUtility.Create(Property);
+            // var field = new Foldout()
+            // {
+            //     text = Property.DisplayName(),
+            //     value = true
+            // 
+            // };
             if (!isNullValue)
             {
-                // TODO: remove block
-                if (Property.PropertyPath == "UIView.primary")
-                {
-                    Debug.Log("STOP");
-                    var declaringObjectOnController = m_Controller.DeclaringObject;
-                    var declaringObject = Property.GetDeclaringObject();
-                    var aux = Property.GetValue();
-                    var auxOrThrow =
-                        PropertyNodeExtensions.GetFieldValueOrThrow(Property.GetDeclaringObject(), Property.Name);
-                    var succeeded = TryGetAssignedPropertyValueAndType(out var auxAssigned, out var auxAssignedType);
-                    Debug.Log("STOP");
-
-                }
                 var controller = PropertyAttributeController.GetOrCreateInstance(Property, propertyType, true);
                 m_FieldFactoryBuilder = new FieldFactoryBuilder(controller);
                 m_FieldFactoryBuilder.Rebuild(field.contentContainer);
             }
+            ((ITreeRenderer)field).Render(true);
             m_ValueHash = Property.GetUnderlyingValue()?.GetHashCode() ?? 0;
             this.TrackPropertyValue(Property, OnTrackedPropertyValueChanged);
-
             return field;
         }
 
@@ -79,7 +68,7 @@ namespace Space3x.InspectorAttributes
             {
                 EnableReadOnly = m_FieldFactoryBuilder?.EnableReadOnly ?? false
             };
-            m_FieldFactoryBuilder.Rebuild(((Foldout)Field).contentContainer);
+            m_FieldFactoryBuilder.Rebuild(Field.contentContainer);
         }
     }
 }

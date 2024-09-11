@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor;
 using Space3x.InspectorAttributes.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -110,7 +108,7 @@ namespace Space3x.InspectorAttributes
                 {
 #if UNITY_EDITOR
                     if (!m_Controller.IsRuntimeUI)
-                        field = (declaredPropertyType != typeof(Color)) ? null : ConfigureField<ColorField, Color>(Field as ColorField, () => new ColorField(label: Property.DisplayName()));
+                        field = (declaredPropertyType != typeof(Color)) ? null : ConfigureField<UnityEditor.UIElements.ColorField, Color>(Field as UnityEditor.UIElements.ColorField, () => new UnityEditor.UIElements.ColorField(label: Property.DisplayName()));
 #endif
                     field ??= declaredPropertyType switch
                     {
@@ -131,11 +129,11 @@ namespace Space3x.InspectorAttributes
                 if (field == null && !m_Controller.IsRuntimeUI)
                     field = declaredPropertyType switch
                     {
-                        _ when declaredPropertyType == typeof(AnimationCurve) => ConfigureField<CurveField, AnimationCurve>(Field as CurveField, () => new CurveField(label: Property.DisplayName())),
-                        _ when declaredPropertyType == typeof(Gradient) => ConfigureField<GradientField, Gradient>(Field as GradientField, () => new GradientField(label: Property.DisplayName())),
+                        _ when declaredPropertyType == typeof(AnimationCurve) => ConfigureField<UnityEditor.UIElements.CurveField, AnimationCurve>(Field as UnityEditor.UIElements.CurveField, () => new UnityEditor.UIElements.CurveField(label: Property.DisplayName())),
+                        _ when declaredPropertyType == typeof(Gradient) => ConfigureField<UnityEditor.UIElements.GradientField, Gradient>(Field as UnityEditor.UIElements.GradientField, () => new UnityEditor.UIElements.GradientField(label: Property.DisplayName())),
                         _ when declaredPropertyType.IsEnum && declaredPropertyType.IsDefined(typeof(FlagsAttribute), false) =>
-                            ConfigureField<EnumFlagsField, Enum>(Field as EnumFlagsField, () => new EnumFlagsField(label: Property.DisplayName(), (Enum)propertyValue ?? default)),
-                        _ when typeof(UnityEngine.Object).IsAssignableFrom(declaredPropertyType) => ConfigureObjectField<ObjectField, UnityEngine.Object>(Field as ObjectField, () => new ObjectField(label: Property.DisplayName()) 
+                            ConfigureField<UnityEditor.UIElements.EnumFlagsField, Enum>(Field as UnityEditor.UIElements.EnumFlagsField, () => new UnityEditor.UIElements.EnumFlagsField(label: Property.DisplayName(), (Enum)propertyValue ?? default)),
+                        _ when typeof(UnityEngine.Object).IsAssignableFrom(declaredPropertyType) => ConfigureObjectField<UnityEditor.UIElements.ObjectField, UnityEngine.Object>(Field as UnityEditor.UIElements.ObjectField, () => new UnityEditor.UIElements.ObjectField(label: Property.DisplayName()) 
                         { 
                             objectType = declaredPropertyType, 
                             allowSceneObjects = true 
