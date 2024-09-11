@@ -33,10 +33,5 @@ namespace Space3x.Properties.Types
 
         public static bool IsRuntimeUI(this IPropertyNode self) =>
             self is IControlledProperty node && (node.Controller?.IsRuntimeUI ?? false);
-        
-#if !UNITY_EDITOR
-        public static IPropertyController GetController(this IPropertyNode property) =>
-            (property as IControlledProperty)?.Controller;
-#endif
     }
 }
