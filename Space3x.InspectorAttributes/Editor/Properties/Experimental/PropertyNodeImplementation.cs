@@ -28,7 +28,7 @@ namespace Space3x.InspectorAttributes.Editor
             var instance = new PropertyNodeImplementation();
             instance.m_Property = property switch
             {
-                SerializedProperty serializedProperty => serializedProperty.GetPropertyNode(),
+                SerializedProperty serializedProp => serializedProp.GetPropertyNode(),
                 IPropertyNode propertyNode => propertyNode,
                 _ => throw new ArgumentException("Unexpected property type", nameof(property))
             };
@@ -672,7 +672,7 @@ namespace Space3x.InspectorAttributes.Editor
                 return serializedProperty.DeleteCommand();
             if (m_Property.IsArrayOrListElement() && m_Property is IPropertyNodeIndex itemNode)
             {
-                ArrayPropertyUtility.DeleteArrayElementInProperty(itemNode.Indexer, itemNode.Index);
+                ArrayPropertyUtility.DeleteArrayElementAtIndex(itemNode.Indexer, itemNode.Index);
                 return true;
             }
             return false;
@@ -702,7 +702,7 @@ namespace Space3x.InspectorAttributes.Editor
                 if (m_Property.HasSerializedProperty())
                     serializedProperty.arraySize = value;
                 else
-                    ArrayPropertyUtility.ResizeArrayInProperty(m_Property, value);
+                    ArrayPropertyUtility.ResizeArray(m_Property, value);
             }
         }
 
@@ -721,7 +721,7 @@ namespace Space3x.InspectorAttributes.Editor
             if (m_Property.HasSerializedProperty())
                 serializedProperty.DeleteArrayElementAtIndex(index);
             else
-                ArrayPropertyUtility.DeleteArrayElementInProperty(m_Property, index);
+                ArrayPropertyUtility.DeleteArrayElementAtIndex(m_Property, index);
         }
 
         public bool MoveArrayElement(int srcIndex, int dstIndex)

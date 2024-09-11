@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Extensions;
-using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -30,6 +28,10 @@ namespace Space3x.InspectorAttributes.Editor
             RemoveAllBindableFields();
             Container = container;
             var allFields = GetExistingFields(PropertyFieldOrigin);
+            // Workaround to rewrite PropertyFields as non-serialized ones (BindablePropertyFields) in editor inspector
+            // views with content already present on runtime UI (Game View).
+            if (Application.isPlaying && container.panel is not IRuntimePanel && Controller.IsRuntimeUI)
+                return Rewrite(container, allFields);
             m_PreviousField = PropertyFieldOrigin;
             
             foreach (var propertyNode in Controller.Properties.Values)
@@ -37,6 +39,16 @@ namespace Space3x.InspectorAttributes.Editor
                 if (string.IsNullOrEmpty(propertyNode.Name)
                     || (!propertyNode.IncludeInInspector() && !propertyNode.ShowInInspector()))
                     continue;
+
+                // if (Application.isPlaying && container.panel is not IRuntimePanel && Controller.IsRuntimeUI)
+                // {
+                //     if (allFields.TryGetValue(propertyNode.Name, out var existingField))
+                //     {
+                //         existingField.LogThis("ALREADY EXISTING!");
+                //         ((IBindable)existingField).BindProperty(propertyNode);
+                //         continue;
+                //     }
+                // }
 
                 switch (propertyNode)
                 {
@@ -79,6 +91,57 @@ namespace Space3x.InspectorAttributes.Editor
             
             return this;
         }
+        
+        private FieldFactoryExtender Rewrite(VisualElement container, Dictionary<string, VisualElement> existingFields)
+        {
+            // var allFields = GetExistingFields(PropertyFieldOrigin);
+            // var otherFields = existingFields.Where((key, field) => field != PropertyFieldOrigin).ToList();
+            var originPair = existingFields
+                .Where(entry => entry.Value == PropertyFieldOrigin)
+                .ToList();
+            var originFieldKey = originPair.Any()
+                ? originPair.FirstOrDefault().Key 
+                : ((PropertyField)PropertyFieldOrigin).bindingPath;
+            existingFields.Where(entry => entry.Value != PropertyFieldOrigin).ForEach(pair =>
+            {
+                if (pair.Value is PropertyField other) other.ProperlyRemoveFromHierarchy();
+            });
+            m_PreviousField = PropertyFieldOrigin;
+            
+            foreach (var propertyNode in Controller.Properties.Values)
+            {
+                if (string.IsNullOrEmpty(propertyNode.Name)
+                    || (!propertyNode.IncludeInInspector() && !propertyNode.ShowInInspector())
+                    || (originFieldKey == propertyNode.Name))
+                    continue;
+
+                // if (Application.isPlaying && container.panel is not IRuntimePanel && Controller.IsRuntimeUI)
+                // {
+                //     if (allFields.TryGetValue(propertyNode.Name, out var existingField))
+                //     {
+                //         existingField.LogThis("ALREADY EXISTING!");
+                //         ((IBindable)existingField).BindProperty(propertyNode);
+                //         continue;
+                //     }
+                // }
+
+                switch (propertyNode)
+                {
+                    case IInvokablePropertyNode:
+                        AddField(propertyNode);
+                        break;
+                    default:
+                    {
+                        var bindableField = AddField(propertyNode);
+                        if (propertyNode.HasChildren() && !propertyNode.IsArrayOrList())
+                            bindableField.TrackPropertyValue(propertyNode, PropertyAttributeController.OnPropertyValueChanged);
+                        break;
+                    }
+                }
+            }
+            
+            return this;
+        }
 
         private BindablePropertyField AddField(IPropertyNode propertyNode)
         {
@@ -87,6 +150,17 @@ namespace Space3x.InspectorAttributes.Editor
             if (propertyNode is not InvokablePropertyNodeBase && !IsReadOnlyEnabled && propertyNode.IsReadOnly())
                 bindableField.SetEnabled(false);
             bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
+            bindableField.TrackPropertyValue(propertyNode, changedProperty =>
+            {
+                try
+                {
+                    BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
+                }
+                catch (Exception e)
+                {
+                    Debug.LogException(e);
+                }
+            });
             m_PreviousField.AddAfter(bindableField);
             bindableField.AttachDecoratorDrawers();
             m_PreviousField = bindableField;
@@ -97,31 +171,32 @@ namespace Space3x.InspectorAttributes.Editor
         private Dictionary<string, VisualElement> GetExistingFields(VisualElement propertyFieldOrigin)
         {
             var allFields = new Dictionary<string, VisualElement>();
+#if UNITY_EDITOR
             foreach (var element in Container.hierarchy.Children().ToList())
             {
-                if (element is not PropertyField propertyField) continue;
+                if (element is not UnityEditor.UIElements.PropertyField propertyField) continue;
 
                 if (!TryGetBoundProperty(propertyField, out var serializedProperty))
                 {
                     // Avoid rebinding the property field where this call is coming from to avoid an infinite loop
                     if (propertyField != propertyFieldOrigin)
                     {
-#if UNITY_EDITOR
                         UnityEditor.UIElements.BindingExtensions.Unbind(propertyField);
                         UnityEditor.UIElements.BindingExtensions.Bind(propertyField, Controller.SerializedObject as UnityEditor.SerializedObject);
-#endif
                     }
                     serializedProperty = propertyField.GetSerializedProperty();
                 }
                 if (serializedProperty == null) continue;
                 allFields[serializedProperty.name] = propertyField;
             }
+#endif
 
             return allFields;
         }
         
+#if UNITY_EDITOR
         // Tries to get the bound SerializedProperty from a correctly rendered PropertyField.
-        private static bool TryGetBoundProperty(PropertyField propertyField, out SerializedProperty serializedProperty)
+        private static bool TryGetBoundProperty(UnityEditor.UIElements.PropertyField propertyField, out UnityEditor.SerializedProperty serializedProperty)
         {
             serializedProperty = propertyField.GetSerializedProperty();
             if (serializedProperty == null) return false;
@@ -135,6 +210,7 @@ namespace Space3x.InspectorAttributes.Editor
 
             return propertyField.hierarchy.childCount > 0 && !HasInvalidDecorators(propertyField);
         }
+#endif
         
         private static bool HasInvalidDecorators(VisualElement propertyField)
         {

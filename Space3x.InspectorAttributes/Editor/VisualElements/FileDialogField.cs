@@ -1,11 +1,13 @@
 ﻿using Space3x.UiToolkit.Types;
 using Unity.Properties;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     [UxmlElement]
+    [HideInInspector]
     public partial class FileDialogField : TextField
     {
         public Button OpenFileButton { get; }

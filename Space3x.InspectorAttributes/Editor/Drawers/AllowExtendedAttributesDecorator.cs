@@ -23,14 +23,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             // if (Field.ClassListContains(UssConstants.UssAttributesExtended)) 
             //     DebugLog.Warning($"<color=#FF0000FF><b>Field: {Field.name} already has {UssConstants.UssAttributesExtended} " +
             //                      $"class list item! ThisHash: {this.GetHashCode()}</b></color>");
+            if ((Application.isPlaying && GhostContainer.panel is IRuntimePanel) || Field is BindablePropertyField) return;
             var parentElement = Container.hierarchy.parent;
+            Debug.Log($"<color=#000000FF><b><u>@AllowExtendedAttributes Extend(): TH: {GetHashCode()} {Property.PropertyPath}</u></b></color> :: {Field?.AsString()}");
             if (parentElement.ClassListContains(UssConstants.UssFactoryPopulated))
             {
-                // TODO: remove
-                parentElement.LogThis($"(INFO) <b>Populated already by factory!</b> TH: {GetHashCode()} {Property.PropertyPath}");
+                // TODO: remove 23
+                parentElement.LogThis($"(INFO) <color=#000000FF><b>Populated already by factory!</b></color> TH: {GetHashCode()} {Property.PropertyPath}");
                 return;
             }
 
+            DebugLog.Warning($"<color=#000000FF><b>[FieldFactoryExtender] FROM AllowExtendedAttributesDecorator.Extend() ON {Property.PropertyPath}</b></color>");
             m_FieldFactory ??= new FieldFactoryExtender((PropertyAttributeController)Property.GetController());
             if (Field is PropertyField propertyField)
                 m_FieldFactory.PropertyFieldOrigin = propertyField;
@@ -67,24 +70,24 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnClick()
         {
-            Dictionary<Type, Type> s_Instances = new Dictionary<Type, Type>();
-            var enumerableDrawers = TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer));
-            foreach (var drawer in enumerableDrawers)
-            {
-                foreach (var attr in drawer.GetCustomAttributes(typeof(CustomRuntimeDrawer), false))
-                {
-                    foreach (var type in ((CustomRuntimeDrawer)attr).Types)
-                    {
-                        s_Instances[type] = (Type)drawer;
-                    }
-                }
-            }
-            // var drawers = enumerableDrawers.ToList();
-            foreach (var (key, value) in s_Instances)
-            {
-                Debug.Log($"    {key.Name}: {value.Name}");
-            }
-            DebuggingUtility.ShowAllControllers();
+            // Dictionary<Type, Type> s_Instances = new Dictionary<Type, Type>();
+            // var enumerableDrawers = TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer));
+            // foreach (var drawer in enumerableDrawers)
+            // {
+            //     foreach (var attr in drawer.GetCustomAttributes(typeof(CustomRuntimeDrawer), false))
+            //     {
+            //         foreach (var type in ((CustomRuntimeDrawer)attr).Types)
+            //         {
+            //             s_Instances[type] = (Type)drawer;
+            //         }
+            //     }
+            // }
+            // // var drawers = enumerableDrawers.ToList();
+            // foreach (var (key, value) in s_Instances)
+            // {
+            //     Debug.Log($"    {key.Name}: {value.Name}");
+            // }
+           DebuggingUtility.ShowAllControllers();
             var str = $"<b>{((PropertyAttributeController)Property.GetController()).InstanceID} <u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
             foreach (var parentProperty in Property.GetAllParentProperties(false))
             {

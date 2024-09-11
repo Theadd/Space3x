@@ -8,6 +8,7 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
 {
     [Experimental]
     [UxmlElement]
+    [HideInInspector]
     public partial class VariableListView : BindableElement, INotifyValueChanged<List<string>>
     {
         public static readonly BindingId ValueProperty = nameof(value);
