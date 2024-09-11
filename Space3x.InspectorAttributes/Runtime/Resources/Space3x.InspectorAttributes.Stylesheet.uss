@@ -239,6 +239,14 @@
     flex-basis: 90%;
 }
 
+.unity-foldout > .unity-foldout__content {
+    display: none;
+}
+
+.unity-foldout:checked > .unity-foldout__content {
+    display: flex;
+}
+
 /* No Label */
 
 .ui3x-no-label-all .unity-label {
@@ -429,3 +437,12 @@
 .ui3x-invalid {
     background-color: red;
 }
+
+/* Custom BaseField<> Aligned Styles */
+
+/*.ui3x-group-type--row .unity-base-field {*/
+/*    --unity-property-field-label-width-ratio: 0.5;*/
+/*    --unity-property-field-label-extra-padding: 8;*/
+/*    --unity-property-field-label-base-min-width: 16;*/
+/*    --unity-base-field-extra-context-width: 32;*/
+/*}*/

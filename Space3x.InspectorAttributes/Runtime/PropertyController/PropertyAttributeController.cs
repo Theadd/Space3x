@@ -40,7 +40,14 @@ namespace Space3x.InspectorAttributes
         public static int[] GetAllInstanceKeys() => s_Instances.Keys.ToArray();
 
 #if UNITY_EDITOR
-        public static PropertyAttributeController GetInstance(UnityEditor.SerializedProperty prop)
+        public static PropertyAttributeController GetInstance(UnityEditor.SerializedProperty prop, 
+            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
+        {
+            Log($"[NC!] #Serialized ({prop.propertyPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
+            return GetSerializedInstanceInternal(prop);
+        }
+        
+        private static PropertyAttributeController GetSerializedInstanceInternal(UnityEditor.SerializedProperty prop)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -77,16 +84,23 @@ namespace Space3x.InspectorAttributes
         }
 #endif
         
+        public static PropertyAttributeController GetInstance(UnityEngine.Object target, IPropertyNode propertyNode = null, 
+            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
+        {
+            Log($"[NC!] #UnityObject ({target.GetInstanceID()}) FROM: <b>{callerName}</b> @ {path}:{line}");
+            return GetObjectInstanceInternal(target, propertyNode);
+        }
+        
         /// <summary>
         /// GetInstance overload for Runtime UI on topmost level object. No safe checks implemented since Runtime UI
         /// could also be populated when not in play mode if ExecuteAlways or ExecuteInEditMode are used.
         /// </summary>
-        public static PropertyAttributeController GetInstance(UnityEngine.Object target, IPropertyNode propertyNode = null)
+        private static PropertyAttributeController GetObjectInstanceInternal(UnityEngine.Object target, IPropertyNode propertyNode = null)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
 
-            var instanceId = target.GetInstanceID();
+            var instanceId = target.GetInstanceID() * 397;
             if (instanceId == 0)
                 return null;
 
@@ -98,7 +112,8 @@ namespace Space3x.InspectorAttributes
                     // IsRuntimeUI = true
                     IsRuntimeUI = propertyNode?.IsRuntimeUI() ?? true
                 };
-                bool isUnreliable = propertyNode == null || Application.isPlaying; // || propertyNode.IsRuntimeUI();
+                // bool isUnreliable = propertyNode == null || Application.isPlaying; // || propertyNode.IsRuntimeUI();
+                bool isUnreliable = Application.isPlaying || (propertyNode?.IsUnreliable() ?? true);
                 value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType, asUnreliable: isUnreliable);
                 value.Properties = new RuntimeTypeProperties(value);
                 if (isUnreliable)
@@ -130,8 +145,15 @@ namespace Space3x.InspectorAttributes
         //
         //     return value;
         // }
+
+        public static PropertyAttributeController GetInstance(int instanceId, [CallerMemberName] string callerName = "", 
+            [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
+        {
+            Log($"[NC!] #instanceId ({instanceId}) FROM: <b>{callerName}</b> @ {path}:{line}");
+            return GetInstanceInternal(instanceId);
+        }
         
-        public static PropertyAttributeController GetInstance(int instanceId)
+        private static PropertyAttributeController GetInstanceInternal(int instanceId)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -148,7 +170,14 @@ namespace Space3x.InspectorAttributes
             return value;
         }
 
-        public bool TryGetInstance(string parentPath, out PropertyAttributeController controller)
+        public bool TryGetInstance(string parentPath, out PropertyAttributeController controller,  
+            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
+        {
+            Log($"[NC!] #TryGetInstance ({parentPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
+            return TryGetInstanceInternal(parentPath, out controller);
+        }
+        
+        private bool TryGetInstanceInternal(string parentPath, out PropertyAttributeController controller)
         {
             SetupActiveSelection();
             var instanceId = string.IsNullOrEmpty(parentPath) 
@@ -158,10 +187,21 @@ namespace Space3x.InspectorAttributes
             return s_Instances.TryGetValue(instanceId, out controller);
         }
         
-        public static PropertyAttributeController GetOrCreateInstance(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false)
+        public static PropertyAttributeController GetOrCreateInstance(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false, 
+            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
         {
+            Log($"[NC!] #GetOrCreate ({parentPropertyTreeRoot.PropertyPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
+            return GetOrCreateInstanceInternal(parentPropertyTreeRoot, expectedType, forceCreate);
+        }
+        
+        private static PropertyAttributeController GetOrCreateInstanceInternal(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false)
+        {
+            Log();
             if (typeof(UnityEngine.Object).IsAssignableFrom(parentPropertyTreeRoot.GetUnderlyingType()))
+            {
+                Log("  --> UnityEngine.Object!!! " + parentPropertyTreeRoot.PropertyPath);
                 return GetInstance((UnityEngine.Object)parentPropertyTreeRoot.GetValue(), parentPropertyTreeRoot);
+            }
             
             SetupActiveSelection();
             var parentController = parentPropertyTreeRoot.GetController();
@@ -283,13 +323,35 @@ namespace Space3x.InspectorAttributes
         public ReadOnlyCollection<IPropertyNode> GetAllProperties() => 
             Properties.Values.AsReadOnly();
 
-        [RuntimeInitializeOnLoadMethod]
-        static void RuntimeInitialize()
+#if UNITY_EDITOR
+        // [UnityEditor.InitializeOnLoadMethod]
+        [UnityEditor.InitializeOnEnterPlayMode]
+        private static void InitializeOnEnterPlayModeInEditor()
         {
-            Log(s_Instances?.Count ?? 0, "s_Instances.Count");
+            Initialize();
+            UnityEditor.EditorApplication.playModeStateChanged -= OnplayModeStateChanged;
+            UnityEditor.EditorApplication.playModeStateChanged += OnplayModeStateChanged;
         }
         
-        static PropertyAttributeController() => RegisterCallbacks(true);
+        private static void OnplayModeStateChanged(UnityEditor.PlayModeStateChange mode)
+        {
+            if (mode == UnityEditor.PlayModeStateChange.ExitingPlayMode || mode == UnityEditor.PlayModeStateChange.EnteredEditMode)
+            {
+                UnityEditor.EditorApplication.playModeStateChanged -= OnplayModeStateChanged;
+                Initialize();
+            }
+        }
+#endif
+        
+        [RuntimeInitializeOnLoadMethod]
+        private static void Initialize()
+        {
+            Log(s_Instances?.Count ?? 0, "s_Instances.Count");
+            RegisterCallbacks(true);
+            UngroupedMarkerDecorators.ClearCache();
+        }
+        
+        static PropertyAttributeController() => Initialize();
         
 #if UNITY_EDITOR
         private static int GetActiveSelectionHash() =>
@@ -299,6 +361,7 @@ namespace Space3x.InspectorAttributes
         {
             Log(s_Instances?.Count ?? 0, "s_Instances.Count");
             s_Instances = new Dictionary<int, PropertyAttributeController>();
+            if (Application.isPlaying) return;
             UnityEditor.Selection.selectionChanged -= OnSelectionChanged;
             if (register)
                 UnityEditor.Selection.selectionChanged += OnSelectionChanged;
@@ -337,13 +400,13 @@ namespace Space3x.InspectorAttributes
 
         private static int s_LogCounter = 0;
         
-        private static T Log<T>(T value, string message = "", [CallerMemberName] string memberName = "")
+        private static T Log<T>(T value, string message, [CallerMemberName] string memberName = "")
         {
-            Debug.Log($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color> :: <b>{value}</b>");
+            Debug.LogWarning($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color> :: <b>{value}</b>");
             return value;
         }
         
         private static void Log(string message = "", [CallerMemberName] string memberName = "") => 
-            Debug.Log($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color>");
+            Debug.LogWarning($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color>");
     }
 }

@@ -1,8 +1,10 @@
-﻿using UnityEngine.UIElements;
+﻿using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.Types
 {
     [UxmlElement]
+    [HideInInspector]
     public partial class SplitterContainer : TwoPaneSplitView
     {
         private IVisualElementScheduledItem m_DelayedTask;

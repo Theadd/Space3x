@@ -47,11 +47,11 @@ namespace Space3x.InspectorAttributes
                 {
                     // changedProperty is a children property of propertyNode
                     case 1:
-                        DebugLog.Error($"[PAC!] #1 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnChildNode! {propertyNode.PropertyPath}");
+                        // DebugLog.Error($"[PAC!] #1 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnChildNode! {propertyNode.PropertyPath}");
                         propertyNode.NotifyValueChangedOnChildNode(changedProperty);
                         break;
                     case 0:
-                        DebugLog.Error($"[PAC!] #0 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnNode! {propertyNode.PropertyPath}");
+                        // DebugLog.Error($"[PAC!] #0 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnNode! {propertyNode.PropertyPath}");
                         // propertyNode instead of changedProperty to avoid being ignored by an equality check.
                         callback?.Invoke(propertyNode);
                         break;

@@ -19,7 +19,8 @@ namespace Space3x.InspectorAttributes
             
             if (!string.IsNullOrEmpty(content.PropertyName))
             {
-                var trackedProperty = drawer.Property.GetParentProperty().FindPropertyRelative(content.PropertyName);
+                // var trackedProperty = drawer.Property.GetParentProperty().FindPropertyRelative(content.PropertyName);
+                var trackedProperty = drawer.Property.GetController().GetProperty(content.PropertyName);
                 if (trackedProperty != null)
                     element.TrackPropertyValue(trackedProperty, _ => drawer.OnUpdate());
                 else

@@ -23,6 +23,7 @@ namespace Space3x.InspectorAttributes
         public IPropertyNode GetValue(string key)
         {
             var i = Keys.IndexOf(key ?? string.Empty);
+            if (i == -1) i = Keys.IndexOf($"<{key}>k__BackingField");
             return i >= 0 ? Values[i] : null;
         }
         

@@ -60,9 +60,12 @@ namespace Space3x.InspectorAttributes
                     Debug.LogException(e);
                 }
             });
-            Container.Add(bindableField);
+            // Container.Add(bindableField);
+            bindableField.AddTo(Container);
             bindableField.AttachDecoratorDrawers();
             BindableFields.Add(bindableField);
+            if (Container is IOffscreenEventHandler handler) 
+                handler.RaiseOnPropertyAddedEvent();
             return bindableField;
         }
     }
