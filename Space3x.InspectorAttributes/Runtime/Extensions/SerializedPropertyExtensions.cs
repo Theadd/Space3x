@@ -1,30 +1,28 @@
 ﻿using System;
-using System.Reflection;
 using Space3x.Properties.Types;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 
 namespace Space3x.InspectorAttributes
 {
     public static class SerializedPropertyExtensions
     {
-        private static MethodInfo s_PropertyFieldReset = null;
+        // private static MethodInfo s_PropertyFieldReset = null;
 
-        internal static void AssignToPropertyField(this SerializedProperty property, PropertyField target)
-        {
-            s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
-                "Reset", 
-                BindingFlags.Instance | BindingFlags.NonPublic,
-                null,
-                new Type[] { typeof(SerializedProperty) },
-                null);
-
-            if (s_PropertyFieldReset != null)
-                s_PropertyFieldReset.Invoke(target, new object[] { property });
-        }
-
-        public static object GetDeclaringObject(this SerializedProperty property)
+        // internal static void AssignToPropertyField(this SerializedProperty property, PropertyField target)
+        // {
+        //     s_PropertyFieldReset ??= typeof(PropertyField).GetMethod(
+        //         "Reset", 
+        //         BindingFlags.Instance | BindingFlags.NonPublic,
+        //         null,
+        //         new Type[] { typeof(SerializedProperty) },
+        //         null);
+        //
+        //     if (s_PropertyFieldReset != null)
+        //         s_PropertyFieldReset.Invoke(target, new object[] { property });
+        // }
+        
+#if UNITY_EDITOR
+        public static object GetDeclaringObject(this UnityEditor.SerializedProperty property)
         {
             var path = property.propertyPath;
             if (path != property.name)
@@ -41,8 +39,8 @@ namespace Space3x.InspectorAttributes
             
             return property.serializedObject.targetObject;
         }
-        
-        public static string GetParentPath(this SerializedProperty prop)
+
+        public static string GetParentPath(this UnityEditor.SerializedProperty prop)
         {
             if (prop == null || prop.propertyPath == prop.name)
                 return "";
@@ -69,7 +67,7 @@ namespace Space3x.InspectorAttributes
             }
         }
 
-        public static IPropertyNode GetPropertyNode(this SerializedProperty prop)
+        public static IPropertyNode GetPropertyNode(this UnityEditor.SerializedProperty prop)
         {
             var c = PropertyAttributeController.GetInstance(prop);
             IPropertyNode n = null;
@@ -80,5 +78,6 @@ namespace Space3x.InspectorAttributes
 
             return n;
         }
+#endif
     }
 }

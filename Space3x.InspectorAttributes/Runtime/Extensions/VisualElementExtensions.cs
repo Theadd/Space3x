@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-// using Space3x.InspectorAttributes.Editor.VisualElements;
+using Space3x.Properties.Types;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
@@ -50,6 +50,22 @@ namespace Space3x.InspectorAttributes
                     return parent as T2;
                 if (parent is TLimit)
                     return null;
+                parent = parent.parent;
+            }
+            return null;
+        }
+        
+        public static VisualElement GetCommonClosestParentEventHandler(this VisualElement element)
+        {
+            VisualElement parent = element;
+            while (parent != null)
+            {
+                if (parent is IOffscreenEventHandler) return parent;
+#if UNITY_EDITOR
+                if (parent is UnityEditor.UIElements.InspectorElement) return parent;
+#endif
+                if (parent is TemplateContainer) return parent;
+                
                 parent = parent.parent;
             }
             return null;
@@ -150,9 +166,6 @@ namespace Space3x.InspectorAttributes
         /// <summary>
         /// Add a sibling before this element
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="sibling"></param>
-        /// <returns></returns>
         public static VisualElement AddBefore(this VisualElement element, VisualElement sibling)
         {
             var index = Mathf.Max(element.hierarchy.parent.hierarchy.IndexOf(element), 0);
@@ -163,18 +176,22 @@ namespace Space3x.InspectorAttributes
         /// <summary>
         /// Add a sibling after this element
         /// </summary>
-        /// <param name="element"></param>
-        /// <param name="sibling"></param>
-        /// <returns></returns>
         public static VisualElement AddAfter(this VisualElement element, VisualElement sibling)
         {
-            var index = Mathf.Min(
-                Mathf.Max(
-                    element.hierarchy.parent.hierarchy.IndexOf(element) + 1, 
-                    0),
+            var index = Mathf.Min(Mathf.Max(element.hierarchy.parent.hierarchy.IndexOf(element) + 1, 0),
                 element.hierarchy.parent.hierarchy.childCount);
             element.hierarchy.parent.hierarchy.Insert(index, sibling);
             return element;
+        }
+        
+        public static VisualElement AddTo(this VisualElement self, VisualElement parent)
+        {
+            if (parent is ITreeAdd treeAdd)
+                treeAdd.Add(self);
+            else
+                parent.Add(self);
+
+            return self;
         }
         
         public static VisualElement SetVisible(this VisualElement self, bool value)
@@ -200,20 +217,27 @@ namespace Space3x.InspectorAttributes
         /// Enumerates all children fields (deriving from <see cref="BaseField{TValueType}"/>-like types) in the
         /// correct order regardless of their nesting level.
         /// </summary>
-        public static IEnumerable<BindableElement> GetChildrenFields(this VisualElement self)
+        public static IEnumerable<BindableElement> GetChildrenFields(this VisualElement self, bool includeNestedFields = false)
         {
-            foreach (var child in self.Children())
+            foreach (var child in self.hierarchy.Children())
             {
                 if (child is not ILayoutElement && child is IMixedValueSupport and BindableElement t)
+                {
                     yield return t;
+                    if (!includeNestedFields) continue;
+                    foreach (var c in GetChildrenFields(child, true))
+                        yield return c;
+                }
                 else
                 {
-                    var bindableElements = GetChildrenFields(child);
+                    var bindableElements = GetChildrenFields(child, includeNestedFields);
                     foreach (var c in bindableElements)
                         yield return c;
                 }
             }
             yield break;
         }
+        
+        
     }
 }

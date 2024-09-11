@@ -4,8 +4,6 @@ using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
@@ -31,7 +29,11 @@ namespace Space3x.InspectorAttributes
                 try
                 {
                     var element = group.contentContainer.hierarchy.ElementAt(i);
-                    if (element is PropertyField or BindablePropertyField)
+#if UNITY_EDITOR
+                    if (element is UnityEditor.UIElements.PropertyField or BindablePropertyField)
+#else
+                    if (element is BindablePropertyField)
+#endif
                     {
                         element.WithClasses(false, "ui3x-group--none", "ui3x-group--column", "ui3x-group--row", "ui3x-group-item--last");
                         if (parentGroupTypeClass != "")
@@ -62,32 +64,34 @@ namespace Space3x.InspectorAttributes
             var parent = endMarker.parent;
             var beginIndex = parent.IndexOf(beginMarker);
             var endIndex = parent.IndexOf(endMarker);
+            if (group.Type != GroupType.Row)
+                group.WithClasses(true, "unity-inspector-element", "unity-inspector-main-container");
             group.IsUsed = true;
             var rawNodes = parent.Children()
                 .Skip(beginIndex)
                 .Take(endIndex - beginIndex + 1).ToList();
             group.AddAllToGroup(rawNodes);
-            if (group.Type == GroupType.Row)
-                group.MakeFieldsOnRowGroupsNotAligned();
+            // if (group.Type == GroupType.Row)
+            //     group.MakeFieldsOnRowGroupsNotAligned();
         }
 
-        private static void MakeFieldsOnRowGroupsNotAligned(this PropertyGroupField group)
-        {
-            foreach (var field in group.GetChildrenFields())
-            {
-                // if (field.parent.ClassListContains("ui3x-group--row") ||
-                //     (field.parent?.parent?.parent?.ClassListContains("ui3x-group--row") ?? false))
-                if (field.ClassListContains(UssConstants.UssAligned))
-                {
-                    field.EnableInClassList(UssConstants.UssAligned, false);
-                    if (field.hierarchy.childCount > 0 && field.hierarchy[0] is Label label)
-                    {
-                        label.style.minWidth = new StyleLength(StyleKeyword.Null);
-                        label.style.width = new StyleLength(StyleKeyword.Null);
-                    }
-                }
-            }
-        }
+        // private static void MakeFieldsOnRowGroupsNotAligned(this PropertyGroupField group)
+        // {
+        //     foreach (var field in group.GetChildrenFields(includeNestedFields: true))
+        //     {
+        //         // if (field.parent.ClassListContains("ui3x-group--row") ||
+        //         //     (field.parent?.parent?.parent?.ClassListContains("ui3x-group--row") ?? false))
+        //         if (field.ClassListContains(UssConstants.UssAligned))
+        //         {
+        //             field.EnableInClassList(UssConstants.UssAligned, false);
+        //             if (field.hierarchy.childCount > 0 && field.hierarchy[0] is Label label)
+        //             {
+        //                 label.style.minWidth = new StyleLength(StyleKeyword.Null);
+        //                 label.style.width = new StyleLength(StyleKeyword.Null);
+        //             }
+        //         }
+        //     }
+        // }
 
         public static PropertyGroupField GetOrCreatePropertyGroupFieldForMarker(this GroupMarker beginMarker)
         {
@@ -121,7 +125,11 @@ namespace Space3x.InspectorAttributes
                 GroupName = beginMarker.GroupName,
                 Type = beginMarker.Type
             };
-            if (beginMarker.MarkerDecorator is DecoratorDrawer { attribute: GroupMarkerAttribute { ProportionalSize: false } })
+#if UNITY_EDITOR
+            if (beginMarker.MarkerDecorator is UnityEditor.DecoratorDrawer { attribute: GroupMarkerAttribute { ProportionalSize: false } })
+#else
+            if (beginMarker.MarkerDecorator is Space3x.Properties.Types.DecoratorDrawerAdapter { attribute: GroupMarkerAttribute { ProportionalSize: false } })
+#endif
                 group.WithClasses(UssConstants.UssNonProportional);
             group.WithClasses($"ui3x-group-type--{beginMarker.Type.ToString().ToLower()}");
             beginMarker.MarkerDecorator.GroupContainer = group;
@@ -146,7 +154,11 @@ namespace Space3x.InspectorAttributes
                     Debug.LogWarning(e.ToString());
                 }
 
-                if (element is PropertyField or BindablePropertyField)
+#if UNITY_EDITOR
+                if (element is UnityEditor.UIElements.PropertyField or BindablePropertyField)
+#else
+                    if (element is BindablePropertyField)
+#endif
                 {
                     switch (group.Type)
                     {
@@ -169,7 +181,11 @@ namespace Space3x.InspectorAttributes
             }
 
             elements
-                .FirstOrDefault(e => e is PropertyField or BindablePropertyField)
+#if UNITY_EDITOR
+                .FirstOrDefault(e => e is UnityEditor.UIElements.PropertyField or BindablePropertyField)
+#else
+                .FirstOrDefault(e => e is BindablePropertyField)
+#endif
                 ?.WithClasses(true, "ui3x-group-item--last");
         }
         
