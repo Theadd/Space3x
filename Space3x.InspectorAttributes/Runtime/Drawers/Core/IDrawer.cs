@@ -25,12 +25,15 @@ namespace Space3x.InspectorAttributes
         /// <summary>
         /// The closest parent InspectorElement related to this decorator or property drawer.
         /// </summary>
-#if UNITY_EDITOR
-        public BindableElement InspectorElement => (BindableElement)Field?.GetClosestParentOfType<UnityEditor.UIElements.InspectorElement>() 
-                                                   ?? Field?.GetClosestParentOfType<TemplateContainer>();
-#else
-        public BindableElement InspectorElement => (BindableElement)Field?.GetClosestParentOfType<TemplateContainer>();
-#endif
+        public BindableElement InspectorElement => (BindableElement)Field?.GetCommonClosestParentEventHandler();
+        
+// #if UNITY_EDITOR
+//         public BindableElement InspectorElement => (BindableElement)Field?.GetClosestParentOfType<UnityEditor.UIElements.InspectorElement>() 
+//                                                    ?? Field?.GetClosestParentOfType<TemplateContainer>();
+// #else
+//         public BindableElement InspectorElement => (BindableElement)Field?.GetClosestParentOfType<TemplateContainer>();
+// #endif
+        
         public MarkerDecoratorsCache DecoratorsCache { get; }
 
         /// <summary>

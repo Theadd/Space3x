@@ -47,6 +47,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnUpdate()
         {
+           DebugLog.Warning($"[GMD!] OnUpdate()");
             var isPending = true;
             if (!DecoratorsCache.IsAutoGroupingDisabled())
             {
@@ -81,6 +82,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 Marker.GetOrCreatePropertyGroupFieldForMarker();
 
             DecoratorsCache.Add(this);
+            DebugLog.Warning($"[GMD!] OnAttachedAndReady()");
         }
         
         public override bool HasValidContainer()
@@ -95,7 +97,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 #endif
                 {
                     isValid = false;
-                    if (Container.GetNextSibling<AutoDecorator>() is PropertyGroupField pgf)
+                    // EDIT: AutoDecorator was being used instead of IAutoElement, replaced by IAutoElement but requires further in-depth testing.
+                    if (Container.GetNextSibling<IAutoElement>() is PropertyGroupField pgf)
                     {
                         if (pgf.contentContainer.hierarchy.childCount > 0)
                         {

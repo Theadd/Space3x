@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
@@ -11,7 +10,9 @@ using UnityEngine.UIElements;
 namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
-    [InitializeOnLoad]
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoad]
+#endif
     public static class UngroupedMarkerDecorators
     {
         private static Dictionary<int, MarkerDecoratorsCache> s_Instances;
@@ -19,8 +20,6 @@ namespace Space3x.InspectorAttributes
         private static HashSet<int> s_AutoDisableGroups;
 
         private static int s_ActiveSelectedObjectHash = 0;
-
-        static UngroupedMarkerDecorators() => RegisterCallbacks(true);
 
         // public static void SetAutoDisableGroupingWhenCreatingCachesInGroup(SerializedObject serializedObject, IPanel panel, bool autoDisable) =>
         //     SetAutoDisableGroupingWhenCreatingCachesInGroup(
@@ -59,13 +58,19 @@ namespace Space3x.InspectorAttributes
                                  ^ drawer.Property.ParentPath.GetHashCode();
                 return GetInstance(
                     instanceId * 397 ^ panelId, 
+#if UNITY_EDITOR                    
                     ((object)drawer.Property.GetSerializedObject() ?? drawer.Property.GetTargetObject()).GetHashCode() * 397 ^ panelId);
+#else
+                   ((object)drawer.Property.GetTargetObject()).GetHashCode() * 397 ^ panelId);
+#endif                    
             }
             DebugLog.Error("<b>UNEXPECTED!</b> IDrawer.Property is not an IControlledProperty");
             return null;
         }
         
-        public static MarkerDecoratorsCache GetInstance(PropertyField propertyField, SerializedProperty fallbackProperty = null, bool propertyContainsChildrenProperties = false)
+#if UNITY_EDITOR
+        [Obsolete]
+        public static MarkerDecoratorsCache GetInstance(UnityEditor.UIElements.PropertyField propertyField, UnityEditor.SerializedProperty fallbackProperty = null, bool propertyContainsChildrenProperties = false)
         {
             var propertyNode = propertyField.GetPropertyNode() 
                                ?? (fallbackProperty == null 
@@ -81,6 +86,7 @@ namespace Space3x.InspectorAttributes
             DebugLog.Error("<b><color=#FF0000FF>UNEXPECTED!</color></b> related IPropertyNode is not an IControlledProperty");
             return null;
         }
+#endif
         
         // public static MarkerDecoratorsCache GetInstance(SerializedObject serializedObject, IPanel panel)
         // {
@@ -92,22 +98,46 @@ namespace Space3x.InspectorAttributes
         
         private static int GetPanelContentHash(IPanel panel) =>
             panel?.visualTree is VisualElement { childCount: >= 2 } vPanel
-                ? vPanel[1].LogThis("UngroupedMarkerDecorators.GetPanelContentHash()").GetHashCode()
-                : LogAndReturn($"[UMD!] GetPanelContentHash({((VisualElement)panel?.visualTree)?.AsString()})", 0);
-        
-        // TODO: remove
-        private static int LogAndReturn(string msg, int returnValue)
-        {
-            Debug.Log($"<color=#FF7F00FF>[UMD!] LogAndReturn (<b>{returnValue}</b>): {msg}</color>");
-            return returnValue;
-        }
+                // ? vPanel[1].LogThis("UngroupedMarkerDecorators.GetPanelContentHash()").GetHashCode()
+                ? vPanel[1].GetHashCode()
+                // : LogAndReturn($"[UMD!] GetPanelContentHash({((VisualElement)panel?.visualTree)?.AsString()})", 0);
+                : 0;
 
+        [RuntimeInitializeOnLoadMethod]
+        static void RuntimeInitialize()
+        {
+            RegisterCallbacks(true);
+        }
+        
+        static UngroupedMarkerDecorators() => RegisterCallbacks(true);
+        
+#if UNITY_EDITOR
         // TODO: Get hash of multiple selected objects.
         private static int GetActiveSelectionHash() =>
-            Selection.activeObject != null ? Selection.activeObject.GetHashCode() : 0;
+            UnityEditor.Selection.activeObject != null ? UnityEditor.Selection.activeObject.GetHashCode() : 0;
 
+        private static void RegisterCallbacks(bool register)
+        {
+            s_Instances = new Dictionary<int, MarkerDecoratorsCache>();
+            s_AutoDisableGroups = new HashSet<int>();
+            if (Application.isPlaying) return;
+            UnityEditor.Selection.selectionChanged -= OnSelectionChanged;
+            if (register)
+                UnityEditor.Selection.selectionChanged += OnSelectionChanged;
+        }
+#else
+        private static int GetActiveSelectionHash() => 0;
+
+        private static void RegisterCallbacks(bool register)
+        {
+            s_Instances = new Dictionary<int, MarkerDecoratorsCache>();
+            s_AutoDisableGroups = new HashSet<int>();
+        }
+#endif
+        
         private static void SetupActiveSelection()
         {
+            if (Application.isPlaying) return;
             var hash = GetActiveSelectionHash();
             if (s_ActiveSelectedObjectHash == hash)
                 return;
@@ -116,19 +146,10 @@ namespace Space3x.InspectorAttributes
             s_ActiveSelectedObjectHash = hash;
             ClearCache();
         }
-
-        private static void RegisterCallbacks(bool register)
-        {
-            s_Instances = new Dictionary<int, MarkerDecoratorsCache>();
-            s_AutoDisableGroups = new HashSet<int>();
-            Selection.selectionChanged -= OnSelectionChanged;
-            if (register)
-                Selection.selectionChanged += OnSelectionChanged;
-        }
-
+        
         private static void OnSelectionChanged() => SetupActiveSelection();
 
-        private static void ClearCache()
+        internal static void ClearCache()
         {
             s_Instances.Clear();
             s_AutoDisableGroups.Clear();
