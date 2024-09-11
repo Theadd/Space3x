@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using JetBrains.Annotations;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.Properties.Types;
@@ -10,15 +11,29 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
 {
-    public interface IEditorDecorator { }
+    /// <summary>
+    /// Represents a VisualElements automatically generated as a side effect, such as decorator-related containers,
+    /// which by default are ignored when calculating the <c>VisualTarget</c> for a <see cref="Decorator{T,TAttribute}">decorator</see>.
+    /// </summary>
+    /// <seealso cref="IElementBlock"/>
+    public interface IAutoElement { }
     
+    /// <summary>
+    /// It is used to distinguish non-blocking elements (<see cref="IAutoElement"/>) from those that must be considered
+    /// when calculating a <see cref="Decorator{T,TAttribute}">decorator</see>'s <c>VisualTarget</c>.
+    /// </summary>
+    /// <seealso cref="IAutoElement"/>
     public interface IElementBlock { }
     
+    /// <summary>
+    /// Identifies those elements that are simply used to rearrange the layout and should not be considered as actual
+    /// fields, such as <see cref="PropertyGroupField"/>, which is a <see cref="BaseField{TValueType}"/> derived class.
+    /// </summary>
     public interface ILayoutElement { }
 
     [UxmlElement]
     [HideInInspector]
-    public abstract partial class AutoDecoratorBase : BindableElement, IEditorDecorator
+    public abstract partial class AutoDecoratorBase : BindableElement, IAutoElement
     {
         protected AutoDecoratorBase(string className, bool visible = true) =>
             this.WithClasses(UssConstants.UssDecorator, className, visible ? "" : UssConstants.UssHidden);
@@ -34,12 +49,16 @@ namespace Space3x.InspectorAttributes
 
         public AutoDecorator() : base() { }
 
+        [UsedImplicitly]
         public void BindProperty(IPropertyNode property) => ThrowInvalidBinding();
         
+        [UsedImplicitly]
         public void BindProperty(IPropertyNode property, BindingId bindingId) => ThrowInvalidBinding();
         
+        [UsedImplicitly]
         public void TrackPropertyValue(IPropertyNode property, Action<IPropertyNode> callback = null) => ThrowInvalidBinding();
         
+        [UsedImplicitly]
         public void TrackSerializedObjectValue(IPropertyNode property, Action callback = null) => ThrowInvalidBinding();
         
         private static void ThrowInvalidBinding([CallerMemberName] string memberName = null) => 
@@ -68,7 +87,7 @@ namespace Space3x.InspectorAttributes
     [ExcludeFromDocs]
     [UxmlElement]
     [HideInInspector]
-    public partial class GroupMarker : VisualElement
+    public partial class GroupMarker : VisualElement, IAutoElement
     {
         public GroupType Type { get; set; }
         
@@ -109,8 +128,6 @@ namespace Space3x.InspectorAttributes
             thisDecorator.LinkedMarkerDecorator = otherDecorator;
         }
 
-        public GroupMarker() => 
-            this
-                .WithClasses(UssConstants.UssGroupMarker, "ui3x-id-" + RuntimeHelpers.GetHashCode(this));
+        public GroupMarker() => this.WithClasses(UssConstants.UssGroupMarker);
     }
 }
