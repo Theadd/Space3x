@@ -10,7 +10,7 @@ using UnityEngine;
 
 namespace Space3x.InspectorAttributes
 {
-    public static class ArrayPropertyUtility
+    internal static class ArrayPropertyUtility
     {
         private static MethodInfo s_ResizeArrayInternal = null;
         private static MethodInfo s_DeleteArrayElementAtIndexInternal = null;
@@ -24,18 +24,15 @@ namespace Space3x.InspectorAttributes
         /// <typeparam name="T">The type of the array</typeparam>
         /// <param name="array">Target array to resize</param>
         /// <param name="capacity">New size of array to resize</param>
-        private static void ResizeArray<T>(ref T[] array, int capacity)
+        private static void ArrayResize<T>(ref T[] array, int capacity)
         {
-            if (array == null)
-            {
+            if (array != null)
+                Array.Resize<T>(ref array, capacity);
+            else
                 array = new T[capacity];
-                return;
-            }
-
-            Array.Resize<T>(ref array, capacity);
         }
 
-        public static void ResizeArrayInProperty(IPropertyNode property, int arraySize)
+        public static void ResizeArray(IPropertyNode property, int arraySize)
         {
             var itemType = property.GetUnderlyingElementType();
             s_ResizeArrayInternal ??= typeof(ArrayPropertyUtility).GetMethod("ResizeArrayInternal",
@@ -50,17 +47,17 @@ namespace Space3x.InspectorAttributes
         {
             IList<TItemValue> targetList = ((IList<TItemValue>)(target?.Cast<TItemValue>() ?? new TItemValue[] {}));
             TItemValue[] targetArray = targetList.ToArray<TItemValue>();
-            ResizeArray<TItemValue>(ref targetArray, arraySize);
+            ArrayResize<TItemValue>(ref targetArray, arraySize);
             property.SetValue(property.IsArray() ? targetArray.ToArray() : targetArray.ToList());
         }
 
-        public static void DeleteArrayElementInProperty(IPropertyNode property, int atIndex)
+        public static void DeleteArrayElementAtIndex(IPropertyNode property, int index)
         {
             var itemType = property.GetUnderlyingElementType();
             s_DeleteArrayElementAtIndexInternal ??= typeof(ArrayPropertyUtility).GetMethod("DeleteArrayElementAtIndexInternal",
                 BindingFlags.Static | BindingFlags.NonPublic);
             var method = s_DeleteArrayElementAtIndexInternal!.MakeGenericMethod(itemType);
-            method.Invoke(null, StaticFlags, null, new object[] { property.GetValue(), property, atIndex },
+            method.Invoke(null, StaticFlags, null, new object[] { property.GetValue(), property, index },
                 CultureInfo.InvariantCulture);
         }
 
@@ -95,7 +92,7 @@ namespace Space3x.InspectorAttributes
             try
             {
                 object removedItem = property.GetArrayElementAtIndex(srcIndex).GetValue();
-                DeleteArrayElementInProperty(property, srcIndex);
+                DeleteArrayElementAtIndex(property, srcIndex);
                 InsertArrayElementAtIndex(property, dstIndex);
                 property.GetArrayElementAtIndex(dstIndex).SetValue(removedItem);
                 for (var i = Math.Min(srcIndex, dstIndex); i <= Math.Max(srcIndex, dstIndex); i++)
