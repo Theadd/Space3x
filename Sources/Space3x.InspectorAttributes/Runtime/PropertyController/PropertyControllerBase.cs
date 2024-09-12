@@ -51,7 +51,8 @@ namespace Space3x.InspectorAttributes
             {
                 SerializedObject = serializedObject;
                 ParentPath = property.GetParentPath();
-                // IsSerialized = true;
+                // IsSerialized is always true for controllers created from a SerializedProperty EXCEPT at runtime/play,
+                // which is forced to be always false.
                 IsSerialized = !Application.isPlaying;
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
                 // TODO: get rid of AllObjectTypesAreTheSame, it's always true by design

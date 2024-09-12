@@ -70,7 +70,7 @@ namespace Space3x.InspectorAttributes
         /// provided but <see cref="VisualTarget"/> is not since the <see cref="Container"/> is not yet added to the
         /// <c>VisualElement</c>'s hierarchy.
         /// </remarks>
-        /// <param name="container">This decorator's <c>VisualElement</c> <see cref="Container"/> of type <typeparamref name="T"/>.</param>
+        /// <param name="container">This decorators <c>VisualElement</c> <see cref="Container"/> of type <typeparamref name="T"/>.</param>
         protected virtual void OnCreatePropertyGUI(VisualElement container) {}
 
         /// <summary>
@@ -187,7 +187,7 @@ namespace Space3x.InspectorAttributes
                 {
                     if (Container == null)
                     {
-                        ((IDrawer) this).AddDefaultStyles();
+                        ((IDrawer) this).AddDefaultStyles(GhostContainer?.panel?.visualTree);
                         Container = new T();
                         Container.WithDevTools(this);
                         OnCreatePropertyGUI(Container);
@@ -201,7 +201,7 @@ namespace Space3x.InspectorAttributes
                         }
                         OnAttachContainerToPanel();
                         
-                        // EDIT: 
+                        // EDIT: // TODO: 
                         CallbackUtility.RegisterCallbackOnce<GeometryChangedEvent>
                             (((IDrawer)this).InspectorElement, _ => OnGeometryChanged());
 #if UNITY_EDITOR
@@ -322,6 +322,7 @@ namespace Space3x.InspectorAttributes
 
         private void OnGeometryChanged()
         {
+            if (m_TotallyRemoved) return;
             if (GhostContainer?.panel == null)
             {
                 Debug.Log("[GMD!] Re-registering callback once!");
@@ -332,7 +333,6 @@ namespace Space3x.InspectorAttributes
             if (Property == null) return;
             if (m_OnUpdateCalled || !(Property?.IsValid() ?? false)) return;
             m_OnUpdateCalled = true;
-            if (m_TotallyRemoved) return;
             OnUpdate();
         }
 

@@ -112,7 +112,9 @@ namespace Space3x.InspectorAttributes
                     // IsRuntimeUI = true
                     IsRuntimeUI = propertyNode?.IsRuntimeUI() ?? true
                 };
-                // bool isUnreliable = propertyNode == null || Application.isPlaying; // || propertyNode.IsRuntimeUI();
+                // Only those controllers (when not in play mode / runtime) for an UnityEngine.Object property which its
+                // IPropertyNode is already known and not flagged as unreliable, are not flagged as unreliable.
+                // In other words, only those UnityEngine.Object in a serialized declaring object are not unreliable. 
                 bool isUnreliable = Application.isPlaying || (propertyNode?.IsUnreliable() ?? true);
                 value.AnnotatedType = AnnotatedRuntimeType.GetInstance(value.DeclaringType, asUnreliable: isUnreliable);
                 value.Properties = new RuntimeTypeProperties(value);

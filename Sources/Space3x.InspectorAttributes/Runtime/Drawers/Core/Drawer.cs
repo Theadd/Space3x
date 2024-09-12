@@ -81,7 +81,8 @@ namespace Space3x.InspectorAttributes
             CreatePropertyNodeGUI(property.GetPropertyNode());
 #endif
         
-        private void OnAttachToPanel(AttachToPanelEvent evt) => ((IDrawer)this).AddDefaultStyles();
+        private void OnAttachToPanel(AttachToPanelEvent ev) => 
+            ((IDrawer)this).AddDefaultStyles((Container?.panel ?? ev.destinationPanel)?.visualTree);
 
         /// <summary>
         /// Override this method in order to perform any custom logic when this property drawer needs to be updated.

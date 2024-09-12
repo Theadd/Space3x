@@ -225,7 +225,7 @@ namespace Space3x.InspectorAttributes
             // If memberName property is a method accepting IPropertyNode as parameter, create that invokable with the relative property as parameter. (outdated)
             if (annotatedMember is VTypeMember vType && vType?.RuntimeMethod != null)
             {
-                if (vType.RuntimeMethod.GetParameters().Any(p => p.ParameterType == typeof(IPropertyNode)))
+                if (vType.RuntimeMethod.GetParameters().Any(p => p.ParameterType == typeof(IPropertyNode) || p.ParameterType == typeof(IDrawer)))
                 {
                     Queue<IPropertyNode> availableNodes = new Queue<IPropertyNode>();
                     if (!string.IsNullOrEmpty(relativePropertyName))

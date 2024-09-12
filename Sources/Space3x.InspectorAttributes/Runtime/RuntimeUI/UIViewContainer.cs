@@ -9,7 +9,7 @@ namespace Space3x.InspectorAttributes
         public int instanceId;
         
         [ShowInInspector]
-        private ScriptableUIView uiView;
+        private ScriptableObject uiView;
 
         private static int s_LastId = 0;
         
@@ -19,6 +19,6 @@ namespace Space3x.InspectorAttributes
             Debug.Log($"@ UIViewContainer.Awake(): instanceId = {instanceId};");
         }
 
-        public void SetView(ScriptableUIView view) => uiView = view;
+        public void SetView(ScriptableObject view) => uiView = view;
     }
 }

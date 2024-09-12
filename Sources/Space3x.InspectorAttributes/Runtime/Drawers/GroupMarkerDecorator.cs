@@ -47,7 +47,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         public override void OnUpdate()
         {
-           DebugLog.Warning($"[GMD!] OnUpdate()");
+            DebugLog.Warning($"[GMD!] OnUpdate()");
             var isPending = true;
             if (!DecoratorsCache.IsAutoGroupingDisabled())
             {
@@ -55,7 +55,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 if (this.TryLinkToMatchingGroupMarkerDecorator())
                 {
                     if (Target.IsOpen)
-                        Debug.LogWarning($"       <color=#000000FF><b>[WARNING]</b></color> ...");
+                        Debug.LogWarning($"    <color=#000000FF><b>[WARNING]</b></color> ...");
                     
                     if (!Target.IsOpen && !this.IsGroupMarkerUsed())
                     {

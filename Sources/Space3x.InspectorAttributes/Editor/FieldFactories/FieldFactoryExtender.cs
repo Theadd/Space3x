@@ -31,7 +31,8 @@ namespace Space3x.InspectorAttributes.Editor
             // Workaround to rewrite PropertyFields as non-serialized ones (BindablePropertyFields) in editor inspector
             // views with content already present on runtime UI (Game View).
 #if UNITY_6000_0_OR_NEWER
-            if (Application.isPlaying && container.panel is not IRuntimePanel && Controller.IsRuntimeUI)
+            // if (Application.isPlaying && container.panel is not IRuntimePanel && Controller.IsRuntimeUI)
+            if (Application.isPlaying && container.panel?.contextType != ContextType.Player && Controller.IsRuntimeUI)
 #else
             if (Application.isPlaying && (container.panel is IPanel containerPanel && containerPanel.contextType != ContextType.Player) && Controller.IsRuntimeUI)
 #endif

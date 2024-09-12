@@ -250,10 +250,8 @@ namespace Space3x.InspectorAttributes
 
         private static bool IsSerializableField(FieldInfo fieldInfo) =>
             !fieldInfo.IsInitOnly && !fieldInfo.IsLiteral && (
-                fieldInfo.IsPublic || (
-                    !fieldInfo.IsNotSerialized && (
-                        fieldInfo.IsDefined(typeof(SerializeField), false) 
-                        || fieldInfo.IsDefined(typeof(SerializeReference), false))));
+                (fieldInfo.IsPublic && !fieldInfo.IsDefined(typeof(NonSerializedAttribute)))
+                || (!fieldInfo.IsNotSerialized && (fieldInfo.IsDefined(typeof(SerializeField), false) || fieldInfo.IsDefined(typeof(SerializeReference), false))));
 
         private static bool HasHideInInspectorAttribute(FieldInfo fieldInfo) => 
             fieldInfo.IsDefined(typeof(HideInInspector), false);

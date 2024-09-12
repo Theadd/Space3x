@@ -43,11 +43,10 @@ namespace Space3x.InspectorAttributes
 
         void OnReset(bool disposing = false);
 
-        public void AddDefaultStyles()
+        public void AddDefaultStyles(VisualElement target)
         {
-            var inspector = InspectorElement;
-            if (inspector?.styleSheets.Contains(DefaultStyleSheet) == false)
-                inspector.styleSheets.Add(DefaultStyleSheet);
+            if ((target ??= InspectorElement)?.styleSheets.Contains(DefaultStyleSheet) == false)
+                target.styleSheets.Add(DefaultStyleSheet);
         }
     }
     

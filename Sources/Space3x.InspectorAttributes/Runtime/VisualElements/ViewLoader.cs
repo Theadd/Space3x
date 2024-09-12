@@ -9,11 +9,11 @@ namespace Space3x.InspectorAttributes
     public partial class ViewLoader : BindableElement
     {
         [System.NonSerialized]
-        private ScriptableUIView m_View;
+        private ScriptableObject m_View;
         
         [CreateProperty]
         [UxmlAttribute]
-        public ScriptableUIView View
+        public ScriptableObject View
         {
             get => m_View;
             set

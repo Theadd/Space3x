@@ -83,10 +83,7 @@ namespace Space3x.InspectorAttributes
                 if (property.IsUnreliable() && property is BindablePropertyNode bindablePropertyNode)
                 {
                     if ((UnreliableEventHandler)bindablePropertyNode.Controller?.EventHandler is UnreliableEventHandler handler)
-                    {
                         handler.TrackPropertyChanges(bindablePropertyNode, callback);
-                        Debug.LogWarning($"[PAC] TRACKING! UnreliableEventHandler: {property.PropertyPath}");
-                    }
                 }
                 
                 if (callback != null && property is INonSerializedPropertyNode nonSerializedPropertyNode)
@@ -109,26 +106,34 @@ namespace Space3x.InspectorAttributes
         {
             try
             {
-                if (property.GetController().IsRuntimeUI && Application.isPlaying)
+                if (property.GetController() is not PropertyAttributeController controller)
+                    return;
+
+                var useCustomHandler = (controller.IsRuntimeUI && Application.isPlaying) 
+                                        || (!controller.IsSerialized && controller.EventHandler != null && (controller.IsRuntimeUI || Application.isPlaying));
+                if (useCustomHandler)
                 {
-                    if (property.GetController().EventHandler is not UnreliableEventHandler handler)
-                    {
-                        Debug.LogException(new NotImplementedException($"<color=#FF007FFF>{nameof(TrackSerializedObjectValue)}() for a runtime controller where it's EventHandler is not an UnreliableEventHandler is <u>not implemented</b>.</color>"));
-                    }
+                    if (controller.EventHandler is not UnreliableEventHandler handler)
+                        Debug.LogException(new NotImplementedException(
+                            $"<color=#FF007FFF>{nameof(TrackSerializedObjectValue)}() for a runtime controller where its EventHandler is not an UnreliableEventHandler is <u>not implemented</b>.</color>"));
                     else if (callback != null)
+                    {
                         ((BindablePropertyNode)handler.SourcePropertyNode).ValueChangedOnChildNode += _ =>
                         {
                             if (element.panel != null)
                                 callback.Invoke();
                         };
+                    }
+
                     return;
                 }
 #if UNITY_EDITOR
-                UnityEditor.UIElements.BindingExtensions.TrackSerializedObjectValue(element, property.GetSerializedObject(), callback == null ? null : _ =>
-                {
-                    if (element.panel != null)
-                        callback.Invoke();
-                });
+                if (property.GetSerializedObject() != null)
+                    UnityEditor.UIElements.BindingExtensions.TrackSerializedObjectValue(element, property.GetSerializedObject(), callback == null ? null : _ =>
+                    {
+                        if (element.panel != null)
+                            callback.Invoke();
+                    });
 #endif
             }
             catch (Exception e)
