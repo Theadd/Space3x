@@ -160,8 +160,8 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             DebugLog.Info($"[USK3] [TypePickerDrawer] CreatePropertyField: {property.PropertyPath}");
             return property.HasSerializedProperty()
                 ? new PropertyField(property.GetSerializedProperty())
-                : new BindablePropertyField(property, property.IsArrayOrList()).WithClasses(UssConstants
-                    .UssShowInInspector);
+                : new BindablePropertyField(property, property.IsArrayOrList())
+                    .Resolve(showInInspector: true);
         }
     }
 }

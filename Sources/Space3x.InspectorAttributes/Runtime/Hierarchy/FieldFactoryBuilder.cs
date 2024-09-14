@@ -10,7 +10,26 @@ namespace Space3x.InspectorAttributes
     {
         public FieldFactoryBuilder(PropertyAttributeController controller) => Controller = controller;
 
+        private static int s_Counter = 0;
+
         public FieldFactoryBuilder Rebuild(VisualElement container = null)
+        {
+            s_Counter++;
+            Debug.Log($"[VD!] FieldFactoryBuilder Rebuild; {GetHashCode()}; COUNTER!: {s_Counter}");
+            var self = RebuildInternal(container);
+            s_Counter--;
+            if (s_Counter == 0)
+            {
+                // Debug.Log($"[VD!] OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()} ");
+                // OffscreenEventHandler.RaiseAndResetOnFullyRendered();
+                // Debug.Log($"[VD!] <b>DONE!!</b> OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()}");
+            }
+
+            Debug.Log($"[VD!] <b>DONE!!</b> FieldFactoryBuilder Rebuild; {GetHashCode()} COUNTER: {s_Counter}");
+            return self;
+        }
+        
+        private FieldFactoryBuilder RebuildInternal(VisualElement container = null)
         {
             container ??= Container;
             if (container == null) return this;
@@ -43,9 +62,9 @@ namespace Space3x.InspectorAttributes
         private BindablePropertyField AddField(IPropertyNode propertyNode)
         {
             var bindableField = new BindablePropertyField();
-            bindableField.WithClasses(
-                propertyNode is SerializedPropertyNodeBase || propertyNode.ShowInInspector(), 
-                UssConstants.UssShowInInspector);
+            // bindableField.WithClasses(
+            //     propertyNode is SerializedPropertyNodeBase || propertyNode.ShowInInspector(), 
+            //     UssConstants.UssShowInInspector);
             if (propertyNode is not InvokablePropertyNodeBase && !IsReadOnlyEnabled && propertyNode.IsReadOnly())
                 bindableField.SetEnabled(false);
             bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
@@ -62,10 +81,12 @@ namespace Space3x.InspectorAttributes
             });
             // Container.Add(bindableField);
             bindableField.AddTo(Container);
-            bindableField.AttachDecoratorDrawers();
+            // bindableField.AttachDecoratorDrawers();
+            bindableField.Resolve(attachDecorators: true,
+                showInInspector: propertyNode is SerializedPropertyNodeBase || propertyNode.ShowInInspector());
             BindableFields.Add(bindableField);
-            if (Container is IOffscreenEventHandler handler) 
-                handler.RaiseOnPropertyAddedEvent();
+            // if (Container is IOffscreenEventHandler handler) 
+            //     handler.RaiseOnPropertyAddedEvent();
             return bindableField;
         }
     }

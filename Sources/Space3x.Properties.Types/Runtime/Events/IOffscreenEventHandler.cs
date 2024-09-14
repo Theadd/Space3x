@@ -1,4 +1,5 @@
 ﻿using System;
+using UnityEngine.UIElements;
 
 namespace Space3x.Properties.Types
 {
@@ -19,9 +20,21 @@ namespace Space3x.Properties.Types
         public event Action onPropertyAdded;
         
         /// <summary>
-        /// Fired when this container is assigned to a renderer (or reassigned).
+        /// Fired when this container is *physically* assigned to a renderer (or reassigned).
         /// </summary>
         public event Action onParentChanged;
+        
+        /// <summary>
+        /// Fired in batches to simulate the AttachToPanelEvent in runtime UI to prevent UnityEditor from throwing due
+        /// to a large recursive call stack on the GeometryChangedEvent dispatcher.
+        /// </summary>
+        public event Action onAttachToPanelEventOnce;
+        
+        /// <summary>
+        /// Fired in batches to simulate the GeometryChangedEvent in runtime UI to prevent UnityEditor from throwing due
+        /// to a large recursive call stack on the GeometryChangedEvent dispatcher.
+        /// </summary>
+        public event Action onGeometryChangedEventOnce;
 
         /// <summary>
         /// It's fired after every single call to the <see cref="UnityEngine.UIElements.VisualElement.Add">Add</see>
@@ -35,7 +48,13 @@ namespace Space3x.Properties.Types
         /// called only once.
         /// </summary>
         public event Action delayCall;
+        
+        public event Action onFullyRendered;
 
         void RaiseOnPropertyAddedEvent();
+        
+        // TODO: remove
+        // void RaiseAndResetOnFullyRendered();
+        // public static void RaiseAndResetOnFullyRenderedInternal() => RaiseAndResetOnFullyRendered();
     }
 }

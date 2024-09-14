@@ -31,10 +31,11 @@ namespace Space3x.InspectorAttributes
 
         public void DisableAutoGroupingOnActiveSelection(bool disable = true)
         {
+            DebugLog.Error($"<color=#FF7F00FF>[VD!] [UMD!] MDC! <b> <u>EARLY RETURN!!</u> DisableAutoGrouping = {disable}</b> ON {m_ActiveSelectedObjectHash} ");
+            return;
             SetupActiveSelection();
             m_AutoGroupingDisabledForHash = m_ActiveSelectedObjectHash;
             m_DisableAutoGrouping = disable;
-            Debug.Log($"<color=#FF7F00FF>[UMD!] MDC! <b>DisableAutoGrouping = {disable}</b> ON {m_ActiveSelectedObjectHash} ");
         }
         
         public bool IsAutoGroupingDisabled() => m_DisableAutoGrouping && m_AutoGroupingDisabledForHash == GetActiveSelectionHash();
@@ -174,6 +175,7 @@ namespace Space3x.InspectorAttributes
 
         public void ClearCache()
         {
+            DebugLog.Error($"[VD!] @MarkerDecoratorsCache.ClearCache!!!!");
             m_CachedInstances.Clear();
             m_PendingInstances.Clear();
             m_FailedInstances.Clear();

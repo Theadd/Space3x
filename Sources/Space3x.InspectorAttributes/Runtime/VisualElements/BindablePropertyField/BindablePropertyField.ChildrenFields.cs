@@ -14,12 +14,8 @@ namespace Space3x.InspectorAttributes
         {
             DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureChildrenFields FOR propertyType {propertyType.Name}: {Property.PropertyPath}");
             var field = TreeRendererUtility.Create(Property);
-            // var field = new Foldout()
-            // {
-            //     text = Property.DisplayName(),
-            //     value = true
-            // 
-            // };
+            var renderer = field.GetTreeRenderer();
+            
             if (!isNullValue)
             {
                 var controller = PropertyAttributeController.GetOrCreateInstance(Property, propertyType, true);

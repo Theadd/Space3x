@@ -29,11 +29,14 @@ namespace Space3x.InspectorAttributes
 
         public ViewLoader()
         {
-            Reload();
+            /* // Reload();
+             * Reload() is automatically called by deserialization of the View property, this would reload the UI twice.
+             */
         }
         
         private void Reload()
         {
+            Debug.LogError($"[VD!] IS FIRST CALL TO ViewLoader.Reload()!!??!??!?!?!?!!??!?!?!?!?!?!!?");
             Clear();
             if (m_ViewContainer != null)
                 Object.Destroy(m_ViewContainer);
@@ -47,7 +50,7 @@ namespace Space3x.InspectorAttributes
             var bindableField = new BindablePropertyField();
             Add(bindableField);
             bindableField.BindProperty(property, false);
-            bindableField.WithClasses(UssConstants.UssShowInInspector);
+            bindableField.Resolve(showInInspector: true);
         }
     }
 }

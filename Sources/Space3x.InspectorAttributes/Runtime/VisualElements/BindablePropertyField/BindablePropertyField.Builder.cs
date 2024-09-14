@@ -52,7 +52,7 @@ namespace Space3x.InspectorAttributes
 
             if (isCollection)
             {
-                Func<VisualElement> itemFactory = () => new BindablePropertyField().WithClasses(UssConstants.UssShowInInspector);
+                Func<VisualElement> itemFactory = () => new BindablePropertyField().Resolve(showInInspector: true);
                 field = declaredPropertyType switch
                 {
                     _ when declaredPropertyType == typeof(int) => ConfigureListView<int>(itemFactory, Field as ListView),

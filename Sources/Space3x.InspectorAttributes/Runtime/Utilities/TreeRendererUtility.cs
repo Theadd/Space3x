@@ -5,11 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
 {
-    internal interface ITreeRenderer : ITreeContainer, ITreeAdd
-    {
-        void Render(bool shouldRender);
-        // public abstract VisualElement contentContainer { get; }
-    }
+    
 
     public interface ITreeAdd
     {

@@ -1,17 +1,19 @@
 ﻿using System;
+using NUnit.Framework;
 using Space3x.Attributes.Types;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;
+using PropertyAttribute = UnityEngine.PropertyAttribute;
 
 namespace Space3x.InspectorAttributes
 {
     /// <summary>
-    /// The base class to derive from when implementing your custom <see cref="DecoratorDrawer"/> on a <see cref="PropertyAttribute"/>.
+    /// The base class to derive from when implementing your custom <see cref="DecoratorDrawer"/> on a <see cref="UnityEngine.PropertyAttribute"/>.
     /// </summary>
     /// <typeparam name="T">Any <see cref="VisualElement"/> derived <see cref="Type"/> to be instantiated as a container element for the decorator.</typeparam>
-    /// <typeparam name="TAttribute">The <see cref="PropertyAttribute"/> type being decorated.</typeparam>
+    /// <typeparam name="TAttribute">The <see cref="UnityEngine.PropertyAttribute"/> type being decorated.</typeparam>
     public abstract class Decorator<T, TAttribute> :
             DecoratorDrawerAdapter, 
             IDrawer<TAttribute>,
@@ -106,7 +108,8 @@ namespace Space3x.InspectorAttributes
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
             GhostContainer.WithDevTools(this);
             m_Ready = false;
-            GhostContainer.RegisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
+            GhostContainer.RegisterOnAttachToPanelEventOnce(OnAttachGhostToPanel);
+            // GhostContainer.RegisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
             GhostContainer.RegisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
 
             return GhostContainer;
@@ -114,6 +117,9 @@ namespace Space3x.InspectorAttributes
 
         private void OnDetachGhostFromPanel(DetachFromPanelEvent evt)
         {
+            // EDIT:
+            if (!(GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true)) return;
+            
             var hasPanel = GhostContainer.hierarchy.parent?.hierarchy.parent != null;
             var originPanelHash = GetPanelContentHash(evt.originPanel);
             // DebugLog.Info($"<color=#FFFF00FF>OnDetachGhostFromPanel: <b>[{(hasPanel ? "IGNORE, HAS PANEL" : "REMOVE, NO PANEL")}]</b> " +
@@ -140,7 +146,7 @@ namespace Space3x.InspectorAttributes
         {
             m_Removed = true;
             m_TotallyRemoved = true;
-            GhostContainer?.UnregisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
+            // GhostContainer?.UnregisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
             GhostContainer?.UnregisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
 #if UNITY_EDITOR
             if (GhostContainer != null)
@@ -158,9 +164,11 @@ namespace Space3x.InspectorAttributes
                 ? vPanel[1].GetHashCode()
                 : 0;
         
-        private void OnAttachGhostToPanel(AttachToPanelEvent ev)
+        private void OnAttachGhostToPanel()
         {
-            if (ev.destinationPanel == null) return;
+            Debug.LogException(new Exception("<color=#0000FFFF><b>HERREEEEEEE!!! OnAttachGhostToPanel() SEE STACK TRACE"));
+            // if (ev.destinationPanel == null) return;
+            if (GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true) return;
             if (m_TotallyRemoved)
             {
                 DebugLog.Error($"<b>IN OnAttachGhostToPanel (1) FOR A TOTALLY REMOVED {this.GetType().Name} ThisHash: {this.GetHashCode()}</b>");
@@ -201,9 +209,11 @@ namespace Space3x.InspectorAttributes
                         }
                         OnAttachContainerToPanel();
                         
-                        // EDIT: // TODO: 
-                        CallbackUtility.RegisterCallbackOnce<GeometryChangedEvent>
-                            (((IDrawer)this).InspectorElement, _ => OnGeometryChanged());
+                        // // EDIT: // TODO: 
+                        // CallbackUtility.RegisterCallbackOnce<GeometryChangedEvent>
+                        //     (((IDrawer)this).InspectorElement, _ => OnGeometryChanged());
+                        
+                        Container.RegisterOnGeometryChangedEventOnce(OnGeometryChanged);
 #if UNITY_EDITOR
                         // if (!Property.IsRuntimeUI())
                         //     UnityEditor.EditorApplication.delayCall += OnGeometryChanged;
@@ -221,7 +231,7 @@ namespace Space3x.InspectorAttributes
                     // ((IDrawer) this).InspectorElement?.RegisterCallbackOnce<GeometryChangedEvent>(_ => OnGeometryChanged());
                 }
                 else
-                    Debug.LogWarning($"<color=#FF0000CC>Could not find parent PropertyField of {((VisualElement)ev.target).name} for {attribute.GetType().Name}</color>");
+                    Debug.LogWarning($"<color=#FF0000CC>Could not find parent PropertyField for {attribute.GetType().Name}</color>");
             }
         }
 
@@ -233,12 +243,12 @@ namespace Space3x.InspectorAttributes
                 m_Ready = false;
                 Container.RemoveFromHierarchy();
                 Container.WithClasses("ui3x-detached");
-                if (onProperlyAttachedCallback != null)
-                    Container.RegisterCallbackOnce<AttachToPanelEvent>((_) => 
-                    {
-                        onProperlyAttachedCallback.Invoke();
-                    });
+                // if (onProperlyAttachedCallback != null)
+                //     Container.RegisterCallbackOnce<AttachToPanelEvent>((_) => 
+                //     {
+                //     });
                 ProperlyAddContainerBeforeField();
+                onProperlyAttachedCallback?.Invoke();
                 return false;
             }
             else
@@ -310,9 +320,9 @@ namespace Space3x.InspectorAttributes
 
         private void OnAttachContainerToPanel()
         {
-            if (GhostContainer.panel == null) return;
-            // Debug.Log("AAAAA " + Property.PropertyPath + " IsValid: " + Property.IsValid() + $", m_Ready = {m_Ready}, m_OnUpdateCalled = {m_OnUpdateCalled}, m_TotallyRemoved = {m_TotallyRemoved}" + $"; ThisHash: {this.GetHashCode()}");
-            // EDIT: Added "|| !Property.IsValid()"
+            // if (GhostContainer.panel == null) return;
+            if (GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true) return;
+            
             if (m_Ready || !Property.IsValid()) return;
             m_Ready = true;
             if (m_TotallyRemoved) return;
@@ -323,13 +333,15 @@ namespace Space3x.InspectorAttributes
         private void OnGeometryChanged()
         {
             if (m_TotallyRemoved) return;
-            if (GhostContainer?.panel == null)
-            {
-                Debug.Log("[GMD!] Re-registering callback once!");
-                CallbackUtility.RegisterCallbackOnce<GeometryChangedEvent>
-                    (((IDrawer)this).InspectorElement, _ => OnGeometryChanged());
-                return;
-            }
+            // EDIT: current implementation should avoid the commented block below, placing assertion to make sure of it.
+            Assert.IsFalse(GhostContainer.IsPhysicallyAndLogicallyDetachedFromPanel());
+            // if (GhostContainer?.panel == null)
+            // {
+            //     Debug.Log("[GMD!] Re-registering callback once!");
+            //     CallbackUtility.RegisterCallbackOnce<GeometryChangedEvent>
+            //         (((IDrawer)this).InspectorElement, _ => OnGeometryChanged());
+            //     return;
+            // }
             if (Property == null) return;
             if (m_OnUpdateCalled || !(Property?.IsValid() ?? false)) return;
             m_OnUpdateCalled = true;

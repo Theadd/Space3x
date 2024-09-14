@@ -756,7 +756,7 @@ namespace Space3x.InspectorAttributes.Editor
             {
                 // TODO: label
                 propertyField = new BindablePropertyField(m_Property, applyCustomDrawers: false)
-                    .WithClasses(UssConstants.UssShowInInspector);
+                    .Resolve(showInInspector: true);
                 if (bindProperty && propertyField is BindablePropertyField bindableField)
                 {
                     ((IBindable)bindableField.Field).BindProperty(m_Property);

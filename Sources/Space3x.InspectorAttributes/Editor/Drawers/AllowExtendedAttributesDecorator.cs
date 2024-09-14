@@ -35,11 +35,11 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (parentElement.ClassListContains(UssConstants.UssFactoryPopulated))
             {
                 // TODO: remove 23
-                parentElement.LogThis($"(INFO) <color=#000000FF><b>Populated already by factory!</b></color> TH: {GetHashCode()} {Property.PropertyPath}");
+                parentElement.LogThis($"(INFO) [VD!] <color=#000000FF><b>Populated already by factory!</b></color> TH: {GetHashCode()} {Property.PropertyPath}");
                 return;
             }
 
-            DebugLog.Warning($"<color=#000000FF><b>[FieldFactoryExtender] FROM AllowExtendedAttributesDecorator.Extend() ON {Property.PropertyPath}</b></color>");
+            DebugLog.Error($"<color=#000000FF><b>[VD!] [FieldFactoryExtender] FROM AllowExtendedAttributesDecorator.Extend() ON {Property.PropertyPath}</b></color>");
             m_FieldFactory ??= new FieldFactoryExtender((PropertyAttributeController)Property.GetController());
             if (Field is PropertyField propertyField)
                 m_FieldFactory.PropertyFieldOrigin = propertyField;

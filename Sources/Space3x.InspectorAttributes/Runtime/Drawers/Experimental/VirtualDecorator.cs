@@ -22,12 +22,13 @@ namespace Space3x.InspectorAttributes
     public class VirtualDecorator : Decorator<AutoDecorator, VirtualDecoratorAttribute>
     {
         private Invokable<object, object> m_OnUpdate;
-        private Action m_UnregisterCallback;
+        // private Action m_UnregisterCallback;
         
         public override VirtualDecoratorAttribute Target => (VirtualDecoratorAttribute) attribute;
         
         protected override void OnCreatePropertyGUI(VisualElement container)
         {
+            Debug.Log($"[VD!] OnCreatePropertyGUI {GetHashCode()}");
             if (!string.IsNullOrEmpty(Target.OnCreate))
             {
                 if (Property.TryCreateInvokable<VisualElement, object>(Target.OnCreate, out var invokable, drawer: this))
@@ -42,6 +43,7 @@ namespace Space3x.InspectorAttributes
 
         public override void OnAttachedAndReady(VisualElement element)
         {
+            Debug.Log($"[VD!] OnAttachedAndReady {GetHashCode()}");
             if (!string.IsNullOrEmpty(Target.OnAttached))
             {
                 if (Property.TryCreateInvokable<VisualElement, object>(Target.OnAttached, out var invokable, drawer: this))
@@ -53,19 +55,24 @@ namespace Space3x.InspectorAttributes
                 }
             }
             if (!string.IsNullOrEmpty(Target.OnUpdate))
-                m_UnregisterCallback = this.RegisterOnPropertyAddedCallback(OnUpdate);
+            {
+                (Container ?? element).RegisterOnGeometryChangedEventOnce(OnUpdate);
+                // m_UnregisterCallback = this.RegisterOnPropertyAddedCallback(OnUpdate);
+                // this.RegisterOnFullyRenderedCallback(OnUpdate);
+            }
         }
 
         public override void OnUpdate()
         {
-            m_UnregisterCallback?.Invoke();
+            Debug.Log($"[VD!] OnUpdate {GetHashCode()}");
+            // m_UnregisterCallback?.Invoke();
             if (!string.IsNullOrEmpty(Target.OnUpdate))
             {
                 if (m_OnUpdate == null)
                     if (Property.TryCreateInvokable<object, object>(Target.OnUpdate, out var invokable, drawer: this))
                         m_OnUpdate = invokable;
                 if (m_OnUpdate == null)
-                    throw new System.ArgumentException($"Invalid value supplied for {nameof(VirtualDecoratorAttribute)}.{nameof(Target.OnUpdate)}.");
+                    throw new ArgumentException($"Invalid value supplied for {nameof(VirtualDecoratorAttribute)}.{nameof(Target.OnUpdate)}. ({Target.OnUpdate})");
                 if (m_OnUpdate.Parameters == null)
                     m_OnUpdate.Invoke();
                 else

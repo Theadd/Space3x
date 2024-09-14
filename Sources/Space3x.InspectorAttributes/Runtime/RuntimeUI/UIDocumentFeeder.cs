@@ -21,7 +21,7 @@ namespace Space3x.InspectorAttributes
             element.Add(bindableField);
             // bindableField.BindProperty(propertyNode, true);
             bindableField.BindProperty(propertyNode, false);
-            bindableField.WithClasses(UssConstants.UssShowInInspector);
+            bindableField.Resolve(showInInspector: true);
             // bindableField.AttachDecoratorDrawers();
         }
         

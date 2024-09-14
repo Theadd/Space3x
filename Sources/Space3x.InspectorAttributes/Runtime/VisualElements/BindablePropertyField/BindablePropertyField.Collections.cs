@@ -67,7 +67,7 @@ namespace Space3x.InspectorAttributes
                 
                 ((BindablePropertyField)element).BindProperty(propertyAtIndex, true);
                 // EDIT: added AttachDecoratorDrawers call
-                ((BindablePropertyField)element).AttachDecoratorDrawers();
+                ((BindablePropertyField)element).Resolve(attachDecorators: true);
                 // element.EnableInClassList("ARRAY_ELEMENT_" + i, true);
                 // element.dataSource = new DataSourceBinding(Property, i);
                 // element.SetBinding(nameof(BaseField<TItemValue>.value), new DataBinding

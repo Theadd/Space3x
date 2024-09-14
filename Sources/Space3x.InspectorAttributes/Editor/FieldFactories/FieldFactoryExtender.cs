@@ -151,7 +151,7 @@ namespace Space3x.InspectorAttributes.Editor
         private BindablePropertyField AddField(IPropertyNode propertyNode)
         {
             var bindableField = new BindablePropertyField();
-            bindableField.WithClasses(propertyNode.ShowInInspector(), UssConstants.UssShowInInspector);
+            // bindableField.WithClasses(propertyNode.ShowInInspector(), UssConstants.UssShowInInspector);
             if (propertyNode is not InvokablePropertyNodeBase && !IsReadOnlyEnabled && propertyNode.IsReadOnly())
                 bindableField.SetEnabled(false);
             bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
@@ -167,7 +167,7 @@ namespace Space3x.InspectorAttributes.Editor
                 }
             });
             m_PreviousField.AddAfter(bindableField);
-            bindableField.AttachDecoratorDrawers();
+            bindableField.Resolve(attachDecorators: true, showInInspector: propertyNode.ShowInInspector());
             m_PreviousField = bindableField;
             BindableFields.Add(bindableField);
             return bindableField;
