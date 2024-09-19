@@ -247,6 +247,31 @@ namespace Space3x.InspectorAttributes
 
             return value;
         }
+        
+        public static PropertyAttributeController GetOrCreateOverloadedInstance(IPropertyNode parentPropertyTreeRoot, Type originalType, Type overloadedType, Func<object> overloadedDeclaringObjectFactory)
+        {
+            var parentController = parentPropertyTreeRoot.GetController();
+            var instanceId = (((PropertyAttributeController)parentController).InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode()) * 397 ^ overloadedType.GetHashCode();
+            PropertyAttributeController value = null;
+
+            if (s_Instances.TryGetValue(instanceId, out value))
+            {
+                if (value.DeclaringType != overloadedType)
+                    throw new InvalidOperationException();
+            }
+            
+            if (value == null)
+            {
+                value = new PropertyAttributeController(parentPropertyTreeRoot, instanceId);
+                value.DeclaringObject = overloadedDeclaringObjectFactory.Invoke();
+                value.AnnotatedType = AnnotatedRuntimeType.GetInstance(overloadedType, asUnreliable: true);
+                value.EventHandler = UnreliableEventHandler.Create((BindablePropertyNode)parentPropertyTreeRoot);
+                value.Properties = new RuntimeTypeProperties(value);
+                s_Instances.Add(instanceId, value);
+            }
+
+            return value;
+        }
 
         public static void OnPropertyValueChanged(IPropertyNode prop)
         {
@@ -408,7 +433,9 @@ namespace Space3x.InspectorAttributes
             return value;
         }
         
-        private static void Log(string message = "", [CallerMemberName] string memberName = "") => 
-            Debug.LogWarning($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color>");
+        private static void Log(string message = "", [CallerMemberName] string memberName = "")
+        {
+            // Debug.LogWarning($"<color=#00FF33FF>  {s_LogCounter++} > @PAC.<b>{memberName}</b>: {message}</color>");
+        }
     }
 }
