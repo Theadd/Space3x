@@ -1,0 +1,30 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Samples/Inspector%20Attributes/0.1.0/Custom%20Runtime%20UI%20Sample/UI%20Toolkit/FlexboxLayoutManualSample/SampleFlexStylesheet.uss?fileID=7433441132597879392&amp;guid=5152320181880f54fbf82f76fedb9fab&amp;type=3#SampleFlexStylesheet" />
+    <ui:VisualElement name="PropertyGroupField" class="unity-base-field unity-base-field--no-label ui3x-property-group-field ui3x-property-group-field--with-no-label ui3x-non-proportional ui3x-group-type--row ui3x-flexbox" style="flex-grow: 0;">
+        <ui:VisualElement name="PropertyGroup" class="ui3x-property-group unity-base-field__input">
+            <ui:VisualElement name="PropertyField" class="unity-property-field unity-inspector-main-container ui3x-aligned ui3x-group--row" style="flex-direction: row; border-left-color: rgb(0, 128, 255); border-right-color: rgb(0, 128, 255); border-top-color: rgb(0, 128, 255); border-bottom-color: rgb(0, 128, 255); border-top-width: 1px; border-right-width: 1px; border-bottom-width: 1px; border-left-width: 1px; background-color: rgba(0, 128, 255, 0.24); flex-basis: auto; flex-grow: 1; flex-shrink: 0;">
+                <Space3x.UiToolkit.Types.LinearGradientSlider label="RED" high-value="1" show-input-field="true" inverted="false" pixels-width="36" low-value-color="#DDAB0076" high-value-color="#8F16F1FF" color-model="RGB" focusable="true" tooltip="RED ALERT!" value="0.35" class="col-sm-4" style="flex-direction: row; flex-grow: 1; flex-wrap: wrap;" />
+                <Space3x.UiToolkit.Types.LinearGradientSlider label="GREEN" high-value="1" show-input-field="true" inverted="false" pixels-width="36" low-value-color="#9100DD18" high-value-color="#62F116FF" color-model="RGB" focusable="true" tooltip="GRRR!" value="0.8" fill="false" class="col-sm-4" />
+                <Space3x.UiToolkit.Types.LinearGradientSlider label="PINK&#10;" high-value="1" show-input-field="true" inverted="false" pixels-width="36" low-value-color="#00DD15E4" high-value-color="#F1169F5C" color-model="RGB" focusable="true" tooltip="PIII PIII!!" value="0.65" fill="false" class="col-sm-4" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement>
+        <ui:VisualElement style="flex-direction: row; flex-grow: 1;">
+            <ui:VisualElement class="col-sm-12" style="flex-direction: row; flex-grow: 1;">
+                <ui:VisualElement name="ColorColumn" class="col-sm-4" style="flex-direction: row; align-self: stretch; align-content: stretch;">
+                    <ui:Label text="Lab Thaew das" name="Label" class="col-sm-3" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; align-self: center; flex-grow: 0; background-color: rgba(0, 0, 0, 0.29); overflow: hidden; flex-shrink: 0; min-width: 60px;" />
+                    <ui:Slider value="42" high-value="100" name="Slider" fill="true" show-input-field="false" direction="Horizontal" inverted="false" class="col-sm-9" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; align-self: center; flex-shrink: 1; flex-grow: 1; min-width: 20%;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ColorColumn" class="col-sm-4" style="flex-direction: row; align-self: stretch; align-content: stretch;">
+                    <ui:Label text="Lab The fuck!" name="Label" class="col-sm-3" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; align-self: center; flex-grow: 1; background-color: rgba(0, 0, 0, 0.29); overflow: hidden; flex-shrink: 0;" />
+                    <ui:Slider value="42" high-value="100" name="Slider" fill="true" show-input-field="false" direction="Horizontal" inverted="false" class="col-sm-9" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; align-self: center; flex-shrink: 0; flex-grow: 1;" />
+                </ui:VisualElement>
+                <ui:VisualElement name="ColorColumn" class="col-sm-4" style="flex-direction: row; align-self: stretch; align-content: stretch;">
+                    <ui:Label text="Lab The fuck!" name="Label" class="col-sm-3" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; padding-top: 0; padding-right: 0; padding-bottom: 0; padding-left: 0; align-self: center; flex-grow: 1; background-color: rgba(0, 0, 0, 0.29); overflow: hidden; flex-shrink: 0;" />
+                    <ui:Slider value="42" high-value="100" name="Slider" fill="true" show-input-field="false" direction="Horizontal" inverted="false" class="col-sm-9" style="margin-top: 0; margin-right: 0; margin-bottom: 0; margin-left: 0; align-self: center; flex-shrink: 0; flex-grow: 1;" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

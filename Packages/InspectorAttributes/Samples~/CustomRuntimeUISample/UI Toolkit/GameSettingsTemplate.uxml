@@ -1,0 +1,22 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Samples/Inspector%20Attributes/0.1.0/Custom%20Runtime%20UI%20Sample/UI%20Toolkit/CustomGameSettingsTemplateStyles.uss?fileID=7433441132597879392&amp;guid=4106a716a0979cb4cb5a7aa46433d3be&amp;type=3#CustomGameSettingsTemplateStyles" />
+    <ui:VisualElement class="ds3x-settings-template">
+        <ui:VisualElement style="height: 22px;" />
+        <ui:Label text="GAME SETTINGS" display-tooltip-when-elided="false" style="padding-left: 32px; -unity-font-style: bold; font-size: 22px; color: rgb(255, 255, 255); -unity-text-outline-color: rgba(170, 218, 255, 0.51); -unity-text-outline-width: 1px; margin-top: 8px; margin-bottom: 6px;" />
+        <ui:TabView>
+            <ui:Tab label="Graphics" style="flex-grow: 1;">
+                <ui:ScrollView nested-interaction-kind="StopScrolling" touch-scroll-type="Elastic" style="flex-grow: 1;">
+                    <ui:VisualElement style="flex-grow: 1; flex-shrink: 0;">
+                        <Space3x.InspectorAttributes.ViewLoader view="project://database/Assets/Samples/Inspector%20Attributes/0.1.0/Custom%20Runtime%20UI%20Sample/GameAssets/UIViews/GraphicsQualitySettings.asset?fileID=11400000&amp;guid=4dbba3f3971f7414688fedf6d50de657&amp;type=2#GraphicsQualitySettings" />
+                    </ui:VisualElement>
+                </ui:ScrollView>
+            </ui:Tab>
+            <ui:Tab label="Audio">
+                <ui:ScrollView />
+            </ui:Tab>
+            <ui:Tab label="Controls">
+                <ui:ScrollView />
+            </ui:Tab>
+        </ui:TabView>
+    </ui:VisualElement>
+</ui:UXML>

@@ -1,13 +1,10 @@
 .unity-base-field {
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
-    border-bottom-left-radius: 3px;
+    border-radius: 3px;
     background-color: rgba(239, 255, 255, 0.06);
     color: rgb(224, 224, 224);
     -unity-font-style: normal;
     -unity-text-align: middle-left;
-    white-space: pre-wrap;
+    white-space: nowrap;
     text-overflow: ellipsis;
     padding-left: 8px;
     letter-spacing: 4px;
@@ -29,11 +26,8 @@
     border-bottom-color: rgba(0, 0, 0, 0.22);
     border-top-right-radius: 3px;
     border-bottom-right-radius: 3px;
-    padding-left: 10px;
     text-overflow: clip;
-    padding-top: 3px;
-    padding-right: 10px;
-    padding-bottom: 3px;
+    padding: 3px 10px;
     margin-top: 0;
     margin-bottom: 0;
     margin-left: 0;
@@ -174,6 +168,30 @@
     margin-left: 4px;
 }
 
+/* Grouping - Override */
+
+.ui3x-property-group-field > .ui3x-property-group {
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+}
+
+.ui3x-property-group-field > .ui3x-property-group > * {
+    margin: 0;
+    padding: 0;
+}
+
+.ui3x-group--row > .unity-base-field {
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 4px;
+}
+
+.ui3x-property-group-field > .ui3x-property-group > .ui3x-group--row > .unity-base-field > Label {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
 /* Foldout Content */
 
 .unity-foldout > .unity-foldout__content {
@@ -181,10 +199,7 @@
     border-right-width: 1px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    border-bottom-left-radius: 3px;
-    border-bottom-right-radius: 3px;
-    border-top-left-radius: 3px;
-    border-top-right-radius: 3px;
+    border-radius: 3px;
     border-left-color: rgba(239, 255, 255, 0.06);
     border-right-color: rgba(239, 255, 255, 0.06);
     border-top-color: rgba(239, 255, 255, 0.06);
@@ -192,4 +207,131 @@
     background-color: rgba(0, 0, 0, 0.29);
     margin-left: 4px;
     padding: 8px;
+}
+
+/* Slider With Input Field */
+
+.unity-base-slider__input {
+    padding-right: 3px;
+}
+
+.unity-base-slider__input > .unity-base-slider__drag-container {
+    margin-right: 7px;
+}
+
+.unity-base-slider__input > .unity-base-slider__text-field {
+    border-radius: 1px;
+    min-height: auto;
+    padding-left: 0;
+    width: auto;
+    background-color: rgba(0, 0, 0, 0.59);
+}
+
+.unity-base-slider__input > .unity-base-slider__text-field > .unity-base-field__input {
+    padding: 0 0 0 3px;
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+    width: 36px;
+}
+
+/* Header */
+
+.ui3x-header {
+    color: rgb(224, 224, 224);
+    letter-spacing: 8px;
+    -unity-font-style: normal;
+}
+
+/* Dropdown */
+
+.unity-enum-field > .unity-enum-field__input > .unity-enum-field__arrow {
+    -unity-background-image-tint-color: rgb(127, 127, 127);
+}
+
+.unity-enum-field:hover:enabled > .unity-enum-field__input > .unity-enum-field__arrow {
+    -unity-background-image-tint-color: rgb(255, 223, 76);
+}
+
+.unity-enum-field:focus:enabled > .unity-enum-field__input > .unity-enum-field__arrow {
+    -unity-background-image-tint-color: rgb(0, 128, 255);
+}
+
+/* Scroller */
+
+.unity-scroller > .unity-repeat-button {
+    display: none;
+}
+
+.unity-scroller .unity-base-slider__tracker {
+    display: none;
+}
+
+.unity-scroller .unity-scroller__slider {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.unity-scroller--vertical .unity-scroller__slider {
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.unity-scroller--horizontal .unity-scroller__slider {
+    margin-left: 8px;
+    margin-right: 8px;
+}
+
+.unity-scroller .unity-base-slider__dragger {
+    border-radius: 4px;
+    opacity: 0.01;
+}
+
+.unity-scroller:hover .unity-base-slider__dragger {
+    opacity: 0.2;
+}
+
+.unity-scroller--vertical .unity-base-slider__dragger {
+    width: 8px;
+    left: -8px;
+}
+
+.unity-scroller--horizontal .unity-base-slider__dragger {
+    height: 8px;
+    top: -8px;
+}
+
+.unity-scroller--horizontal .unity-slider__input {
+    padding-bottom: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-top: 14px;
+}
+
+.unity-scroller .unity-slider__input {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+/* Offscreen Rendering */
+
+.ds3x-offscreen {
+    padding-bottom: 0;
+    padding-top: 0;
+}
+
+.ui3x-offscreen-field .unity-base-field {
+    background-color: rgba(0, 0, 0, 0);
+    margin-left: 0;
+    padding-left: 0;
+}
+
+.ds3x-offscreen-field .ui3x-group-type--row > .ui3x-property-group > .ui3x-group--row {
+    margin-right: 4px;
+}
+
+.ds3x-offscreen-field .ui3x-group-type--row > .ui3x-property-group > .ui3x-group-item--last {
+    margin-right: 0;
+}
+
+.ds3x-offscreen-field .ui3x-group-type--row > .ui3x-property-group > .ui3x-group-item--last .unity-base-field {
+    margin-right: 0;
 }

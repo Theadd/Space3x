@@ -1,0 +1,60 @@
+.ui3x-flexbox.ui3x-group-type--row > #PropertyGroup > .ui3x-group--row > LinearGradientSlider > Label {
+    flex-basis: 20%;
+    flex-shrink: 0;
+    flex-grow: 1;
+}
+
+.ui3x-flexbox.ui3x-group-type--row > #PropertyGroup > .ui3x-group--row > LinearGradientSlider > .unity-slider__input {
+    flex-basis: 80%;
+    flex-grow: 1;
+    flex-shrink: 1;
+    flex-direction: row;
+}
+
+.col-sm-1 {
+    flex-basis: 8.3333%;
+}
+
+.col-sm-2 {
+    flex-basis: 16.6666%;
+}
+
+.col-sm-3 {
+    flex-basis: 25%;
+}
+
+.col-sm-4 {
+    flex-basis: 33.3333%;
+}
+
+.col-sm-5 {
+    flex-basis: 41.6666%;
+}
+
+.col-sm-6 {
+    flex-basis: 49.9999%;
+}
+
+.col-sm-7 {
+    flex-basis: 58.3333%;
+}
+
+.col-sm-8 {
+    flex-basis: 66.6666%;
+}
+
+.col-sm-9 {
+    flex-basis: 74.9999%;
+}
+
+.col-sm-10 {
+    flex-basis: 83.3333%;
+}
+
+.col-sm-11 {
+    flex-basis: 91.6666%;
+}
+
+.col-sm-12 {
+    flex-basis: 100%;
+}

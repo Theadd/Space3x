@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Samples/Inspector%20Attributes/0.1.0/Custom%20Runtime%20UI%20Sample/UI%20Toolkit/GradientSliderStylesheet.uss?fileID=7433441132597879392&amp;guid=cfa75b4369a941758eb5702abbc6953a&amp;type=3#GradientSliderStylesheet" />
+    <Space3x.InspectorAttributes.ViewLoader view="project://database/Assets/Samples/Inspector%20Attributes/0.1.0/Custom%20Runtime%20UI%20Sample/GameAssets/UIViews/SimpleView.asset?fileID=11400000&amp;guid=c86d9c011c3985e41bb5ff340370edd9&amp;type=2#SimpleView" />
+</ui:UXML>

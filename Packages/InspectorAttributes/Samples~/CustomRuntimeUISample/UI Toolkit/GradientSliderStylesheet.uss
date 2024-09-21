@@ -1,0 +1,60 @@
+
+.ui3x-gradient-slider .unity-base-slider__label {
+    flex-basis: 10%;
+    padding: 0;
+    min-width: auto;
+    overflow: visible;
+    margin: 0 5px 0 0;
+}
+
+.ui3x-gradient-slider .unity-base-slider__input {
+    background-color: rgba(0, 0, 0, 0);
+    flex-basis: 80%;
+    flex-grow: 0;
+    /*-unity-background-scale-mode: stretch-to-fill;*/
+    /*border-top-width: 0;*/
+    /*border-right-width: 0;*/
+    /*border-bottom-width: 0;*/
+    /*border-left-width: 0;*/
+    /*border-top-right-radius: 0;*/
+    /*border-bottom-right-radius: 0;*/
+    align-self: center;
+    border-width: 0;
+    border-radius: 0;
+    /*border-width: 1px;*/
+    border-color: rgba(255, 255, 255, 0.28);
+    /*height: 50%;*/
+    /*margin-bottom: 3px;*/
+    /*margin-top: 3px;*/
+    padding: 0;
+    height: 22px;
+    margin: 0;
+}
+
+.ui3x-gradient-slider .unity-base-slider__drag-container {
+    /*margin-left: -3px;*/
+    /*margin-right: -3px;*/
+}
+
+.ui3x-gradient-slider .unity-base-slider__tracker {
+    /*display: none;*/
+}
+
+.ui3x-gradient-slider .unity-base-slider__dragger-border {
+    /*display: none;*/
+}
+
+.ui3x-gradient-slider .unity-base-slider__dragger {
+    border-top-width: 0;
+    border-right-width: 0;
+    border-bottom-width: 0;
+    border-left-width: 0;
+    margin-top: -11px;
+    opacity: 0.6;
+    width: 6px;
+    height: 22px;
+}
+
+.ui3x-gradient-slider:hover .unity-base-slider__dragger {
+    opacity: 0.9;
+}

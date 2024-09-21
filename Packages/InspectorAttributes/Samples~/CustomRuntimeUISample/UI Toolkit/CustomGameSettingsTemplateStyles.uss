@@ -1,0 +1,46 @@
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__header-container {
+    flex-direction: column;
+    padding-top: 16px;
+    border-right-width: 1px;
+    border-right-color: rgba(0, 128, 255, 0.5);
+}
+
+.ds3x-settings-template > .unity-tab-view {
+    flex-direction: row;
+    align-content: stretch;
+    align-self: stretch;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__content-container {
+    flex-grow: 1;
+    padding: 8px;
+    background-color: rgba(14, 29, 49, 0.35);
+}
+
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__header-container > .unity-tab__header {
+    align-self: stretch;
+    justify-content: flex-end;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: rgba(0, 0, 0, 0);
+    -unity-font-style: bold;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.ds3x-settings-template {
+    background-color: rgba(0, 0, 0, 0);
+}
+
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__header-container > .unity-tab__header > .unity-tab__header-underline {
+    display: none;
+}
+
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__header-container > .unity-tab__header:checked {
+    background-color: rgba(0, 128, 255, 0.5);
+}
+
+.ds3x-settings-template > .unity-tab-view > .unity-tab-view__header-container > .unity-tab__header:hover:enabled {
+    color: rgb(255, 223, 76);
+}

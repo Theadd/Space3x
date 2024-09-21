@@ -1,0 +1,140 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: GraphicsQualityBlue
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: 159fdb0be1fa94e4890ca732a9c9f566, type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: verticalSync
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: brightness
+    value: 3.17
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: renderTextureMaterial
+    value: 
+    objectReference: {fileID: 2100000, guid: 95b7aab0f1b36da43ae8f2d0eff6e8aa, type: 2}
+  - target: {fileID: 0}
+    propertyPath: renderTextureColor.r
+    value: 0.39
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: renderTextureColor.g
+    value: 0.77
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: renderTextureColor.b
+    value: 0.94
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: renderTextureColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: metallic
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: smoothness
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: skyboxMaterial
+    value: 
+    objectReference: {fileID: 2100000, guid: 81f714daf7144784b8a2f42f1cd30927, type: 2}
+  - target: {fileID: 0}
+    propertyPath: skyboxTintColor.r
+    value: 0.16862746
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: skyboxTintColor.g
+    value: 0.23921569
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: skyboxTintColor.b
+    value: 0.30980393
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: skyboxTintColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: exposure
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: rotation
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: shadowQuality
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: shadowDistance
+    value: 80
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: cameraDisplacement.x
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: cameraDisplacement.y
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: cameraDisplacement.z
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: shaderQuality
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: depthOfField
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: antiAliasing
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: ambientOcclusion
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: bloomAndLensFlare
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: motionBlur
+    value: 0
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []

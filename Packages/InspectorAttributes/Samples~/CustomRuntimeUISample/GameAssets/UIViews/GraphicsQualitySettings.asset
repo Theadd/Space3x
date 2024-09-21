@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 159fdb0be1fa94e4890ca732a9c9f566, type: 3}
+  m_Name: GraphicsQualitySettings
+  m_EditorClassIdentifier: 
+  verticalSync: 1
+  brightness: 5
+  renderTextureMaterial: {fileID: 2100000, guid: 95b7aab0f1b36da43ae8f2d0eff6e8aa, type: 2}
+  renderTextureColor: {r: 0.39, g: 0.77, b: 0.94, a: 1}
+  metallic: 0
+  smoothness: 0
+  skyboxMaterial: {fileID: 2100000, guid: 81f714daf7144784b8a2f42f1cd30927, type: 2}
+  skyboxTintColor: {r: 0.08632965, g: 0.13750443, b: 0.18867922, a: 1}
+  exposure: 3.7
+  rotation: 0
+  shadowQuality: 3
+  shadowDistance: 80
+  cameraDisplacement: {x: 0, y: 0, z: 0}
+  shaderQuality: 2
+  depthOfField: 1
+  antiAliasing: 1
+  ambientOcclusion: 1
+  bloomAndLensFlare: 0
+  motionBlur: 0
