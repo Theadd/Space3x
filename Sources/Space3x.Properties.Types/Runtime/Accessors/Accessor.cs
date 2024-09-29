@@ -27,7 +27,7 @@ namespace Space3x.Properties.Types
     public class Accessor
     {
         /// <summary>
-        /// Notice it's an static non-readonly field, therefore shared on all Accessor types.
+        /// Notice it's a static non-readonly field, therefore shared on all Accessor types.
         /// </summary>
         [PublicAPI]
         public static BindingFlags DefaultFlags = BindingFlags.Instance | BindingFlags.Public | 

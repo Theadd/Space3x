@@ -78,5 +78,7 @@ namespace Space3x.Properties.Types
         public bool IsReadOnly => (Flags | VTypeFlags.ReadOnly) == Flags;
         
         public bool IsUnreliable => (Flags | VTypeFlags.Unreliable) == Flags;
+        
+        public bool NoFoldout => (Flags | VTypeFlags.NoFoldout) == Flags;
     }
 }

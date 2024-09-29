@@ -1,20 +1,20 @@
 ﻿using System;
 using System.Linq.Expressions;
 using System.Reflection;
-using UnityEngine.UIElements;
 
 namespace Space3x.Properties.Types
 {
     public static partial class Accessors
     {
-        [Obsolete]
-        internal static Delegate CreateDelegateSetter(PropertyInfo propertyInfo)
-        {
-            ParameterExpression instance = Expression.Parameter(propertyInfo.ReflectedType, "instance");
-            ParameterExpression propertyValue = Expression.Parameter(propertyInfo.PropertyType, "propertyValue");
-            var body = Expression.Assign(Expression.Property(instance, propertyInfo.Name), propertyValue);
-            return Expression.Lambda(body, instance, propertyValue).Compile();
-        }
+        // TODO: remove
+        // [Obsolete]
+        // internal static Delegate CreateDelegateSetter(PropertyInfo propertyInfo)
+        // {
+        //     ParameterExpression instance = Expression.Parameter(propertyInfo.ReflectedType, "instance");
+        //     ParameterExpression propertyValue = Expression.Parameter(propertyInfo.PropertyType, "propertyValue");
+        //     var body = Expression.Assign(Expression.Property(instance, propertyInfo.Name), propertyValue);
+        //     return Expression.Lambda(body, instance, propertyValue).Compile();
+        // }
 
         // HAVING:
         // public class MyClass<T>

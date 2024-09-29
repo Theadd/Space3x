@@ -34,7 +34,7 @@ namespace Space3x.Properties.Types
         /// Fired in batches to simulate the GeometryChangedEvent in runtime UI to prevent UnityEditor from throwing due
         /// to a large recursive call stack on the GeometryChangedEvent dispatcher.
         /// </summary>
-        public event Action onGeometryChangedEventOnce;
+        public event Action<GeometryChangedEvent> onGeometryChangedEventOnce;
 
         /// <summary>
         /// It's fired after every single call to the <see cref="UnityEngine.UIElements.VisualElement.Add">Add</see>
@@ -52,9 +52,5 @@ namespace Space3x.Properties.Types
         public event Action onFullyRendered;
 
         void RaiseOnPropertyAddedEvent();
-        
-        // TODO: remove
-        // void RaiseAndResetOnFullyRendered();
-        // public static void RaiseAndResetOnFullyRenderedInternal() => RaiseAndResetOnFullyRendered();
     }
 }

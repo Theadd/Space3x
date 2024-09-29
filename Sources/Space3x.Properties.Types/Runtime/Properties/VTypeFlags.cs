@@ -24,6 +24,7 @@ namespace Space3x.Properties.Types
         /// which target the same underlying value won't be notified. This flag tags those unreliable properties
         /// to provide an accurate event propagation implementation.
         /// </summary>
-        Unreliable = 256
+        Unreliable = 256,
+        NoFoldout = 512
     }
 }
