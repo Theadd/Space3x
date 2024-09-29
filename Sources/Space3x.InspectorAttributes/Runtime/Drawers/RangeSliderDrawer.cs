@@ -21,9 +21,9 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 _ when declaredPropertyType == typeof(Vector2) || declaredPropertyType == typeof(Vector2Int) => 
                     new MinMaxSlider() { lowLimit = Target.Min, highLimit = Target.Max, label = preferredLabel },
                 _ when declaredPropertyType == typeof(double) || declaredPropertyType == typeof(float) => 
-                    new Slider() { lowValue = Target.Min, highValue = Target.Max, label = preferredLabel },
+                    new Slider() { lowValue = Target.Min, highValue = Target.Max, label = preferredLabel, showInputField = Target.ShowValue },
                 _ when declaredPropertyType.IsPrimitive => 
-                    new SliderInt() { lowValue = (int)Target.Min, highValue = (int)Target.Max, label = preferredLabel },
+                    new SliderInt() { lowValue = (int)Target.Min, highValue = (int)Target.Max, label = preferredLabel, showInputField = Target.ShowValue  },
                 _ => new BindableElement()
             };
             slider.AddToClassList(BaseField<int>.alignedFieldUssClassName);

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Space3x.Attributes.Types;
 using Space3x.Properties.Types;
-using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.Internal;
 using UnityEngine.UIElements;
@@ -10,9 +9,9 @@ using UnityEngine.UIElements;
 namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
-#if UNITY_EDITOR
-    [UnityEditor.InitializeOnLoad]
-#endif
+// #if UNITY_EDITOR
+//     [UnityEditor.InitializeOnLoad]
+// #endif
     public static class UngroupedMarkerDecorators
     {
         private static Dictionary<int, MarkerDecoratorsCache> s_Instances;
@@ -64,7 +63,6 @@ namespace Space3x.InspectorAttributes
                    ((object)drawer.Property.GetTargetObject()).GetHashCode() * 397 ^ panelId);
 #endif                    
             }
-            DebugLog.Error("<b>UNEXPECTED!</b> IDrawer.Property is not an IControlledProperty");
             return null;
         }
         
@@ -83,7 +81,6 @@ namespace Space3x.InspectorAttributes
                                  ^ (propertyContainsChildrenProperties ? propertyNode.PropertyPath : propertyNode.ParentPath).GetHashCode();
                 return GetInstance(instanceId * 397 ^ panelId);
             }
-            DebugLog.Error("<b><color=#FF0000FF>UNEXPECTED!</color></b> related IPropertyNode is not an IControlledProperty");
             return null;
         }
 #endif
@@ -103,13 +100,13 @@ namespace Space3x.InspectorAttributes
                 // : LogAndReturn($"[UMD!] GetPanelContentHash({((VisualElement)panel?.visualTree)?.AsString()})", 0);
                 : 0;
 
-        [RuntimeInitializeOnLoadMethod]
-        static void RuntimeInitialize()
-        {
-            RegisterCallbacks(true);
-        }
-        
-        static UngroupedMarkerDecorators() => RegisterCallbacks(true);
+        // [RuntimeInitializeOnLoadMethod]
+        // static void RuntimeInitialize()
+        // {
+        //     RegisterCallbacks(true);
+        // }
+        //
+        // static UngroupedMarkerDecorators() => RegisterCallbacks(true);
         
 #if UNITY_EDITOR
         // TODO: Get hash of multiple selected objects.
@@ -142,7 +139,6 @@ namespace Space3x.InspectorAttributes
             if (s_ActiveSelectedObjectHash == hash)
                 return;
 
-            Debug.Log($"<color=#FF7F00FF>[UMD!] UngroupedMarkedDecorators.<b>ClearCache()</b> -> {s_ActiveSelectedObjectHash} != {hash}");
             s_ActiveSelectedObjectHash = hash;
             ClearCache();
         }
@@ -153,6 +149,12 @@ namespace Space3x.InspectorAttributes
         {
             s_Instances.Clear();
             s_AutoDisableGroups.Clear();
+        }
+        
+        internal static void ReloadAll()
+        {
+            s_ActiveSelectedObjectHash = 0;
+            RegisterCallbacks(true);
         }
     }
 }

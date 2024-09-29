@@ -28,7 +28,12 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 var result = invokable.Parameters == null ? invokable.Invoke() : invokable.InvokeWith(invokable.Parameters);
                 if (Property is IInvokablePropertyNode invokablePropertyNode)
-                    invokablePropertyNode.SetValue(result);
+                {
+                    var returnType = ((PropertyAttributeController)invokablePropertyNode.GetController()).AnnotatedType
+                        .GetValue(invokablePropertyNode.Name)?.RuntimeMethod.ReturnType;
+                    if (returnType != typeof(void))
+                        invokablePropertyNode.SetValue(result);
+                }
             }
         }
     }

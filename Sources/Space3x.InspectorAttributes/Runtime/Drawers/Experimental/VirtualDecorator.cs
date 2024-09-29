@@ -1,7 +1,7 @@
 ﻿using System;
+using JetBrains.Annotations;
 using Space3x.Attributes.Types;
 using Space3x.Properties.Types;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
@@ -19,53 +19,41 @@ namespace Space3x.InspectorAttributes
     [UnityEditor.CustomPropertyDrawer(typeof(VirtualDecoratorAttribute), true)]
 #endif
     [CustomRuntimeDrawer(typeof(VirtualDecoratorAttribute), true)]
+    [PublicAPI]
     public class VirtualDecorator : Decorator<AutoDecorator, VirtualDecoratorAttribute>
     {
         private Invokable<object, object> m_OnUpdate;
-        // private Action m_UnregisterCallback;
-        
+
         public override VirtualDecoratorAttribute Target => (VirtualDecoratorAttribute) attribute;
+        
+        protected override bool UpdateOnAnyValueChange => Target.UpdateOnAnyValueChange;
         
         protected override void OnCreatePropertyGUI(VisualElement container)
         {
-            Debug.Log($"[VD!] OnCreatePropertyGUI {GetHashCode()}");
             if (!string.IsNullOrEmpty(Target.OnCreate))
-            {
                 if (Property.TryCreateInvokable<VisualElement, object>(Target.OnCreate, out var invokable, drawer: this))
-                {
                     if (invokable.Parameters == null)
-                        invokable.Invoke();
+                        invokable.Invoke(container);
                     else
                         invokable.InvokeWith(invokable.Parameters);
-                }
-            }
         }
 
         public override void OnAttachedAndReady(VisualElement element)
         {
-            Debug.Log($"[VD!] OnAttachedAndReady {GetHashCode()}");
             if (!string.IsNullOrEmpty(Target.OnAttached))
-            {
                 if (Property.TryCreateInvokable<VisualElement, object>(Target.OnAttached, out var invokable, drawer: this))
-                {
                     if (invokable.Parameters == null)
-                        invokable.Invoke();
+                        invokable.Invoke(element);
                     else
                         invokable.InvokeWith(invokable.Parameters);
-                }
-            }
-            if (!string.IsNullOrEmpty(Target.OnUpdate))
-            {
-                (Container ?? element).RegisterOnGeometryChangedEventOnce(OnUpdate);
-                // m_UnregisterCallback = this.RegisterOnPropertyAddedCallback(OnUpdate);
-                // this.RegisterOnFullyRenderedCallback(OnUpdate);
-            }
+            // if (!string.IsNullOrEmpty(Target.OnUpdate))
+            //     (Container ?? element).RegisterOnGeometryChangedEventOnce(OnFirstUpdate);
         }
 
+        // private void OnFirstUpdate(GeometryChangedEvent _) => OnUpdate();
+        
         public override void OnUpdate()
         {
-            Debug.Log($"[VD!] OnUpdate {GetHashCode()}");
-            // m_UnregisterCallback?.Invoke();
             if (!string.IsNullOrEmpty(Target.OnUpdate))
             {
                 if (m_OnUpdate == null)

@@ -15,9 +15,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         
         VisualElement GroupContainer { get; set; }
 
-        // TODO: remove
-        string DebugId { get; }
-
         void RemoveGroupMarker();
 
         bool HasValidMarker();
@@ -41,21 +38,17 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public VisualElement GroupContainer { get; set; } = null;
         
         public override TGroupAttribute Target => (TGroupAttribute) attribute;
-        
-        // TODO: remove
-        public string DebugId => this.GetType().Name + "-" + RuntimeHelpers.GetHashCode(this);
 
         public override void OnUpdate()
         {
-            DebugLog.Warning($"[GMD!] OnUpdate()");
             var isPending = true;
-            if (!DecoratorsCache.IsAutoGroupingDisabled())
+            if (!(DecoratorsCache.IsAutoGroupingDisabled() && !Property.IsRuntimeUI()))
             {
                 this.RebuildGroupMarkerIfRequired();
                 if (this.TryLinkToMatchingGroupMarkerDecorator())
                 {
                     if (Target.IsOpen)
-                        Debug.LogWarning($"    <color=#000000FF><b>[WARNING]</b></color> ...");
+                        DebugLog.Warning($"    <color=#000000FF><b>[WARNING]</b></color> ...");
                     
                     if (!Target.IsOpen && !this.IsGroupMarkerUsed())
                     {
@@ -70,7 +63,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 DecoratorsCache.MarkPending(this);
             }
-            DecoratorsCache.HandlePendingDecorators();
+            if (!(DecoratorsCache.IsAutoGroupingDisabled() && !Property.IsRuntimeUI()))
+                DecoratorsCache.HandlePendingDecorators();
         }
 
         public override void OnAttachedAndReady(VisualElement element)
@@ -82,7 +76,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 Marker.GetOrCreatePropertyGroupFieldForMarker();
 
             DecoratorsCache.Add(this);
-            DebugLog.Warning($"[GMD!] OnAttachedAndReady()");
         }
         
         public override bool HasValidContainer()
@@ -209,7 +202,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             {
                 if (this.IsGroupMarkerUsed())
                 {
-                    Debug.LogWarning($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
+                    DebugLog.Warning($"<color=#FF0000FF><b>!!! [Reset]</b></color> This Group marker was used when it should have been reset.");
                     // ((IDrawer) this).ForceRebuild();
                     // return; // TODO: FIXME: this is a hack, should be fixed in the next release
                     UndoAllHierarchyGrouping();
@@ -225,7 +218,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 
                 RemoveGroupMarker();
                 LinkedMarkerDecorator?.RemoveGroupMarker(); // TODO: is this needed?
-                Debug.LogWarning("<color=#FF0000FF>// TODO: FIXME: this is a hack, should be fixed in the next release</color>");
+                DebugLog.Warning("<color=#FF0000FF>// TODO: FIXME: this is a hack, should be fixed in the next release</color>");
                 // HACK COMMENTED OUT: return; // TODO: FIXME: this is a hack, should be fixed in the next release
             }
             else
