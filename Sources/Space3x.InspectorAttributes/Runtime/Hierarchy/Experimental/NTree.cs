@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Space3x.Attributes.Types.DeveloperNotes;
 
 namespace Space3x.InspectorAttributes
 {
+    [Experimental(Text = "Implementation making use of this class is still in progress.")]
     public class NTree<T>
     {
         private readonly T m_Value;

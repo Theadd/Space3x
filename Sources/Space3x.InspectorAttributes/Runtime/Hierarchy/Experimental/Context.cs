@@ -17,10 +17,7 @@
         NTree<Context> TreeNode { get; set; }
     }
     
-    internal interface IOffscreenRenderer : ITreeRenderer
-    {
-        
-    }
+    internal interface IOffscreenRenderer : ITreeRenderer { }
     
     public interface IOffscreenContainer
     {
