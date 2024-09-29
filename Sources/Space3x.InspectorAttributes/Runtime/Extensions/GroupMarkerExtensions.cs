@@ -18,6 +18,9 @@ namespace Space3x.InspectorAttributes
             var parent = group.hierarchy.parent;
             if (parent == null)
                 return group;
+#if SPACE3X_DEBUG
+            DebugLog.Warning($"<color=#FF8C00FF>[WARNING]</color> <b>PropertyGroupField.UngroupAll()</b>\n{group.StringifyThis()}");
+#endif
             var indexInParent = parent.hierarchy.IndexOf(group);
             var parentGroupTypeClass = "";
             var iMax = group.contentContainer.hierarchy.childCount - 1;

@@ -28,6 +28,7 @@ namespace Space3x.InspectorAttributes
         /// </summary>
         public static void ProperlyRemoveFromHierarchy(this PropertyField propertyField)
         {
+            DebugLog.Notice("PropertyFieldExtensions.ProperlyRemoveFromHierarchy(this PropertyField propertyField) " + propertyField.AsString());
             var decoratorDrawersContainer = propertyField.Children()
                 .FirstOrDefault(c => c.ClassListContains(UssConstants.UssDecoratorDrawersContainer));
             if (decoratorDrawersContainer != null)
