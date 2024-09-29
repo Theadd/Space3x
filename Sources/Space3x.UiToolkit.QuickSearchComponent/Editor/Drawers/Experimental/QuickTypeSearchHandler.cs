@@ -7,6 +7,7 @@ using Space3x.InspectorAttributes.Editor.Drawers;
 using Space3x.Properties.Types;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.Extensions;
 using Space3x.UiToolkit.QuickSearchComponent.Editor.VisualElements;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
@@ -34,7 +35,11 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
 
         public void OnShowPopup(IDrawer drawer, IQuickTypeSearch target, VisualElement selectorField, ShowWindowMode mode)
         {
-            PopupContent ??= CreateQuickSearchElement(drawer);
+            // PopupContent ??= CreateQuickSearchElement(drawer);
+            Debug.Log("OnShowPopup()");
+            Target.ReloadCache();
+            PopupContent = CreateQuickSearchElement(drawer);
+            //
             Popup ??= new QuickSearchPopup() { };
             Popup.WithContent(PopupContent).WithSearchable(target).Show(selectorField, mode);
         }

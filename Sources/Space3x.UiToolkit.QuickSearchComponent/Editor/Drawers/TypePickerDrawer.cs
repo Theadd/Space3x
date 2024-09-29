@@ -138,7 +138,7 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
         }
 
         private void OnSelectionChanged(IEnumerable<Type> newValues) => 
-            Property.SetValue(GetValueFromType(newValues.FirstOrDefault()));
+            Property?.SetValue(GetValueFromType(newValues.FirstOrDefault()));
 
         private static ElementType GetPropertyElementType(IPropertyNode property)
         {
@@ -155,12 +155,12 @@ namespace Space3x.UiToolkit.QuickSearchComponent.Editor.Drawers
             };
         }
         
-        private static VisualElement CreatePropertyField(IPropertyNode property)
+        private VisualElement CreatePropertyField(IPropertyNode property)
         {
             DebugLog.Info($"[USK3] [TypePickerDrawer] CreatePropertyField: {property.PropertyPath}");
             return property.HasSerializedProperty()
                 ? new PropertyField(property.GetSerializedProperty())
-                : new BindablePropertyField(property, property.IsArrayOrList())
+                : BindablePropertyField.Create(this, property, property.IsArrayOrList())
                     .Resolve(showInInspector: true);
         }
     }
