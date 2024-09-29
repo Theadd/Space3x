@@ -12,9 +12,12 @@ namespace Space3x.InspectorAttributes
         
         private VisualElement ConfigureChildrenFields(Type propertyType, bool isNullValue = false)
         {
-            DebugLog.Info($"[USK3] [BindablePropertyField] ConfigureChildrenFields FOR propertyType {propertyType.Name}: {Property.PropertyPath}");
             var field = TreeRendererUtility.Create(Property);
-            var renderer = field.GetTreeRenderer();
+            // TODO: var renderer = field.GetTreeRenderer(); => SET TreeNode
+            Field?.RemoveFromHierarchy();
+            Field = field;
+            Add(field);
+            // TODO: Field.tooltip = vType?.Tooltip ?? "";
             
             if (!isNullValue)
             {
@@ -33,7 +36,7 @@ namespace Space3x.InspectorAttributes
             // DebugLog.Error($"[PAC!] OnTrackedPropertyValueChanged: ({Property.PropertyPath} == {trackedNode.PropertyPath})?");
             if (!Equals(Property, trackedNode))
             {
-                Debug.Log($"[PAC!] <u>[ConfigureChildrenFields] <b>NOT EQUALS!</b> OnTrackedPropertyValueChanged</u>: {Property.PropertyPath} != {trackedNode.PropertyPath}");
+                DebugLog.Warning($"[PAC!] <u>[ConfigureChildrenFields] <b>NOT EQUALS!</b> OnTrackedPropertyValueChanged</u>: {Property.PropertyPath} != {trackedNode.PropertyPath}");
                 // return;
             }
             var node = Property;
@@ -64,7 +67,7 @@ namespace Space3x.InspectorAttributes
             {
                 EnableReadOnly = m_FieldFactoryBuilder?.EnableReadOnly ?? false
             };
-            m_FieldFactoryBuilder.Rebuild(Field.contentContainer);
+           m_FieldFactoryBuilder.Rebuild(Field.contentContainer);
         }
     }
 }

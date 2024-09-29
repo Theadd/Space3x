@@ -18,7 +18,6 @@ namespace Space3x.InspectorAttributes
             if ((object) field == null)
             {
                 field = (TField) factory().WithClasses(BaseField<TValue>.alignedFieldUssClassName);
-                DebugLog.Info($"<color=#FFFF00FF>TODO: UNCOMMENT ConfigureField.RegisterValueChangedCallback&lt;<`{typeof(TValue).Name}`>({field.GetType().Name}): {Property.PropertyPath}</color>");
                 
                 // TODO: Uncomment
                 // field.RegisterValueChangedCallback<TValue>((ev =>

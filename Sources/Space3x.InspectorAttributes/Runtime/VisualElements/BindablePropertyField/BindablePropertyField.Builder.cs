@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Types;
-using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -33,11 +31,6 @@ namespace Space3x.InspectorAttributes
             VisualElement field = null;
             var isCollectionElement = Property.IsArrayOrListElement();
             var isCollection = Property.IsArrayOrList();
-            // TODO: remove block
-            if (Property.PropertyPath == "UIView.primary")
-            {
-                Debug.Log("STOP");
-            }
             // The declared underlying element type for collections and collections elements, or the declared property type for non-collections.
             Type declaredPropertyType = isCollectionElement
                 ? Property.GetParentProperty().GetUnderlyingElementType()
@@ -52,7 +45,7 @@ namespace Space3x.InspectorAttributes
 
             if (isCollection)
             {
-                Func<VisualElement> itemFactory = () => new BindablePropertyField().Resolve(showInInspector: true);
+                Func<VisualElement> itemFactory = () => BindablePropertyField.Create(this).Resolve(showInInspector: true);
                 field = declaredPropertyType switch
                 {
                     _ when declaredPropertyType == typeof(int) => ConfigureListView<int>(itemFactory, Field as ListView),
@@ -86,7 +79,6 @@ namespace Space3x.InspectorAttributes
             }
             else
             {
-                DebugLog.Info($"[USK3] [BindablePropertyField] BindToBuiltInField ON ({declaredPropertyType?.Name}): {Property.PropertyPath}");
                 if (declaredPropertyType == null)
                     return FieldNotImplemented();
                 
