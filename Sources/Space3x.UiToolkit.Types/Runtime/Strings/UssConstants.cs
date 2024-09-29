@@ -14,7 +14,11 @@
         public const string UssButtonGroupButtonRight = UssButtonGroupButton + "--right";
         public const string UssBaseField = UnityPrefix + "base-field";
         public const string UssDecoratorDrawersContainer = UnityPrefix + "decorator-drawers-container";
-        public const string UssAligned = UssBaseField + "__aligned";
+        public const string UssUnityAligned = UssBaseField + "__aligned";
+        public const string UssAligned = CustomPrefix + "aligned";
+        public const string UssAlignedAuto = UssAligned + "--auto";
+        public const string UssInspector = UnityPrefix + "inspector-element";
+        public const string UssInspectorContainer = UnityPrefix + "inspector-main-container";
         public const string UssHidden = CustomPrefix + "hidden";
         public const string UssDecorator = CustomPrefix + "decorator";
         public const string UssBlockDecorator = CustomPrefix + "block-decorator";
@@ -32,5 +36,6 @@
         public const string UssTypePicker = CustomPrefix + "type-picker";
         public const string UssTypePickerInstanceContainer = UssTypePicker + "-instance-container";
         public const string UssFactoryPopulated = CustomPrefix + "factory-populated";
+        public const string UssEditorUI = CustomPrefix + "editor-ui";
     }
 }

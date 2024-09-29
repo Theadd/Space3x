@@ -44,7 +44,7 @@ namespace Space3x.UiToolkit.Types
 #else
             var info = !HasFlag(VerbosityFlags.Info) ? "" : target switch
             {
-                PropertyDrawer propertyDrawer => "ui3x-info-" + propertyDrawer.attribute.GetType().Name.ToLower(CultureInfo.InvariantCulture),
+                PropertyDrawer propertyDrawer => "ui3x-info-" + propertyDrawer.attribute?.GetType().Name.ToLower(CultureInfo.InvariantCulture),
                 DecoratorDrawer decoratorDrawer => "ui3x-info-" + decoratorDrawer.attribute.GetType().Name.ToLower(CultureInfo.InvariantCulture),
                 _ => ""
             };

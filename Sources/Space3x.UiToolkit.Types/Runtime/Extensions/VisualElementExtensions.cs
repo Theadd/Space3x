@@ -119,7 +119,7 @@ namespace Space3x.UiToolkit.Types
         }
 
 
-#if UNITY_EDITOR
+#if UNITY_EDITOR || SPACE3X_DEBUG
         [HideInCallstack]
         public static string AsString(this VisualElement self) => 
             self == null ? "null" : NJoin(" ", new[] 
@@ -214,6 +214,15 @@ namespace Space3x.UiToolkit.Types
         public static string AsFullHierarchyStringForDebugger(this VisualElement self, int depth = 999, int indentLevel = 0) =>
             StripTags(self.AsFullHierarchyString(depth, indentLevel));
         
+        public static string StringifyThis(this VisualElement self, int depth = 999, int indentLevel = 0)
+        {
+            if (self == null) return "";
+            return StripTags(self.AsFullHierarchyString(depth, indentLevel))
+                .Replace(".unity-base-field", ".UBF")
+                .Replace(".unity-base", ".UB")
+                .Replace(".unity", ".U");
+        }
+
         private static string StripTags(string richStr)
         {
             var sb = new System.Text.StringBuilder(richStr.Length);
