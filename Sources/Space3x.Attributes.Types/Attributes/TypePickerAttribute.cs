@@ -7,6 +7,14 @@ namespace Space3x.Attributes.Types
     [ExcludeFromDocs]
     public interface ITypePickerAttributeHandler { }
 
+    [Flags]
+    public enum IncludedType
+    {
+        SelectedTypes = 0,
+        DerivedTypes = 1,
+        ImplementedInterfaces = 2,
+    }
+
     [ExcludeFromDocs]
     public interface ITypePickerAttribute
     {
@@ -22,9 +30,9 @@ namespace Space3x.Attributes.Types
         Type[] GenericParameterTypes { get; set; }
 
         /// <summary>
-        /// Whether to include derived types from the <see cref="Types"/> array.
+        /// Whether to include derived and other types from the <see cref="Types"/> array.
         /// </summary>
-        bool DerivedTypes { get; set; }
+        IncludedType IncludedTypes { get; set; }
 
         /// <summary>
         /// Name of a field, property or method from which the <see cref="Types"/> array will be populated.
@@ -102,9 +110,9 @@ namespace Space3x.Attributes.Types
         public Type[] GenericParameterTypes { get; set; } = null;
         
         /// <summary>
-        /// Whether to include derived types from the <see cref="Types"/> array.
+        /// Whether to include derived and other types from the <see cref="Types"/> array.
         /// </summary>
-        public bool DerivedTypes { get; set; } = false;
+        public IncludedType IncludedTypes { get; set; } = IncludedType.SelectedTypes;
         
         /// <summary>
         /// Name of a field, property or method from which the <see cref="Types"/> array will be populated.
@@ -144,22 +152,22 @@ namespace Space3x.Attributes.Types
         /// </summary>
         /// <param name="types">An array of types used to populate the list of available types to pick from.
         /// If null, an empty array is used.</param>
-        /// <param name="derivedTypes">Whether to include derived types from the <paramref name="types"/> array.</param>
-        public TypePickerAttribute(bool derivedTypes, params Type[] types)
+        /// <param name="includedTypes">Whether to include derived and other types from the <paramref name="types"/> array.</param>
+        public TypePickerAttribute(IncludedType includedTypes, params Type[] types)
         {
-            DerivedTypes = derivedTypes;
+            IncludedTypes = includedTypes;
             Types = types ?? Type.EmptyTypes;
         }
         
         /// <summary>
         /// Shows a <see cref="Type"/> picker in the inspector.
         /// </summary>
-        /// <param name="derivedTypes">Whether to include derived types from the <paramref name="baseType"/>.</param>
+        /// <param name="includedTypes">Whether to include derived and other types from the <paramref name="baseType"/>.</param>
         /// <param name="baseType">The base type from which to derive the types.</param>
         /// <param name="genericParameterTypes">Generic parameter types to filter the list of available types.</param>
-        public TypePickerAttribute(Type baseType, bool derivedTypes, params Type[] genericParameterTypes)
+        public TypePickerAttribute(Type baseType, IncludedType includedTypes, params Type[] genericParameterTypes)
         {
-            DerivedTypes = derivedTypes;
+            IncludedTypes = includedTypes;
             Types = new[] { baseType };
             GenericParameterTypes = genericParameterTypes;
         }
@@ -173,11 +181,11 @@ namespace Space3x.Attributes.Types
         /// <summary>
         /// Shows a <see cref="Type"/> picker in the inspector.
         /// </summary>
-        /// <param name="derivedTypes">Whether to include derived types from the <see cref="Types"/> array.</param>
+        /// <param name="includedTypes">Whether to include derived and other types from the <see cref="Types"/> array.</param>
         /// <param name="propertyName">Name of a field, property or method from which the <see cref="Types"/> array will be populated.</param>
-        public TypePickerAttribute(bool derivedTypes, string propertyName)
+        public TypePickerAttribute(IncludedType includedTypes, string propertyName)
         {
-            DerivedTypes = derivedTypes;
+            IncludedTypes = includedTypes;
             PropertyName = propertyName;
         }
     }

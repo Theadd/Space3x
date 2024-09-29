@@ -22,6 +22,8 @@ namespace Space3x.Attributes.Types
         
         /// <inheritdoc cref="Space3x.InspectorAttributes.Decorator{T,TAttribute}.OnUpdate"/>
         public string OnUpdate { get; set; } = string.Empty;
+        
+        public bool UpdateOnAnyValueChange { get; set; } = false;
 
         public VirtualDecoratorAttribute() : this(false) { }
     

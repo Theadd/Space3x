@@ -12,6 +12,7 @@ namespace Space3x.Attributes.Types
     {
         public float Min { get; set; }
         public float Max { get; set; }
+        public bool ShowValue { get; set; } = false;
 
         public RangeSliderAttribute(float min = 0f, float max = 1f)
         {
