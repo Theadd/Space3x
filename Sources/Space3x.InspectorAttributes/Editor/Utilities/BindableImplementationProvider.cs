@@ -3,7 +3,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using Space3x.Properties.Types;
 using UnityEditor;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor
@@ -35,13 +34,11 @@ namespace Space3x.InspectorAttributes.Editor
                 {
                     if (element.dataSource is DataSourceBinding sourceBinding)
                     {
-                        Debug.Log($"<color=#00FF00FF>AutoNotifyValueChangedOnNonSerializedWrapper ON dataSource</color>");
                         if (RuntimeHelpers.Equals((T) sourceBinding.Value, ev.newValue) && !RuntimeHelpers.Equals(ev.previousValue, ev.newValue))
                             sourceBinding.NotifyValueChanged();
                     }
                     else
                     {
-                        Debug.Log($"<color=#00FF00FF>AutoNotifyValueChangedOnNonSerializedWrapper ON property</color>");
                         property.NotifyValueChanged(property);
                     }
                 });

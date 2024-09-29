@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿#if SPACE3X_DEBUG
+using System.Collections.Generic;
 using System.Linq;
 using Space3x.Properties.Types;
 using UnityEngine;
@@ -48,3 +49,4 @@ DeclaringObject: {controller.DeclaringObject}
         }
     }
 }
+#endif
