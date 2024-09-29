@@ -31,6 +31,14 @@ namespace Space3x.Attributes.Types
         }
         
         [HideInCallstack]
+        public static void Notice(string msg)
+        {
+#if SPACE3X_DEBUG
+            Debug.unityLogger.Log(LogType.Assert, "<color=#499FF3FF>" + msg + "</color>");
+#endif
+        }
+        
+        [HideInCallstack]
         public static void AllLines(string msg, int maxLines = 150)
         {
             #if SPACE3X_DEBUG

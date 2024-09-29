@@ -1,5 +1,4 @@
-﻿using Space3x.Properties.Types;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes.Editor.VisualElements
@@ -19,7 +18,5 @@ namespace Space3x.InspectorAttributes.Editor.VisualElements
         public override VisualElement contentContainer => Container ?? base.contentContainer;
 
         public new void Add(VisualElement child) => contentContainer.Add(child);
-
-        // public virtual IOffscreenEventHandler GetOffscreenEventHandler() => null;
     }
 }
