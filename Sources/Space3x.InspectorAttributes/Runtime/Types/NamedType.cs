@@ -6,6 +6,8 @@ namespace Space3x.InspectorAttributes.Types
     [Serializable]
     public struct NamedType : IEquatable<NamedType>
     {
+        public static readonly NamedType Empty = new NamedType();
+        
         [SerializeField]
         public string TypeName;
 
