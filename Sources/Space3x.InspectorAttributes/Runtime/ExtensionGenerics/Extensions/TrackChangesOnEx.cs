@@ -1,7 +1,6 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
@@ -19,12 +18,11 @@ namespace Space3x.InspectorAttributes
             
             if (!string.IsNullOrEmpty(content.PropertyName))
             {
-                // var trackedProperty = drawer.Property.GetParentProperty().FindPropertyRelative(content.PropertyName);
                 var trackedProperty = drawer.Property.GetController().GetProperty(content.PropertyName);
                 if (trackedProperty != null)
                     element.TrackPropertyValue(trackedProperty, _ => drawer.OnUpdate());
                 else
-                    Debug.LogWarning($"Unable to find related property {content.PropertyName} on {drawer.Property.PropertyPath}");
+                    return Fail(new ArgumentNullException(nameof(content.PropertyName), $"{nameof(TrackChangesOnEx)} is unable to find related property {content.PropertyName} on {drawer.Property.PropertyPath}"));
             }
 
             return true;

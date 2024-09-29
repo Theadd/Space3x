@@ -1,6 +1,7 @@
 ﻿using System;
 using JetBrains.Annotations;
 using Space3x.Attributes.Types;
+using Space3x.UiToolkit.Types;
 
 namespace Space3x.InspectorAttributes
 {
@@ -22,6 +23,7 @@ namespace Space3x.InspectorAttributes
 
             if (context is IDrawer drawer)
             {
+                DebugLog.Warning($"{drawer.GetType().Name} #{drawer.GetHashCode()} EnableOnEx: {bValue} ON {drawer.VisualTarget.AsString()}");
                 drawer.VisualTarget.SetEnabled(bValue);
                 return true;
             }
