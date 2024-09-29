@@ -1,4 +1,5 @@
 ﻿using Space3x.Attributes.Types;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
@@ -25,6 +26,7 @@ namespace Space3x.InspectorAttributes
             DecoratorsCache.RebuildAll();
             DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
             DecoratorsCache.HandlePendingDecorators();
+            Debug.Log("[AEA!] END OnUpdate()");
         }
 
         public override void OnReset(bool disposing = false)

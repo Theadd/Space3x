@@ -54,7 +54,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         public override void OnUpdate()
         {
             if (Property == null) return;
-            if (Property.TryCreateInvokable<object, object>(Target.MethodName, out var invokable, drawer: this))
+            if (!Property.TryCreateInvokable<object, object>(Target.MethodName, out var invokable, drawer: this))
             {
                 var target = Property.GetDeclaringObject();
                 m_Invokable = new Invokable<object, object>()
@@ -63,6 +63,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                     CallableMember = ReflectionUtility.FindFunction(Target.MethodName, target)
                 };
             }
+            else
+                m_Invokable = invokable;
         }
     }
 }
