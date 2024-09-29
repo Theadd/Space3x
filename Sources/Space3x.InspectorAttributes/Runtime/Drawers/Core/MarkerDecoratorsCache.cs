@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
-using UnityEngine;
 using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes
@@ -31,8 +29,8 @@ namespace Space3x.InspectorAttributes
 
         public void DisableAutoGroupingOnActiveSelection(bool disable = true)
         {
-            DebugLog.Error($"<color=#FF7F00FF>[VD!] [UMD!] MDC! <b> <u>EARLY RETURN!!</u> DisableAutoGrouping = {disable}</b> ON {m_ActiveSelectedObjectHash} ");
-            return;
+            // DebugLog.Warning($"<color=#FF7F00FF>[VD!] [UMD!] MDC! <b> <u>NOOOOO EARLY RETURN!!</u> DisableAutoGrouping = {disable}</b> ON {m_ActiveSelectedObjectHash} ");
+            // return;
             SetupActiveSelection();
             m_AutoGroupingDisabledForHash = m_ActiveSelectedObjectHash;
             m_DisableAutoGrouping = disable;
@@ -107,7 +105,6 @@ namespace Space3x.InspectorAttributes
 
         public void RebuildAll()
         {
-            Debug.Log($"<color=#FF7F00FF>[UMD!] MDC! <b>RebuildAll()</b> PRINT BEFORE REBUILD ALL:");
             // TODO: remove
             PrintCachedInstances(false);
             
@@ -121,12 +118,11 @@ namespace Space3x.InspectorAttributes
         
         public void HandlePendingDecorators()
         {
-            Debug.Log($"<color=#FF7F00FF>[UMD!] MDC! <b>HandlePendingDecorators()</b> -> ");
             // TODO: remove
             PrintCachedInstances(false);
             
-            if (!IsAutoGroupingDisabled())
-            {
+            // if (!IsAutoGroupingDisabled())
+            // {
                 if (HasOnlyPending())
                 {
                     IGroupMarkerDecorator pendingDecorator = null;
@@ -149,7 +145,7 @@ namespace Space3x.InspectorAttributes
 
                     m_FailedInstances.Clear();
                 }
-            }
+            // }
         }
         
 #if UNITY_EDITOR
@@ -167,7 +163,6 @@ namespace Space3x.InspectorAttributes
             if (m_ActiveSelectedObjectHash == hash)
                 return;
 
-            Debug.Log($"<color=#FF7F00FF>[UMD!] MDC! <b>ClearCache()</b> -> {m_ActiveSelectedObjectHash} != {hash}; <b>PRINTING CACHED INSTANCES BEFORE CLEAR</b>:");
             PrintCachedInstances();
             m_ActiveSelectedObjectHash = hash;
             ClearCache();
@@ -175,7 +170,6 @@ namespace Space3x.InspectorAttributes
 
         public void ClearCache()
         {
-            DebugLog.Error($"[VD!] @MarkerDecoratorsCache.ClearCache!!!!");
             m_CachedInstances.Clear();
             m_PendingInstances.Clear();
             m_FailedInstances.Clear();
@@ -184,15 +178,17 @@ namespace Space3x.InspectorAttributes
         // TODO: remove
         public void PrintCachedInstances(bool fullReport = true)
         {
-            DebugLog.Info($"_____ PrintCachedInstances _____ PENDING: {m_PendingInstances.Count} " +
-                      $"CACHED: {m_CachedInstances.Count} FAILED: {m_FailedInstances.Count} CACHE_ID: {this.GetHashCode()}");
-            if (!fullReport) return;
-            foreach (var groupMarkerDecorator in m_CachedInstances)
-            {
-                var isPending = m_PendingInstances.Contains(groupMarkerDecorator);
-                var isFailed = m_FailedInstances.Contains(groupMarkerDecorator);
-                DebugLog.Info($"<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")} {(isFailed ? " (<b>FAILED</b>)" : "")}</color>");
-            }
+            // var str = $"_____ PrintCachedInstances _____ PENDING: {m_PendingInstances.Count} " +
+            //           $"CACHED: {m_CachedInstances.Count} FAILED: {m_FailedInstances.Count} CACHE_ID: {this.GetHashCode()}";
+            // // if (!fullReport) return;
+            // foreach (var groupMarkerDecorator in m_CachedInstances)
+            // {
+            //     var isPending = m_PendingInstances.Contains(groupMarkerDecorator);
+            //     var isFailed = m_FailedInstances.Contains(groupMarkerDecorator);
+            //     str += $"\n<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")} {(isFailed ? " (<b>FAILED</b>)" : "")}</color>";
+            // }
+            //
+            // DebugLog.Info(str + "\n\n");
         }
     }
 }

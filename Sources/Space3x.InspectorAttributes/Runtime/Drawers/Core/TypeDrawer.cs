@@ -7,26 +7,8 @@ using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
 {
-    /// <summary>
-    /// The base class to derive from when implementing your custom <see cref="PropertyDrawer"/> on a
-    /// <see cref="PropertyAttribute"/>.
-    /// That's right, it's tied to a PropertyAttribute and, unlike the ordinary PropertyDrawer, it is not
-    /// designed to be used directly on a Type, which would remove the need to annotate a custom <see cref="Type"/>
-    /// meant to be drawn, always, using the same <see cref="PropertyDrawer"/>.
-    /// </summary>
-    /// <remarks>
-    /// However, by simply annotating the relevant members on that custom <see cref="Type"/>'s definition,
-    /// you can get whatsoever you were looking for in just a tiny fraction of the time you would have spent
-    /// implementing a custom PropertyDrawer.
-    /// 
-    /// If for any reason that would not be feasible and neither having to annotate that type every time its used,
-    /// like in a public API, post an issue on the project repo in GitHub, otherwise it won't be even considered.
-    /// </remarks>
-    /// <typeparam name="TAttribute">The <see cref="PropertyAttribute"/> type being decorated.</typeparam>
-    public abstract class Drawer<TAttribute> : PropertyDrawerAdapter, IDrawer<TAttribute>, ICreatePropertyNodeGUI
-        where TAttribute : PropertyAttribute
+    public abstract class TypeDrawer : PropertyDrawerAdapter, IDrawer, ICreatePropertyNodeGUI
     {
-        public virtual TAttribute Target => (TAttribute) attribute;
         public IPropertyNode Property { get; set; }
         public VisualElement Container { get; set; }
         public VisualElement VisualTarget => Field;
@@ -45,6 +27,11 @@ namespace Space3x.InspectorAttributes
         
         private bool m_Disposed;
         
+        // ReSharper disable once PublicConstructorInAbstractClass VirtualMemberCallInConstructor
+        public TypeDrawer() => Initialize();
+
+        public virtual void Initialize() { }
+        
         /// <summary>
         /// It's the <see cref="Drawer{TAttribute}"/> version of the <see cref="PropertyDrawer.CreatePropertyGUI"/>
         /// method, that is, the entry point in which you create the initial VisualElement hierarchy for this
@@ -62,6 +49,7 @@ namespace Space3x.InspectorAttributes
             Property = property;
             Container = OnCreatePropertyGUI(Property);
             Container.WithDevTools(this);
+            // Container.RegisterOnAttachToPanelEventOnce(OnAttachToPanel);
             Container.RegisterCallbackOnce<AttachToPanelEvent>(OnAttachToPanel);
             return Container;
         }
@@ -79,7 +67,7 @@ namespace Space3x.InspectorAttributes
         public sealed override VisualElement CreatePropertyGUI(UnityEditor.SerializedProperty property) =>
             CreatePropertyNodeGUI(property.GetPropertyNode());
 #endif
-
+        
         private void OnAttachToPanel(AttachToPanelEvent ev)
         {
             if ((Container?.panel ?? ev.destinationPanel) is IPanel editorPanel && editorPanel.contextType == ContextType.Editor)
@@ -93,12 +81,20 @@ namespace Space3x.InspectorAttributes
 
         #region IDisposable
 
+        ~TypeDrawer() => Dispose(false);
+        
         public virtual void OnReset(bool disposing = false)
         {
             if (disposing)
             {
-                Container?.UnregisterCallback<AttachToPanelEvent>(OnAttachToPanel);
-                Container?.RemoveFromHierarchy();
+                if (Container != null)
+                {
+                    Container.UnregisterCallback<AttachToPanelEvent>(OnAttachToPanel);
+#if UNITY_EDITOR
+                    UnityEditor.UIElements.BindingExtensions.Unbind(Container);
+#endif
+                    Container.RemoveFromHierarchy();
+                }
                 Property = null;
                 m_Field = null;
                 Container = null;
@@ -108,10 +104,10 @@ namespace Space3x.InspectorAttributes
         public void Dispose()
         {
             Dispose(disposing: true);
-            GC.SuppressFinalize(this);
+            // GC.SuppressFinalize(this);
         }
         
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (m_Disposed) 
                 return;

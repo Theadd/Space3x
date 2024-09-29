@@ -45,6 +45,8 @@ namespace Space3x.InspectorAttributes
 
         public void AddDefaultStyles(VisualElement target)
         {
+            // TODO: FIXME: Next line is a workaround to prevent our stylesheets to be added to UI Builder interface.
+            target = InspectorElement;
             if ((target ??= InspectorElement)?.styleSheets.Contains(DefaultStyleSheet) == false)
                 target.styleSheets.Add(DefaultStyleSheet);
         }

@@ -1,4 +1,9 @@
 ﻿// #define SIMULATE_RUNTIME_BUILD
+// // TODO: REMOVE NEXT LINE!
+// #define UNITY_EDITOR
+#if UNITY_EDITOR && !SIMULATE_RUNTIME_BUILD && RUNTIME_UITOOLKIT_DRAWERS
+    #define DUAL_MODE
+#endif
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -11,10 +16,20 @@ namespace Space3x.InspectorAttributes
     {
         private static MethodInfo s_GetDrawerTypeForType;
         private static Dictionary<Type, Type> s_Instances;
+#if DUAL_MODE
+        private static Dictionary<Type, Type> s_RuntimeInstances;
+        private static Dictionary<Type, Type> s_RuntimeOverrides;
+#endif
         
         private static Func<Type, Type[], bool, Type> s_GetDrawerTypeForTypeDelegate;
 
-        static CachedDrawers() => Initialize();
+        internal static void ReloadAll()
+        {
+            Initialize();
+#if DUAL_MODE
+            InitializeDualMode();
+#endif
+        }
 
 #if UNITY_EDITOR && !SIMULATE_RUNTIME_BUILD
         private static void Initialize()
@@ -48,11 +63,57 @@ namespace Space3x.InspectorAttributes
         }
 #endif
         
+#if DUAL_MODE
+        private static void InitializeDualMode()
+        {
+            s_RuntimeInstances = new Dictionary<Type, Type>();
+            s_RuntimeOverrides = new Dictionary<Type, Type>();
+            foreach (var drawer in TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer)))
+            {
+                foreach (var attr in drawer.GetCustomAttributes(typeof(CustomRuntimeDrawer), false))
+                {
+                    foreach (var type in ((CustomRuntimeDrawer)attr).Types)
+                    {
+                        s_RuntimeInstances[type] = (Type)drawer;
+                    }
+                }
+            }
+        }
+#endif
+        
+#if DUAL_MODE
+        public static Type GetCustomDrawer(Type type)
+        {
+            if (type == null) return null;
+            if (s_Instances.TryGetValue(type, out var value)) return value;
+            
+            Type drawer = GetCustomDrawerInternal(type);
+            Type runtimeDrawer = s_RuntimeInstances.GetValueOrDefault(type, null);
+            if (drawer == null)
+            {
+                s_Instances.Add(type, runtimeDrawer);
+                return runtimeDrawer;
+            }
+            else
+            {
+                if (drawer != runtimeDrawer)
+                    s_RuntimeOverrides[drawer] = runtimeDrawer;
+                
+                s_Instances.Add(type, drawer);
+                return drawer;
+            }
+        }
+        
+        private static Type GetCustomDrawerInternal(Type type)
+        {
+            Type value = null;
+#else
         public static Type GetCustomDrawer(Type type)
         {
             if (type == null) return null;
             if (s_Instances.TryGetValue(type, out var value))
                 return value;
+#endif
 
 #if UNITY_EDITOR && !SIMULATE_RUNTIME_BUILD
             var renderPipelineAssetTypes = GraphicsSettings.isScriptableRenderPipelineEnabled
@@ -68,11 +129,20 @@ namespace Space3x.InspectorAttributes
             // value = (Type) s_GetDrawerTypeForType.Invoke(null, new object[] { type, renderPipelineAssetTypes, false });
             value = s_GetDrawerTypeForTypeDelegate(type, renderPipelineAssetTypes, false);
             
+#if !DUAL_MODE
             s_Instances.Add(type, value);
+#endif
             return value;
 #else
             return null;
 #endif
         }
+
+#if UNITY_EDITOR && RUNTIME_UITOOLKIT_DRAWERS
+        public static Type GetRuntimeDrawerOverride(Type originalDrawer) =>
+            s_RuntimeOverrides.TryGetValue(originalDrawer, out Type replacementDrawer)
+                ? replacementDrawer
+                : originalDrawer;
+#endif
     }
 }
