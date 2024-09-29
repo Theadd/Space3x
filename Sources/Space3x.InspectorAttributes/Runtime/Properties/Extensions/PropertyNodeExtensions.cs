@@ -53,7 +53,13 @@ namespace Space3x.InspectorAttributes
             foreach (var node in GetAllParentNodes(self.PropertyPath))
             {
                 nodeStack.Push(node);
-                if (((PropertyAttributeController)controller).TryGetInstance(node.ParentPath, out var parentController))
+                // BEGIN EDIT: To support Type proxies
+                if (!((PropertyAttributeController)controller).TryGetInstance(node.ParentPath, out var parentController))
+                    if (controller.GetProperty(node.Name) != null)
+                        parentController = (PropertyAttributeController)controller;
+                    
+                if (parentController != null) 
+                // END EDIT
                 {
                     controller = parentController;
                     while (nodeStack.Count > 0)
@@ -220,38 +226,44 @@ namespace Space3x.InspectorAttributes
             out IPropertyNode property)
         {
             // if (indexer is not INodeTree) throw new ArgumentException("Not an array-like property.");
-            Type elementType = indexer.GetUnderlyingElementType();
-            var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) && elementType != typeof(string);
-            if (indexer is INodeTree && indexer.HasSerializedProperty() && indexer is ISerializedPropertyNode serializedIndexer)
+            if (indexer?.IsArrayOrList() == true)
             {
-                if (isNodeTree)
-                    property = new SerializedPropertyNodeIndexTree()
-                    {
-                        Indexer = serializedIndexer,
-                        Index = propertyIndex
-                    };
-                else
-                    property = new SerializedPropertyNodeIndex()
-                    {
-                        Indexer = serializedIndexer,
-                        Index = propertyIndex
-                    };
-            }
-            // else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
-            else if (indexer is INodeTree)
-            {
-                if (isNodeTree)
-                    property = new NonSerializedPropertyNodeIndexTree()
-                    {
-                        Indexer = indexer,
-                        Index = propertyIndex
-                    };
-                else
-                    property = new NonSerializedPropertyNodeIndex()
-                    {
-                        Indexer = indexer,
-                        Index = propertyIndex
-                    };
+                Type elementType = indexer.GetUnderlyingElementType();
+                var isNodeTree = elementType != null && (elementType.IsClass || elementType.IsInterface) &&
+                                 elementType != typeof(string);
+                // EDIT: Fix: INodeTree != IsArrayOrList
+                // if (indexer is INodeTree && indexer.HasSerializedProperty() && indexer is ISerializedPropertyNode serializedIndexer)
+                if (indexer.HasSerializedProperty() && indexer is ISerializedPropertyNode serializedIndexer)
+                {
+                    if (isNodeTree)
+                        property = new SerializedPropertyNodeIndexTree()
+                        {
+                            Indexer = serializedIndexer,
+                            Index = propertyIndex
+                        };
+                    else
+                        property = new SerializedPropertyNodeIndex()
+                        {
+                            Indexer = serializedIndexer,
+                            Index = propertyIndex
+                        };
+                }
+                // else if (indexer is INonSerializedPropertyNode nonSerializedIndexer)
+                else    // if (indexer is INodeTree)
+                {
+                    if (isNodeTree)
+                        property = new NonSerializedPropertyNodeIndexTree()
+                        {
+                            Indexer = indexer,
+                            Index = propertyIndex
+                        };
+                    else
+                        property = new NonSerializedPropertyNodeIndex()
+                        {
+                            Indexer = indexer,
+                            Index = propertyIndex
+                        };
+                }
             }
             else
             {
@@ -310,10 +322,13 @@ namespace Space3x.InspectorAttributes
                 property.GetSerializedObject().Update();
             }
 #endif
-            
             // Modify property's value
             if (!property.TrySetValue(value))
+            {
                 property.SetUnderlyingValue(value);
+                // TODO: Is value equality check before raising event required?
+                ExplicitlyNotifyValueChanged(property);
+            }
             
 #if UNITY_EDITOR
             if (property.HasSerializedProperty())
@@ -324,6 +339,21 @@ namespace Space3x.InspectorAttributes
                 property.GetSerializedObject().Update();
             }
 #endif
+        }
+
+        private static void ExplicitlyNotifyValueChanged(IPropertyNode property)
+        {
+            try
+            {
+                if (property is BindablePropertyNode propertyNode && propertyNode.IsUnreliable())
+                    propertyNode.Controller?.EventHandler?.NotifyValueChanged(propertyNode);
+                else
+                    ((property is IPropertyNodeIndex propertyIndex ? propertyIndex.Indexer : property) as INonSerializedPropertyNode)?.NotifyValueChanged(property);
+            }
+            catch (Exception ex)
+            {
+                DebugLog.Error(ex.ToString());
+            }
         }
     }
 }

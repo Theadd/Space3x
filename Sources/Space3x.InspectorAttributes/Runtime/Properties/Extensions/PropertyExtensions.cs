@@ -190,7 +190,17 @@ namespace Space3x.InspectorAttributes
         public static string DisplayName(this IPropertyNode self) =>
             self is IPropertyNodeIndex nodeIndex
                     ? "Element " + nodeIndex.Index
-                    : self.Name;
+                    : s_FormatVariableName(self.Name);
+
+        private static Func<string, string> s_FormatVariableName = (Func<string, string>) Type
+            .GetType("UnityEngine.NameFormatter, UnityEngine")!
+            .GetMethod(
+                "FormatVariableName",
+                BindingFlags.Public | BindingFlags.Static,
+                null,
+                new Type[] { typeof(string) },
+                null)!
+            .CreateDelegate(typeof(Func<string, string>));
 #endif
         
         public static string Tooltip(this IPropertyNode property) =>
@@ -377,10 +387,10 @@ namespace Space3x.InspectorAttributes
             propertyName = propertyIndex >= 0 
                 ? propertyIndexerPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..] 
                 : propertyPath[(parentPath.Length > 0 ? parentPath.Length + 1 : 0)..];
-            if (string.IsNullOrEmpty(parentPath))
-                instanceId = prop.GetTargetObjectInstanceID() * 397;
-            else
-                instanceId = prop.GetTargetObjectInstanceID() * 397 ^ parentPath.GetHashCode();
+            instanceId = (string.IsNullOrEmpty(parentPath)
+                             ? prop.GetTargetObjectInstanceID() * 397
+                             : prop.GetTargetObjectInstanceID() * 397 ^ parentPath.GetHashCode()) *
+                         (prop.IsRuntimeUI() && PropertyAttributeController.UseSeparateControllersForRuntimeUI ? 673 : 1);
         }
 
         internal static int GetTargetObjectInstanceID(this IPropertyNode property)
