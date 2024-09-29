@@ -13,10 +13,7 @@
 }
 
 .ui3x-property-group-field > .unity-label {
-    margin-top: 1px;
-    margin-bottom: 1px;
-    margin-left: 3px;
-    margin-right: -1px;
+    margin: 1px -1px 1px 3px;
     padding-top: 0;
 }
 
@@ -57,10 +54,14 @@
     flex-direction: row;
     margin-top: 1px;
     margin-bottom: 1px;
-    margin-left: 0;
+    /*margin-left: 0;*/
     flex-basis: auto;
     flex-grow: 1;
     flex-shrink: 1;
+}
+
+.ui3x-group--row > .unity-toggle {
+    margin-bottom: 3px;
 }
 
 .ui3x-property-group > .ui3x-group--row > .unity-base-field > Label {
@@ -283,12 +284,6 @@
 
 /* Foldout Transitions */
 
-.unity-foldout:checked {
-    min-height: 42px;
-    max-height: 2000px;
-    overflow: visible;
-}
-
 .unity-foldout {
     transition-property: max-height, min-height;
     transition-duration: 1s, 0.25s;
@@ -296,6 +291,12 @@
     transition-timing-function: ease-in-out-sine, ease-in-out-sine;
     min-height: 21px;
     max-height: 42px;
+    overflow: visible;
+}
+
+.unity-foldout:checked {
+    min-height: 42px;
+    max-height: 2000px;
     overflow: visible;
 }
 
@@ -426,23 +427,90 @@
     flex-shrink: 1;
 }
 
-/* --- */
+/* Aligned Attribute */
 
-/* Space3x.UiToolkit.Runtime */
-
-.ui3x-valid {
-    background-color: green;
+.ui3x-group-type--row .ui3x-aligned .ui3x-aligned--auto > * {
+    flex-basis: 0%;
+    flex-grow: 1;
+    flex-shrink: 0;
 }
 
-.ui3x-invalid {
-    background-color: red;
+.ui3x-group-type--row .ui3x-aligned .ui3x-aligned--auto > .unity-label {
+    min-width: 90px;
 }
 
-/* Custom BaseField<> Aligned Styles */
+/* Linear Gradient Slider */
 
-/*.ui3x-group-type--row .unity-base-field {*/
-/*    --unity-property-field-label-width-ratio: 0.5;*/
-/*    --unity-property-field-label-extra-padding: 8;*/
-/*    --unity-property-field-label-base-min-width: 16;*/
-/*    --unity-base-field-extra-context-width: 32;*/
-/*}*/
+.ui3x-gradient-slider .ui3x-gradient-slider--image {
+    -unity-background-scale-mode: stretch-to-fill;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 0;
+}
+
+.ui3x-gradient-slider .unity-base-slider__tracker {
+    visibility: hidden;
+}
+
+.ui3x-gradient-slider .unity-base-slider__drag-container {
+    border-color: rgb(48, 48, 48);
+    border-bottom-color: rgb(36, 36, 36);
+    border-width: 1px;
+}
+
+.ui3x-gradient-slider > Label.unity-label {
+    flex-basis: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.ui3x-property-group > .ui3x-group--row > .ui3x-gradient-slider > Label.unity-label {
+    flex-basis: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.ui3x-gradient-slider > .unity-slider__input {
+    flex-basis: auto;
+    flex-grow: 1;
+    flex-shrink: 0;
+}
+
+.ui3x-group--row > .ui3x-gradient-slider > .unity-label {
+    /*min-width: 60px;*/
+    min-width: auto;
+    padding-right: 8px;
+}
+
+.ui3x-group--row.ui3x-gradient-slider > .unity-label {
+    /*min-width: 60px;*/
+    min-width: auto;
+}
+
+.ui3x-editor-ui.ui3x-gradient-slider .ui3x-gradient-slider--image {
+    top: 1px;
+    right: 1px;
+    bottom: 1px;
+    left: 1px;
+    border-radius: 2px;
+}
+
+.ui3x-editor-ui.ui3x-gradient-slider .unity-base-slider__drag-container {
+    border-radius: 3px;
+    background-color: rgb(138, 138, 138);
+}
+
+.ui3x-editor-ui.ui3x-gradient-slider .unity-base-slider__drag-container:hover {
+    background-color: rgb(195, 195, 195);
+}
+
+
+
+
+
+
+
+
+

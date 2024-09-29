@@ -61,6 +61,9 @@ namespace Space3x.InspectorAttributes
         [UsedImplicitly]
         public void TrackSerializedObjectValue(IPropertyNode property, Action callback = null) => ThrowInvalidBinding();
         
+        [UsedImplicitly]
+        public void TrackSerializedObjectValue(IPropertyNode property, Action<IPropertyNode> callback = null) => ThrowInvalidBinding();
+        
         private static void ThrowInvalidBinding([CallerMemberName] string memberName = null) => 
             Debug.LogException(new InvalidOperationException($"Use Decorator's GhostContainer instead of Container to call {memberName} on it."));
 

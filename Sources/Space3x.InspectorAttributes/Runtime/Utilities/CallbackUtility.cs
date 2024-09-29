@@ -3,7 +3,6 @@ using System.Runtime.CompilerServices;
 using Space3x.Attributes.Types;
 using Space3x.Attributes.Types.DeveloperNotes;
 using Space3x.Properties.Types;
-using Space3x.UiToolkit.Types;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -124,20 +123,45 @@ namespace Space3x.InspectorAttributes
                 handler.onAttachToPanelEventOnce += callback;
             else
                 self
-                    .LogThis("RegisterOnAttachToPanelEventOnce FALLBACK")
+                    // .LogThis("RegisterOnAttachToPanelEventOnce FALLBACK")
                     .RegisterCallbackOnce<AttachToPanelEvent>(_ => callback());
         }
         
         [Experimental(Text = "Temporary naming.")]
-        public static void RegisterOnGeometryChangedEventOnce(this VisualElement self, Action callback)
+        public static void RegisterOnGeometryChangedEventOnce(this VisualElement self, Action<GeometryChangedEvent> callback, bool fallbackToParent = false)
         {
             if (self.ThrowIfNull().GetEventHandler() is OffscreenEventHandler handler)
+            {
+                handler.onGeometryChangedEventOnce -= callback;
                 handler.onGeometryChangedEventOnce += callback;
+            }
             else
-                self
-                    .LogThis("RegisterOnGeometryChangedEventOnce FALLBACK")
-                    .RegisterCallbackOnce<GeometryChangedEvent>(_ => callback());
+                (fallbackToParent ? self.parent ?? self : self)
+                    .RegisterCallbackOnce<GeometryChangedEvent>(new EventCallback<GeometryChangedEvent>(callback));
         }
+        
+        public static void UnregisterOnGeometryChangedEventOnce(this VisualElement self, Action<GeometryChangedEvent> callback)
+        {
+            if (self == null) return;
+            self.parent?.UnregisterCallback<GeometryChangedEvent>(new EventCallback<GeometryChangedEvent>(callback));
+            self.UnregisterCallback<GeometryChangedEvent>(new EventCallback<GeometryChangedEvent>(callback));
+            if (self.GetEventHandler() is OffscreenEventHandler handler) 
+                handler.onGeometryChangedEventOnce -= callback;
+        }
+        
+        // private void OnAttachToPanel(AttachToPanelEvent evt)
+        // {
+        //     this.RegisterCallback<KeyDownEvent>(new EventCallback<KeyDownEvent>(this.OnKeyDownEvent));
+        //     this.m_LayoutDisplay.RegisterCallback<PointerUpEvent>(new EventCallback<PointerUpEvent>(this.OnPointerUpEvent));
+        //     this.m_LayoutDisplay.RegisterCallback<WheelEvent>(new EventCallback<WheelEvent>(this.OnWheelEvent));
+        // }
+        //
+        // private void OnDetachFromPanel(DetachFromPanelEvent evt)
+        // {
+        //     this.UnregisterCallback<KeyDownEvent>(new EventCallback<KeyDownEvent>(this.OnKeyDownEvent));
+        //     this.m_LayoutDisplay.UnregisterCallback<PointerUpEvent>(new EventCallback<PointerUpEvent>(this.OnPointerUpEvent));
+        //     this.m_LayoutDisplay.UnregisterCallback<WheelEvent>(new EventCallback<WheelEvent>(this.OnWheelEvent));
+        // }
         
         public static TElement ThrowIfNull<TElement>(this TElement element, [CallerMemberName] string callerName = "") => 
             element ?? throw new ArgumentNullException(callerName);

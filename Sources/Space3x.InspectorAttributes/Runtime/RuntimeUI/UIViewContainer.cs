@@ -9,6 +9,7 @@ namespace Space3x.InspectorAttributes
         public int instanceId;
         
         [ShowInInspector]
+        [NoFoldout]
         private ScriptableObject uiView;
 
         private static int s_LastId = 0;

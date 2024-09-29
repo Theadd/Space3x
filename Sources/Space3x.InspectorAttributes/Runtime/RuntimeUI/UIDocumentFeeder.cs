@@ -17,7 +17,7 @@ namespace Space3x.InspectorAttributes
             // var property = controller.GetProperty(propertyNode.PropertyPath);
             // var ingredientProperty = controller.GetProperty("");
             Debug.Log($"property is null? {(propertyNode == null)}");
-            var bindableField = new BindablePropertyField();
+            var bindableField = BindablePropertyField.Create(element);
             element.Add(bindableField);
             // bindableField.BindProperty(propertyNode, true);
             bindableField.BindProperty(propertyNode, false);

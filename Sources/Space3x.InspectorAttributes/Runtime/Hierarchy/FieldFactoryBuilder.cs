@@ -10,26 +10,26 @@ namespace Space3x.InspectorAttributes
     {
         public FieldFactoryBuilder(PropertyAttributeController controller) => Controller = controller;
 
-        private static int s_Counter = 0;
+        // private static int s_Counter = 0;
 
-        public FieldFactoryBuilder Rebuild(VisualElement container = null)
-        {
-            s_Counter++;
-            Debug.Log($"[VD!] FieldFactoryBuilder Rebuild; {GetHashCode()}; COUNTER!: {s_Counter}");
-            var self = RebuildInternal(container);
-            s_Counter--;
-            if (s_Counter == 0)
-            {
-                // Debug.Log($"[VD!] OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()} ");
-                // OffscreenEventHandler.RaiseAndResetOnFullyRendered();
-                // Debug.Log($"[VD!] <b>DONE!!</b> OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()}");
-            }
-
-            Debug.Log($"[VD!] <b>DONE!!</b> FieldFactoryBuilder Rebuild; {GetHashCode()} COUNTER: {s_Counter}");
-            return self;
-        }
+        // public FieldFactoryBuilder Rebuild(VisualElement container = null)
+        // {
+        //     s_Counter++;
+        //     Debug.Log($"[VD!] FieldFactoryBuilder Rebuild; {GetHashCode()}; COUNTER!: {s_Counter}");
+        //     var self = RebuildInternal(container);
+        //     s_Counter--;
+        //     if (s_Counter == 0)
+        //     {
+        //         // Debug.Log($"[VD!] OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()} ");
+        //         // OffscreenEventHandler.RaiseAndResetOnFullyRendered();
+        //         // Debug.Log($"[VD!] <b>DONE!!</b> OffscreenEventHandler.RaiseAndResetOnFullyRendered(); {GetHashCode()}");
+        //     }
+        //
+        //     Debug.Log($"[VD!] <b>DONE!!</b> FieldFactoryBuilder Rebuild; {GetHashCode()} COUNTER: {s_Counter}");
+        //     return self;
+        // }
         
-        private FieldFactoryBuilder RebuildInternal(VisualElement container = null)
+        public FieldFactoryBuilder Rebuild(VisualElement container = null)
         {
             container ??= Container;
             if (container == null) return this;
@@ -61,30 +61,32 @@ namespace Space3x.InspectorAttributes
 
         private BindablePropertyField AddField(IPropertyNode propertyNode)
         {
-            var bindableField = new BindablePropertyField();
+            var bindableField = BindablePropertyField.Create(Container);
             // bindableField.WithClasses(
             //     propertyNode is SerializedPropertyNodeBase || propertyNode.ShowInInspector(), 
             //     UssConstants.UssShowInInspector);
             if (propertyNode is not InvokablePropertyNodeBase && !IsReadOnlyEnabled && propertyNode.IsReadOnly())
                 bindableField.SetEnabled(false);
-            bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
-            bindableField.TrackPropertyValue(propertyNode, changedProperty =>
-            {
-                try
-                {
-                    BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
-                }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                }
-            });
-            // Container.Add(bindableField);
             bindableField.AddTo(Container);
+            BindableFields.Add(bindableField);
+            bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
+            // TODO: UNCOMMENT
+            // bindableField.TrackPropertyValue(propertyNode, changedProperty =>
+            // {
+            //     try
+            //     {
+            //         BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
+            //     }
+            //     catch (Exception e)
+            //     {
+            //         Debug.LogException(e);
+            //     }
+            // });
+            
+            // Container.Add(bindableField);
             // bindableField.AttachDecoratorDrawers();
             bindableField.Resolve(attachDecorators: true,
                 showInInspector: propertyNode is SerializedPropertyNodeBase || propertyNode.ShowInInspector());
-            BindableFields.Add(bindableField);
             // if (Container is IOffscreenEventHandler handler) 
             //     handler.RaiseOnPropertyAddedEvent();
             return bindableField;

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using Space3x.Properties.Types;
+using UnityEngine;
 
 namespace Space3x.InspectorAttributes
 {
@@ -8,7 +10,7 @@ namespace Space3x.InspectorAttributes
         public IBindableDataSource DataSource { get; set; }
 
         internal event Action<IBindablePropertyNode> ValueChangedOnChildNode;
-        
+
         internal void NotifyValueChangedOnChildNode(IBindablePropertyNode propertyNode) => ValueChangedOnChildNode?.Invoke(propertyNode);
         
         public virtual string Name { get; set; }

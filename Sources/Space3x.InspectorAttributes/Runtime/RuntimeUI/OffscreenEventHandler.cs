@@ -18,7 +18,7 @@ namespace Space3x.InspectorAttributes
         public event Action onAttachToPanelEventOnce;
 
         /// <inheritdoc/>
-        public event Action onGeometryChangedEventOnce;
+        public event Action<GeometryChangedEvent> onGeometryChangedEventOnce;
 
         /// <inheritdoc/>
         public event Action onElementAdded;
@@ -129,7 +129,7 @@ namespace Space3x.InspectorAttributes
                 {
                     try
                     {
-                        callback.DynamicInvoke();
+                        callback.DynamicInvoke((object)(GeometryChangedEvent)null);
                     }
                     catch (Exception ex)
                     {
@@ -138,5 +138,20 @@ namespace Space3x.InspectorAttributes
                 }
             }
         }
+
+        // // TODO: remove
+        // public string GetRegisteredListeners()
+        // {
+        //     var str = "[GetRegisteredListeners]:\n";
+        //
+        //     str += $"  {nameof(onPropertyAdded)}: {(onPropertyAdded?.GetInvocationList().Length ?? 0)}\n";
+        //     str += $"  {nameof(onParentChanged)}: {(onParentChanged?.GetInvocationList().Length ?? 0)}\n";
+        //     str += $"  {nameof(onAttachToPanelEventOnce)}: {(onAttachToPanelEventOnce?.GetInvocationList().Length ?? 0)}\n";
+        //     str += $"  {nameof(onGeometryChangedEventOnce)}: {(onGeometryChangedEventOnce?.GetInvocationList().Length ?? 0)}\n";
+        //     str += $"  {nameof(globalDelayCall)}: {(globalDelayCall?.GetInvocationList().Length ?? 0)}\n";
+        //     str += $"  {nameof(globalOnFullyRendered)}: {(globalOnFullyRendered?.GetInvocationList().Length ?? 0)}\n";
+        //
+        //     return str;
+        // }
     }
 }
