@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Space3x.InspectorAttributes.Editor;
 using Space3x.Properties.Types;
 
 namespace Space3x.InspectorAttributes

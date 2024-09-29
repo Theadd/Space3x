@@ -53,7 +53,11 @@ namespace Space3x.InspectorAttributes
                 ParentPath = property.GetParentPath();
                 // IsSerialized is always true for controllers created from a SerializedProperty EXCEPT at runtime/play,
                 // which is forced to be always false.
-                IsSerialized = !Application.isPlaying;
+                // TODO: (SKIP FOR NOW) UNCOMMENT AND REMOVE THE OTHER ONE BELOW
+                // IsSerialized = !Application.isPlaying;
+                // This is actually providing better results, (true vs !Application.isPlaying).
+                // Now, editing a serialized object in an editor panel while in play mode, changed values are being propagated.
+                IsSerialized = true;
                 IsEditingMultipleObjects = serializedObject.isEditingMultipleObjects;
                 // TODO: get rid of AllObjectTypesAreTheSame, it's always true by design
                 if (!IsEditingMultipleObjects || (IsEditingMultipleObjects && AllObjectTypesAreTheSame(serializedObject.targetObjects)))

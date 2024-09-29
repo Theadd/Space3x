@@ -9,11 +9,16 @@ using UnityEngine;
 
 namespace Space3x.InspectorAttributes
 {
-#if UNITY_EDITOR
-    [UnityEditor.InitializeOnLoad]
-#endif
     public class PropertyAttributeController : PropertyControllerBase, IPropertyController
     {
+        /// <summary>
+        /// Using separate controllers for Runtime UI results in providing the proper PropertyDrawer or DecoratorDrawer
+        /// to use, specially when the same decorated object instance is being rendered in a runtime panel and in an
+        /// editor panel at the same time or since last domain reload. With the downside that they'd be controlled
+        /// separately, in other words, without synchronizing their values.
+        /// </summary>
+        public static bool UseSeparateControllersForRuntimeUI = true;
+        
         private static Dictionary<int, PropertyAttributeController> s_Instances;
         
         private static int s_ActiveSelectedObjectHash = 0;
@@ -40,14 +45,8 @@ namespace Space3x.InspectorAttributes
         public static int[] GetAllInstanceKeys() => s_Instances.Keys.ToArray();
 
 #if UNITY_EDITOR
-        public static PropertyAttributeController GetInstance(UnityEditor.SerializedProperty prop, 
-            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
-        {
-            Log($"[NC!] #Serialized ({prop.propertyPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
-            return GetSerializedInstanceInternal(prop);
-        }
         
-        private static PropertyAttributeController GetSerializedInstanceInternal(UnityEditor.SerializedProperty prop)
+        public static PropertyAttributeController GetInstance(UnityEditor.SerializedProperty prop)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -84,23 +83,17 @@ namespace Space3x.InspectorAttributes
         }
 #endif
         
-        public static PropertyAttributeController GetInstance(UnityEngine.Object target, IPropertyNode propertyNode = null, 
-            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
-        {
-            Log($"[NC!] #UnityObject ({target.GetInstanceID()}) FROM: <b>{callerName}</b> @ {path}:{line}");
-            return GetObjectInstanceInternal(target, propertyNode);
-        }
-        
         /// <summary>
         /// GetInstance overload for Runtime UI on topmost level object. No safe checks implemented since Runtime UI
         /// could also be populated when not in play mode if ExecuteAlways or ExecuteInEditMode are used.
         /// </summary>
-        private static PropertyAttributeController GetObjectInstanceInternal(UnityEngine.Object target, IPropertyNode propertyNode = null)
+        public static PropertyAttributeController GetInstance(UnityEngine.Object target, IPropertyNode propertyNode = null)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
 
-            var instanceId = target.GetInstanceID() * 397;
+            var isRuntimeUI = propertyNode?.IsRuntimeUI() ?? true;
+            var instanceId = target.GetInstanceID() * 397 * (isRuntimeUI && UseSeparateControllersForRuntimeUI ? 673 : 1);
             if (instanceId == 0)
                 return null;
 
@@ -109,8 +102,7 @@ namespace Space3x.InspectorAttributes
             {
                 value = new PropertyAttributeController(target, instanceId)
                 {
-                    // IsRuntimeUI = true
-                    IsRuntimeUI = propertyNode?.IsRuntimeUI() ?? true
+                    IsRuntimeUI = isRuntimeUI
                 };
                 // Only those controllers (when not in play mode / runtime) for an UnityEngine.Object property which its
                 // IPropertyNode is already known and not flagged as unreliable, are not flagged as unreliable.
@@ -126,36 +118,7 @@ namespace Space3x.InspectorAttributes
             return value;
         }
         
-        // public static PropertyAttributeController GetInstance(IPropertyNode prop)
-        // {
-        //     if (s_Instances == null)
-        //         s_Instances = new Dictionary<int, PropertyAttributeController>();
-        //
-        //     if (prop is IControlledProperty { Controller: PropertyAttributeController controller })
-        //         return controller;
-        //
-        //     var instanceId = prop.GetParentObjectHash();
-        //     if (instanceId == 0)
-        //         return null;
-        //
-        //     SetupActiveSelection();
-        //     if (!s_Instances.TryGetValue(instanceId, out var value))
-        //     {
-        //         throw new ArgumentException(
-        //             $"{nameof(PropertyAttributeController)} instance {instanceId} not found for property with path: {prop.PropertyPath}.");
-        //     }
-        //
-        //     return value;
-        // }
-
-        public static PropertyAttributeController GetInstance(int instanceId, [CallerMemberName] string callerName = "", 
-            [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
-        {
-            Log($"[NC!] #instanceId ({instanceId}) FROM: <b>{callerName}</b> @ {path}:{line}");
-            return GetInstanceInternal(instanceId);
-        }
-        
-        private static PropertyAttributeController GetInstanceInternal(int instanceId)
+        public static PropertyAttributeController GetInstance(int instanceId)
         {
             if (s_Instances == null)
                 s_Instances = new Dictionary<int, PropertyAttributeController>();
@@ -163,55 +126,37 @@ namespace Space3x.InspectorAttributes
             SetupActiveSelection();
             if (instanceId == 0) return null;
             if (!s_Instances.TryGetValue(instanceId, out var value))
-            {
-                // DebugLog.Error(new ArgumentException(
-                //     $"{nameof(PropertyAttributeController)} instance {instanceId} not found.").ToString());
                 return null;
-            }
 
             return value;
         }
-
-        public bool TryGetInstance(string parentPath, out PropertyAttributeController controller,  
-            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
-        {
-            Log($"[NC!] #TryGetInstance ({parentPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
-            return TryGetInstanceInternal(parentPath, out controller);
-        }
         
-        private bool TryGetInstanceInternal(string parentPath, out PropertyAttributeController controller)
+        public bool TryGetInstance(string parentPath, out PropertyAttributeController controller)
         {
             SetupActiveSelection();
-            var instanceId = string.IsNullOrEmpty(parentPath) 
+            var instanceId = (string.IsNullOrEmpty(parentPath) 
                 ? InstanceID * 397 
-                : InstanceID * 397 ^ parentPath.GetHashCode();
+                : InstanceID * 397 ^ parentPath.GetHashCode()) 
+                             * (this.IsRuntimeUI && UseSeparateControllersForRuntimeUI ? 673 : 1);
 
             return s_Instances.TryGetValue(instanceId, out controller);
         }
         
-        public static PropertyAttributeController GetOrCreateInstance(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false, 
-            [CallerMemberName] string callerName = "", [CallerFilePath] string path = "", [CallerLineNumber] int line = 0)
-        {
-            Log($"[NC!] #GetOrCreate ({parentPropertyTreeRoot.PropertyPath}) FROM: <b>{callerName}</b> @ {path}:{line}");
-            return GetOrCreateInstanceInternal(parentPropertyTreeRoot, expectedType, forceCreate);
-        }
-        
-        private static PropertyAttributeController GetOrCreateInstanceInternal(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false)
+        public static PropertyAttributeController GetOrCreateInstance(IPropertyNode parentPropertyTreeRoot, Type expectedType = null, bool forceCreate = false)
         {
             Log();
             if (typeof(UnityEngine.Object).IsAssignableFrom(parentPropertyTreeRoot.GetUnderlyingType()))
-            {
-                Log("  --> UnityEngine.Object!!! " + parentPropertyTreeRoot.PropertyPath);
                 return GetInstance((UnityEngine.Object)parentPropertyTreeRoot.GetValue(), parentPropertyTreeRoot);
-            }
             
             SetupActiveSelection();
             var parentController = parentPropertyTreeRoot.GetController();
-            // TODO: typeof(UnityEngine.Object).IsAssignableFrom(
-            var instanceId = ((PropertyAttributeController)parentController).InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode();
+            var instanceId =
+                (((PropertyAttributeController)parentController).InstanceID * 397 ^
+                 parentPropertyTreeRoot.PropertyPath.GetHashCode()) *
+                (parentController.IsRuntimeUI && UseSeparateControllersForRuntimeUI ? 673 : 1);
             PropertyAttributeController value = null;
             
-            object underlyingValue = parentPropertyTreeRoot.IsRuntimeUI() 
+            object underlyingValue = parentController.IsRuntimeUI // parentPropertyTreeRoot.IsRuntimeUI() 
                 ? parentPropertyTreeRoot.GetValueUnsafe()
                 : parentPropertyTreeRoot.GetValue();
             
@@ -220,22 +165,13 @@ namespace Space3x.InspectorAttributes
             {
                 if (value.CachedDeclaringObjectHashCode != (underlyingValue?.GetHashCode() ?? 0))
                 {
-                    Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
-                                     $"<b><color=#FF0000FF>REMOVING EXISTING INSTANCE</color> {instanceId}</b>");
                     s_Instances.Remove(instanceId);
                     value = null;
-                }
-                else
-                {
-                    Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
-                                     $"<b><color=#FF005AFF>NOT REMOVING EXISTING INSTANCE, SAME HASHES!</color> {instanceId}</b>");
                 }
             }
             
             if (value == null)
             {
-                Debug.LogWarning($"[PAC!] GetOrCreateInstance('{parentPropertyTreeRoot.PropertyPath}', {expectedType?.Name}, <b>{forceCreate}</b>) " +
-                                 $"<b><color=#5AFF5AFF>CREATING NEW INSTANCE</color> {instanceId}</b>");
                 value = new PropertyAttributeController(parentPropertyTreeRoot, instanceId);
                 if (expectedType != null && value.DeclaringType != null && value.DeclaringType != expectedType)
                     throw new ArgumentException($"Expected type {expectedType.Name} but found {value.DeclaringType?.Name}");
@@ -251,14 +187,15 @@ namespace Space3x.InspectorAttributes
         public static PropertyAttributeController GetOrCreateOverloadedInstance(IPropertyNode parentPropertyTreeRoot, Type originalType, Type overloadedType, Func<object> overloadedDeclaringObjectFactory)
         {
             var parentController = parentPropertyTreeRoot.GetController();
-            var instanceId = (((PropertyAttributeController)parentController).InstanceID * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode()) * 397 ^ overloadedType.GetHashCode();
+            var instanceId = ((((PropertyAttributeController)parentController).InstanceID
+                                     * 397 ^ parentPropertyTreeRoot.PropertyPath.GetHashCode())
+                                 * 397 ^ overloadedType.GetHashCode()) *
+                             (parentController.IsRuntimeUI && UseSeparateControllersForRuntimeUI ? 673 : 1);
             PropertyAttributeController value = null;
 
             if (s_Instances.TryGetValue(instanceId, out value))
-            {
                 if (value.DeclaringType != overloadedType)
                     throw new InvalidOperationException();
-            }
             
             if (value == null)
             {
@@ -281,9 +218,16 @@ namespace Space3x.InspectorAttributes
                 DebugLog.Error($"<b>IN OnPropertyValueChanged WITH NO CHILDREN</b>");
                 return;
             }
-
+#if SPACE3X_DEBUG
+            var controller = prop.GetController();
+            if (controller == null) 
+                throw new NullReferenceException($"{prop.GetType().Name} with no valid controller at path: {prop.PropertyPath}");
+#else
+            // Obsolete version, the null-coalescing operator shouldn't be required anymore,
+            // kept for backwards-compatibility, should be removed soon.
             var controller = prop.GetController() ??
                              GetInstance((prop.GetTargetObject()?.GetInstanceID() ?? 0) * 397 ^ prop.PropertyPath.GetHashCode());
+#endif
             ((PropertyAttributeController)controller)?.Rebuild(prop);
             // GetInstance(prop.GetTargetObjectInstanceID() * 397 ^ prop.PropertyPath.GetHashCode())?.Rebuild(prop);
         }
@@ -299,21 +243,9 @@ namespace Space3x.InspectorAttributes
                               $"{declaringProperty.PropertyPath}</color>");
                 if (areEqual) return;
                 controller.DeclaringObject = declaringObject;
-                controller.AnnotatedType = AnnotatedRuntimeType.GetInstance(controller.DeclaringType);
+                controller.AnnotatedType = AnnotatedRuntimeType.GetInstance(controller.DeclaringType, asUnreliable: declaringProperty.IsUnreliable());
                 controller.Properties = new RuntimeTypeProperties(controller);
             }
-            // object declaringObject = declaringProperty.GetUnderlyingValue();
-            // var areEqual = ReferenceEquals(declaringObject, DeclaringObject);
-            // DebugLog.Info($"<color=#00FF00FF>{(areEqual ? "<b><u>NO</u></b> " : "")}Rebuild: {areEqual} {DeclaringObject?.GetType().Name} {declaringObject?.GetType().Name} {declaringProperty.PropertyPath}</color>");
-            // if (areEqual) return;
-            // DebugLog.Error($"<b>// TODO: FIX REBUILD WHEN ASSIGNING A NEW OBJECT INSTANCE TO A ROOT PROPERTY</b>");
-            // Code below is reassigning the annotated type and properties of the controller to the type and value
-            // of the underlying value of the 'declaringProperty', which in many cases it isn't the one the controller
-            // is currently associated with, but an inner property of it.
-            // ---
-            // DeclaringObject = declaringObject;
-            // AnnotatedType = AnnotatedRuntimeType.GetInstance(DeclaringType);
-            // Properties = new RuntimeTypeProperties(this);
         }
 
         public static void RemoveFromCache(PropertyAttributeController controller) => 
@@ -350,36 +282,8 @@ namespace Space3x.InspectorAttributes
         public ReadOnlyCollection<IPropertyNode> GetAllProperties() => 
             Properties.Values.AsReadOnly();
 
-#if UNITY_EDITOR
-        // [UnityEditor.InitializeOnLoadMethod]
-        [UnityEditor.InitializeOnEnterPlayMode]
-        private static void InitializeOnEnterPlayModeInEditor()
-        {
-            Initialize();
-            UnityEditor.EditorApplication.playModeStateChanged -= OnplayModeStateChanged;
-            UnityEditor.EditorApplication.playModeStateChanged += OnplayModeStateChanged;
-        }
-        
-        private static void OnplayModeStateChanged(UnityEditor.PlayModeStateChange mode)
-        {
-            if (mode == UnityEditor.PlayModeStateChange.ExitingPlayMode || mode == UnityEditor.PlayModeStateChange.EnteredEditMode)
-            {
-                UnityEditor.EditorApplication.playModeStateChanged -= OnplayModeStateChanged;
-                Initialize();
-            }
-        }
-#endif
-        
-        [RuntimeInitializeOnLoadMethod]
-        private static void Initialize()
-        {
-            Log(s_Instances?.Count ?? 0, "s_Instances.Count");
-            RegisterCallbacks(true);
-            UngroupedMarkerDecorators.ClearCache();
-        }
-        
-        static PropertyAttributeController() => Initialize();
-        
+        internal static void ReloadAll() => RegisterCallbacks(true);
+
 #if UNITY_EDITOR
         private static int GetActiveSelectionHash() =>
             UnityEditor.Selection.activeObject != null ? UnityEditor.Selection.activeObject.GetHashCode() : 0;

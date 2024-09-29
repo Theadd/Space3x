@@ -39,6 +39,7 @@ namespace Space3x.InspectorAttributes
 
         public void TrackPropertyChanges(BindablePropertyNode propertyNode, Action<IBindablePropertyNode> callback = null)
         {
+            var srcNode = m_SourcePropertyNode;
             // Debug.LogWarning($"[PAC!] [UnreliableEventHandler] TRACKING! {propertyNode.PropertyPath}");
             m_SourcePropertyNode.ValueChangedOnChildNode += changedProperty =>
             {
@@ -48,7 +49,8 @@ namespace Space3x.InspectorAttributes
                     // changedProperty is a children property of propertyNode
                     case 1:
                         // DebugLog.Error($"[PAC!] #1 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnChildNode! {propertyNode.PropertyPath}");
-                        propertyNode.NotifyValueChangedOnChildNode(changedProperty);
+                        if (srcNode != propertyNode)
+                            propertyNode.NotifyValueChangedOnChildNode(changedProperty);
                         break;
                     case 0:
                         // DebugLog.Error($"[PAC!] #0 [UnreliableEventHandler] TRACKED VALUE CHANGE ValueChangedOnNode! {propertyNode.PropertyPath}");
