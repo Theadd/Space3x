@@ -27,7 +27,8 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             if (property.HasSerializedProperty())
                 m_InnerField = new PropertyField(property.GetSerializedProperty());
             else
-                m_InnerField = new BindablePropertyField(property).Resolve(showInInspector: true);
+                // TODO: container, as expectedParent, is used before having a parent itself.
+                m_InnerField = BindablePropertyField.Create(this, property).Resolve(showInInspector: true);
             InspectorContainer = new BindableElement();
             InspectorContainer.TrackPropertyValue(property, CheckInline);
             container.Add(m_InnerField);

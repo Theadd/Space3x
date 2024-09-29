@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
 
 [assembly: Unity.Properties.GeneratePropertyBagsForAssembly]
-[assembly: InternalsVisibleTo("Space3x.UiToolkit.Runtime")]
-
+[assembly: InternalsVisibleTo(nameof(Space3x) + ".UiToolkit.Runtime")]

@@ -150,26 +150,28 @@ namespace Space3x.InspectorAttributes.Editor
 
         private BindablePropertyField AddField(IPropertyNode propertyNode)
         {
-            var bindableField = new BindablePropertyField();
+            var bindableField = BindablePropertyField.Create(Container);
             // bindableField.WithClasses(propertyNode.ShowInInspector(), UssConstants.UssShowInInspector);
             if (propertyNode is not InvokablePropertyNodeBase && !IsReadOnlyEnabled && propertyNode.IsReadOnly())
                 bindableField.SetEnabled(false);
-            bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
-            bindableField.TrackPropertyValue(propertyNode, changedProperty =>
-            {
-                try
-                {
-                    BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
-                }
-                catch (Exception e)
-                {
-                    Debug.LogException(e);
-                }
-            });
             m_PreviousField.AddAfter(bindableField);
-            bindableField.Resolve(attachDecorators: true, showInInspector: propertyNode.ShowInInspector());
             m_PreviousField = bindableField;
             BindableFields.Add(bindableField);
+            bindableField.BindProperty(propertyNode, applyCustomDrawers: true);
+            // TODO: UNCOMMENT
+            // bindableField.TrackPropertyValue(propertyNode, changedProperty =>
+            // {
+            //     try
+            //     {
+            //         BindableUtility.SetValueWithoutNotify(bindableField.Field, changedProperty.GetValue());
+            //     }
+            //     catch (Exception e)
+            //     {
+            //         Debug.LogException(e);
+            //     }
+            // });
+            
+           bindableField.Resolve(attachDecorators: true, showInInspector: propertyNode.ShowInInspector());
             return bindableField;
         }
 

@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Space3x.Attributes.Types;
-using Space3x.InspectorAttributes.Editor.Utilities;
-using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
 using UnityEditor;
 using UnityEditor.UIElements;
@@ -31,15 +26,13 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
                 || Field is BindablePropertyField) return;
 #endif
             var parentElement = Container.hierarchy.parent;
-            Debug.Log($"<color=#000000FF><b><u>@AllowExtendedAttributes Extend(): TH: {GetHashCode()} {Property.PropertyPath}</u></b></color> :: {Field?.AsString()}");
+            // Debug.Log($"<color=#000000FF><b><u>@AllowExtendedAttributes Extend(): TH: {GetHashCode()} {Property.PropertyPath}</u></b></color> :: {Field?.AsString()}");
             if (parentElement.ClassListContains(UssConstants.UssFactoryPopulated))
             {
-                // TODO: remove 23
-                parentElement.LogThis($"(INFO) [VD!] <color=#000000FF><b>Populated already by factory!</b></color> TH: {GetHashCode()} {Property.PropertyPath}");
+                // parentElement.LogThis($"(INFO) [VD!] <color=#000000FF><b>Populated already by factory!</b></color> TH: {GetHashCode()} {Property.PropertyPath}");
                 return;
             }
 
-            DebugLog.Error($"<color=#000000FF><b>[VD!] [FieldFactoryExtender] FROM AllowExtendedAttributesDecorator.Extend() ON {Property.PropertyPath}</b></color>");
             m_FieldFactory ??= new FieldFactoryExtender((PropertyAttributeController)Property.GetController());
             if (Field is PropertyField propertyField)
                 m_FieldFactory.PropertyFieldOrigin = propertyField;
@@ -77,6 +70,7 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
 
         private void OnClick()
         {
+            Debug.Log("STOP");
             // Dictionary<Type, Type> s_Instances = new Dictionary<Type, Type>();
             // var enumerableDrawers = TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer));
             // foreach (var drawer in enumerableDrawers)
@@ -94,26 +88,26 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
             // {
             //     Debug.Log($"    {key.Name}: {value.Name}");
             // }
-           DebuggingUtility.ShowAllControllers();
-            var str = $"<b>{((PropertyAttributeController)Property.GetController()).InstanceID} <u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
-            foreach (var parentProperty in Property.GetAllParentProperties(false))
-            {
-                str += $"\t'<b>{parentProperty.Name}</b>' @ '{parentProperty.ParentPath}' ({parentProperty.PropertyPath})\n";
-            }
-            DebugLog.Info(str);
-
-            var underlyingValue = Property.GetUnderlyingValue();
-            Debug.Log(underlyingValue);
-            var parent = Property.GetParentProperty();
-            if (parent != null)
-            {
-                var uValueParent = parent.GetUnderlyingValue();
-                Debug.Log($"<u>{uValueParent}</u>: {uValueParent} ({uValueParent.GetType().Name})");
-                if (parent is IPropertyNodeIndex propertyNodeIndex)
-                {
-                    Debug.Log($"  Index: {propertyNodeIndex.Index}");
-                }
-            }
+            // DebuggingUtility.ShowAllControllers();
+            // var str = $"<b>{((PropertyAttributeController)Property.GetController()).InstanceID} <u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
+            // foreach (var parentProperty in Property.GetAllParentProperties(false))
+            // {
+            //     str += $"\t'<b>{parentProperty.Name}</b>' @ '{parentProperty.ParentPath}' ({parentProperty.PropertyPath})\n";
+            // }
+            // DebugLog.Info(str);
+            //
+            // var underlyingValue = Property.GetUnderlyingValue();
+            // Debug.Log(underlyingValue);
+            // var parent = Property.GetParentProperty();
+            // if (parent != null)
+            // {
+            //     var uValueParent = parent.GetUnderlyingValue();
+            //     Debug.Log($"<u>{uValueParent}</u>: {uValueParent} ({uValueParent.GetType().Name})");
+            //     if (parent is IPropertyNodeIndex propertyNodeIndex)
+            //     {
+            //         Debug.Log($"  Index: {propertyNodeIndex.Index}");
+            //     }
+            // }
 
         }
     }
