@@ -71,44 +71,6 @@ namespace Space3x.InspectorAttributes.Editor.Drawers
         private void OnClick()
         {
             Debug.Log("STOP");
-            // Dictionary<Type, Type> s_Instances = new Dictionary<Type, Type>();
-            // var enumerableDrawers = TypeUtilityExtensions.GetTypesWithAttributeInCustomAssemblies(typeof(CustomRuntimeDrawer));
-            // foreach (var drawer in enumerableDrawers)
-            // {
-            //     foreach (var attr in drawer.GetCustomAttributes(typeof(CustomRuntimeDrawer), false))
-            //     {
-            //         foreach (var type in ((CustomRuntimeDrawer)attr).Types)
-            //         {
-            //             s_Instances[type] = (Type)drawer;
-            //         }
-            //     }
-            // }
-            // // var drawers = enumerableDrawers.ToList();
-            // foreach (var (key, value) in s_Instances)
-            // {
-            //     Debug.Log($"    {key.Name}: {value.Name}");
-            // }
-            // DebuggingUtility.ShowAllControllers();
-            // var str = $"<b>{((PropertyAttributeController)Property.GetController()).InstanceID} <u>ALL PARENT PROPERTIES:</u> {Property.PropertyPath}</b>\n";
-            // foreach (var parentProperty in Property.GetAllParentProperties(false))
-            // {
-            //     str += $"\t'<b>{parentProperty.Name}</b>' @ '{parentProperty.ParentPath}' ({parentProperty.PropertyPath})\n";
-            // }
-            // DebugLog.Info(str);
-            //
-            // var underlyingValue = Property.GetUnderlyingValue();
-            // Debug.Log(underlyingValue);
-            // var parent = Property.GetParentProperty();
-            // if (parent != null)
-            // {
-            //     var uValueParent = parent.GetUnderlyingValue();
-            //     Debug.Log($"<u>{uValueParent}</u>: {uValueParent} ({uValueParent.GetType().Name})");
-            //     if (parent is IPropertyNodeIndex propertyNodeIndex)
-            //     {
-            //         Debug.Log($"  Index: {propertyNodeIndex.Index}");
-            //     }
-            // }
-
         }
     }
 }

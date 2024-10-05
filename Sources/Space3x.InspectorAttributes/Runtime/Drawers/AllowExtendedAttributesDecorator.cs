@@ -26,17 +26,13 @@ namespace Space3x.InspectorAttributes
             DecoratorsCache.RebuildAll();
             DecoratorsCache.DisableAutoGroupingOnActiveSelection(disable: false);
             DecoratorsCache.HandlePendingDecorators();
-            Debug.Log("[AEA!] END OnUpdate()");
         }
 
         public override void OnReset(bool disposing = false)
         {
-            if (!disposing) 
-                m_IsReady = false;
-            // else
-            //     if (Property is IControlledProperty propertyWithSerializedObject && propertyWithSerializedObject.Controller != null)
-            //         PropertyAttributeController.RemoveFromCache((PropertyAttributeController)propertyWithSerializedObject.Controller);
-
+            m_IsReady = false;
+            if (disposing && Property?.IsValid() == false) 
+                DecoratorsCache?.Dispose();
             base.OnReset(disposing);
         }
     }
