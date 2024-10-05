@@ -1,6 +1,6 @@
-﻿using Space3x.Attributes.Types;
+﻿using Space3x.Properties.Types;
 using Space3x.UiToolkit.Types;
-using UnityEngine;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
@@ -9,7 +9,7 @@ namespace Space3x.InspectorAttributes
     {
         private void OnDetachGhostFromPanel(DetachFromPanelEvent evt)
         {
-            DebugInternal($"[D!] OnDetachGhostFromPanel() => <b>m_DetachingItself:</b> {m_DetachingItself}");
+            DebugInternal($"[D!] OnDetachGhostFromPanel() => <b>DetachItself:</b>{m_DetachingItself}; <b>State:</b> {m_State}");
             if (m_DetachingItself) return;
             if (Property?.HasSerializedProperty() ?? false)
             {
@@ -87,66 +87,96 @@ namespace Space3x.InspectorAttributes
 
         private void OnAttachGhostToPanel()
         {
-            // Debug.LogException(new Exception("<color=#0000FFFF><b>HERREEEEEEE!!! OnAttachGhostToPanel() SEE STACK TRACE"));
-            // if (ev.destinationPanel == null) return;
-            if (GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true) return;
-            if (m_TotallyRemoved)
+            LogInternal("[D!] OnAttachGhostToPanel()! <b>FROM STATE:</b> " + m_State);
+            Assert.IsTrue(m_State == State.AwaitingGhost);
+            var ctx = CreateContext();
+            Assert.IsTrue(ctx.Field != null && ctx.Property != null);
+            Field = ctx.Field;
+            Property = ctx.Property;
+            m_State = State.ContextReady;
+            if (GhostContainer?.panel is IPanel editorPanel && editorPanel.contextType == ContextType.Editor)
+                ((IDrawer)this).AddDefaultStyles(editorPanel.visualTree);
+            Container = new T();
+            Container.WithDevTools(this);
+            OnCreatePropertyGUI(Container);
+            
+            if (UpdateOnAnyValueChange)
+                GhostContainer.TrackSerializedObjectValue(Property, OnUpdate);
+            DecoratorsCache?.AddDisposable(this);
+            
+            EnsureContainerIsProperlyAttached(() =>
             {
-                LogInternal(
-                    $"<b>IN OnAttachGhostToPanel (1) FOR A TOTALLY REMOVED {this.GetType().Name} ThisHash: {this.GetHashCode()}</b>");
-                return;
-            }
-
-            if (m_Added)
-            {
-                // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[SKIP ADD!!]</b> {this.GetType().Name}, " +
-                //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
-                //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
-                BindToClosestParentPropertyFieldOf(GhostContainer);
-                return;
-            }
-
-            // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[ADD]</b> {this.GetType().Name}, " +
-            //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
-            //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
-            BindToClosestParentPropertyFieldOf(GhostContainer);
-            m_Added = true;
-            if (!m_Removed)
-            {
-                if (Field != null)
-                {
-                    if (Container == null)
-                    {
-                        if (GhostContainer?.panel is IPanel editorPanel &&
-                            editorPanel.contextType == ContextType.Editor)
-                            ((IDrawer)this).AddDefaultStyles(editorPanel.visualTree);
-                        Container = new T();
-                        Container.WithDevTools(this);
-                        OnCreatePropertyGUI(Container);
-                    }
-
-                    EnsureContainerIsProperlyAttached(() =>
-                    {
-                        if (m_TotallyRemoved)
-                        {
-                            LogInternal(
-                                $"<b>IN OnAttachGhostToPanel (3) FOR A TOTALLY REMOVED {this.GetType().Name} ThisHash: {this.GetHashCode()}</b>");
-                            return;
-                        }
-
-                        OnAttachContainerToPanel();
-
-                        Container.RegisterOnGeometryChangedEventOnce(OnGeometryChanged, fallbackToParent: true);
-// #if UNITY_EDITOR
-//                         // if (!Property.IsRuntimeUI())
-//                         //     UnityEditor.EditorApplication.delayCall += OnGeometryChanged;
-// #endif
-                    });
-                }
-                else
-                    DebugLog.Warning(
-                        $"<color=#FF0000CC>Could not find parent PropertyField for {attribute.GetType().Name}</color>");
-            }
+                OnAttachContainerToPanel();
+                Container.RegisterOnGeometryChangedEventOnce(OnGeometryChanged, fallbackToParent: true);
+#if UNITY_EDITOR
+                if (!Property.IsRuntimeUI())
+                    UnityEditor.EditorApplication.delayCall += () => OnGeometryChanged(null);
+#endif
+            });
         }
+        
+//         private void OnAttachGhostToPanel()
+//         {
+//             // Debug.LogException(new Exception("<color=#0000FFFF><b>HERREEEEEEE!!! OnAttachGhostToPanel() SEE STACK TRACE"));
+//             // if (ev.destinationPanel == null) return;
+//             if (GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true) return;
+//             if (m_TotallyRemoved)
+//             {
+//                 LogInternal(
+//                     $"<b>IN OnAttachGhostToPanel (1) FOR A TOTALLY REMOVED {this.GetType().Name} ThisHash: {this.GetHashCode()}</b>");
+//                 return;
+//             }
+//
+//             if (m_Added)
+//             {
+//                 // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[SKIP ADD!!]</b> {this.GetType().Name}, " +
+//                 //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
+//                 //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
+//                 BindToClosestParentPropertyFieldOf(GhostContainer);
+//                 return;
+//             }
+//
+//             // GhostContainer.LogThis($"  <color=#FFFF00FF>OnAttachGhostToPanel: <b>[ADD]</b> {this.GetType().Name}, " +
+//             //                        $"THash: {this.GetHashCode()}, Rem: {m_Removed}, Add: {m_Added}, " +
+//             //                        $"PanelHash: {GetPanelContentHash(ev.destinationPanel)}</color>");
+//             BindToClosestParentPropertyFieldOf(GhostContainer);
+//             m_Added = true;
+//             if (!m_Removed)
+//             {
+//                 if (Field != null)
+//                 {
+//                     if (Container == null)
+//                     {
+//                         if (GhostContainer?.panel is IPanel editorPanel &&
+//                             editorPanel.contextType == ContextType.Editor)
+//                             ((IDrawer)this).AddDefaultStyles(editorPanel.visualTree);
+//                         Container = new T();
+//                         Container.WithDevTools(this);
+//                         OnCreatePropertyGUI(Container);
+//                     }
+//
+//                     EnsureContainerIsProperlyAttached(() =>
+//                     {
+//                         if (m_TotallyRemoved)
+//                         {
+//                             LogInternal(
+//                                 $"<b>IN OnAttachGhostToPanel (3) FOR A TOTALLY REMOVED {this.GetType().Name} ThisHash: {this.GetHashCode()}</b>");
+//                             return;
+//                         }
+//
+//                         OnAttachContainerToPanel();
+//
+//                         Container.RegisterOnGeometryChangedEventOnce(OnGeometryChanged, fallbackToParent: true);
+// // #if UNITY_EDITOR
+// //                         // if (!Property.IsRuntimeUI())
+// //                         //     UnityEditor.EditorApplication.delayCall += OnGeometryChanged;
+// // #endif
+//                     });
+//                 }
+//                 else
+//                     DebugLog.Warning(
+//                         $"<color=#FF0000CC>Could not find parent PropertyField for {attribute.GetType().Name}</color>");
+//             }
+//         }
     }
 }

@@ -92,28 +92,20 @@ namespace Space3x.InspectorAttributes
 
         public sealed override VisualElement CreatePropertyGUI()
         {
-            LogInternal("[D!] CreatePropertyGUI()!");
-            // var numGhosts = GhostContainer?.hierarchy.parent?.hierarchy.childCount ?? -1;
+            LogInternal("[D!] CreatePropertyGUI()! <b>FROM STATE:</b> " + m_State);
+            if (!(m_State <= State.None))
+            {
+                LogInternal("ASSERT FAIL: m_State <= State.None");
+                m_DetachingItself = true;
+                m_State = State.ResetToInitialState;
+                ResetToInitialState();
+                m_DetachingItself = false;
+            }
             Assert.IsTrue(m_State <= State.None);
-            m_Disposed = false;
-            // if (GhostContainer != null || m_TotallyRemoved)
-            // {
-            //     m_DetachingItself = true;
-            //     ResetToInitialState();
-            //     m_DetachingItself = false;
-            //     // DebugLog.Info($"  <b><color=#6666FFFF>[CREATE COPY!]</color> ThisHash: {this.GetHashCode()}</b>");
-            //     // return ((DecoratorDrawerAdapter)DrawerUtility.CopyDecoratorDrawer(this)).CreatePropertyGUI();
-            //
-            // }
-            // DebugLog.Info($"<color=#FFFF00FF><b>[CREATE]</b> {this.GetType().Name}, NºGh: {numGhosts}, NullGh: {GhostContainer == null}, " +
-            //               $"NullCT: {Container == null}, NullP: {Property == null}, THash: {this.GetHashCode()}, Rem: {m_Removed}, " +
-            //               $"Add: {m_Added}, TotallyRemoved: {m_TotallyRemoved}</color>");
             m_State = State.AwaitingGhost;
             GhostContainer = new GhostDecorator() { TargetDecorator = this };
             GhostContainer.WithDevTools(this);
-            // m_Ready = false;
             GhostContainer.RegisterOnAttachToPanelEventOnce(OnAttachGhostToPanel);
-            // GhostContainer.RegisterCallback<AttachToPanelEvent>(OnAttachGhostToPanel);
             GhostContainer.UnregisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
             GhostContainer.RegisterCallback<DetachFromPanelEvent>(OnDetachGhostFromPanel);
 
@@ -122,62 +114,31 @@ namespace Space3x.InspectorAttributes
 
         private void OnAttachContainerToPanel()
         {
-            if (m_TotallyRemoved) return;
-            // if (GhostContainer.panel == null) return;
-            if (GhostContainer?.IsPhysicallyAndLogicallyDetachedFromPanel() ?? true)
+            Assert.IsTrue(m_State == State.ContextReady);
+            if (!Property.IsValid())
             {
-                // TODO: remove
-                Assert.IsFalse(true);
+                LogInternalError("[D!] OnAttachContainerToPanel()! <b>Property IS NOT VALID!</b>");
                 return;
             }
-            
-            if (m_Ready || !Property.IsValid()) return;
-            m_Ready = true;
-
+            m_State = State.AttachedAndReady;
             OnAttachedAndReady(Container);
         }
         
         private void OnGeometryChanged(GeometryChangedEvent _)
         {
-            if (m_TotallyRemoved) return;
-            // EDIT: current implementation should avoid the commented block below, placing assertion to make sure of it.
-            // Assert.IsFalse(GhostContainer.IsPhysicallyAndLogicallyDetachedFromPanel());
-
+            LogInternal("[D!] OnGeometryChanged()! <b>FROM STATE:</b> " + m_State + " m_OnUpdateCalled: " + m_OnUpdateCalled);
+            Container.UnregisterOnGeometryChangedEventOnce(OnGeometryChanged);
             if (Property == null) return;
-            if (m_OnUpdateCalled || !(Property?.IsValid() ?? false)) return;
-            m_OnUpdateCalled = true;
-            OnUpdate();
-        }
-        
-        private void BindToClosestParentPropertyFieldOf(VisualElement target)
-        {
-#if UNITY_EDITOR
-            Field = target.GetClosestParentOfAnyType<UnityEditor.UIElements.PropertyField, BindablePropertyField, UnityEditor.UIElements.InspectorElement>();
-#else
-            Field = target.GetClosestParentOfType<BindablePropertyField, TemplateContainer>();
-#endif
-            if (Field == null)
+            if (m_OnUpdateCalled/* || !(Property?.IsValid() ?? false)*/) return;
+                m_OnUpdateCalled = true;
+            Assert.IsTrue(m_State == State.AttachedAndReady);
+            if (Property?.IsValid() != true)
             {
-                Debug.LogWarning($"<color=#FF0000CC>Could not find parent PropertyField of {target.name} for {attribute.GetType().Name}</color>");
+                LogInternalError("[D!] OnGeometryChanged()! Property IS <b>NOT VALID!</b>");
                 return;
             }
-
-            try
-            {
-                Property = Field.GetPropertyNode();
-            }
-            catch (ObjectDisposedException ex)
-            {
-#if UNITY_EDITOR
-                LogInternal(ex.ToString());
-                DebugInternal("##@@##@@##@@##@@##@@##@@ FORCING FULL REBIND ON PROPERTYFIELD # ");
-                UnityEditor.UIElements.BindingExtensions.Unbind((UnityEditor.UIElements.PropertyField)Field);
-                UnityEditor.UIElements.BindingExtensions.Bind((UnityEditor.UIElements.PropertyField)Field, Property.GetSerializedObject());
-#endif
-                Property = Field.GetPropertyNode();
-            }
-            if (UpdateOnAnyValueChange)
-                GhostContainer.TrackSerializedObjectValue(Property, OnUpdate);
+            m_State = State.Done;
+            OnUpdate();
         }
     }
 }

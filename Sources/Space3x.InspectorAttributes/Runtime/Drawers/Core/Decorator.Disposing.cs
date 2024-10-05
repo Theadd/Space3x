@@ -8,17 +8,10 @@ namespace Space3x.InspectorAttributes
 {
     public abstract partial class Decorator<T, TAttribute>
     {
-        // ~Decorator()
-        // {
-        //     LogInternal($"[D!] ~Decorator() => DESTRUCTOR! Calling: Dispose(disposing: false);");
-        //     Dispose(disposing: false);
-        // }
-
         public void Dispose()
         {
             LogInternal($"[D!] Dispose() => IDisposable.Dispose();");
             Dispose(disposing: true);
-            // GC.SuppressFinalize(this);
         }
 
         protected void Dispose(bool disposing)
@@ -108,6 +101,12 @@ namespace Space3x.InspectorAttributes
         {
             DebugLog.Error(
                 $"<color=#000000FF>{GetType().Name} #{GetHashCode()}</color> {msg} <color=#FFFFFFEA>{callerName}</color>");
+        }
+        
+        private void LogInternalError(string msg, [CallerMemberName] string callerName = "")
+        {
+            DebugLog.Error(
+                $"{GetType().Name} #{GetHashCode()} <b>[ERROR]</b> <color=#000000FF>{msg}</color> <color=#FFFFFFEA>{callerName}</color>");
         }
 
         private void DebugInternal(string msg, [CallerMemberName] string callerName = "")

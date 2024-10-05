@@ -1,5 +1,6 @@
 ﻿using System;
 using Space3x.Properties.Types;
+using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 
 namespace Space3x.InspectorAttributes
@@ -53,15 +54,13 @@ namespace Space3x.InspectorAttributes
             Done = 4,
         }
 
-        private Context m_ExpectedContext = null;
-        
         private void HandleDetachFromPanelEventOnInvalidState(Context context)
         {
             m_DetachingItself = true;
             m_State = State.ResetToInitialState;
             ResetToInitialState();
+            Assert.IsNull(GhostContainer?.panel);
             m_DetachingItself = false;
-            m_ExpectedContext = context;
         }
 
         private Context CreateContext()
