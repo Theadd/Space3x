@@ -1,17 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Editor.Drawers;
 using UnityEngine.Internal;
 
 namespace Space3x.InspectorAttributes
 {
     [ExcludeFromDocs]
-    public class MarkerDecoratorsCache
+    public class MarkerDecoratorsCache : IDisposable
     {
         private List<IGroupMarkerDecorator> m_CachedInstances;
         private List<IGroupMarkerDecorator> m_PendingInstances;
         private List<IGroupMarkerDecorator> m_FailedInstances;
+
+        private HashSet<IDrawer> m_Drawers;
 
         private int m_ActiveSelectedObjectHash = 0;
         
@@ -24,13 +27,12 @@ namespace Space3x.InspectorAttributes
             m_CachedInstances = new List<IGroupMarkerDecorator>();
             m_PendingInstances = new List<IGroupMarkerDecorator>();
             m_FailedInstances = new List<IGroupMarkerDecorator>();
+            m_Drawers = new HashSet<IDrawer>();
             m_ActiveSelectedObjectHash = GetActiveSelectionHash();
         }
 
         public void DisableAutoGroupingOnActiveSelection(bool disable = true)
         {
-            // DebugLog.Warning($"<color=#FF7F00FF>[VD!] [UMD!] MDC! <b> <u>NOOOOO EARLY RETURN!!</u> DisableAutoGrouping = {disable}</b> ON {m_ActiveSelectedObjectHash} ");
-            // return;
             SetupActiveSelection();
             m_AutoGroupingDisabledForHash = m_ActiveSelectedObjectHash;
             m_DisableAutoGrouping = disable;
@@ -105,9 +107,6 @@ namespace Space3x.InspectorAttributes
 
         public void RebuildAll()
         {
-            // TODO: remove
-            PrintCachedInstances(false);
-            
             foreach (var groupMarkerDecorator in m_CachedInstances)
             {
                 groupMarkerDecorator.RebuildGroupMarkerIfRequired();
@@ -170,9 +169,11 @@ namespace Space3x.InspectorAttributes
 
         public void ClearCache()
         {
+            DebugLog.Notice(nameof(MarkerDecoratorsCache) + ".ClearCache()!");
             m_CachedInstances.Clear();
             m_PendingInstances.Clear();
             m_FailedInstances.Clear();
+            m_Drawers.Clear();
         }
 
         // TODO: remove
@@ -187,8 +188,30 @@ namespace Space3x.InspectorAttributes
             //     var isFailed = m_FailedInstances.Contains(groupMarkerDecorator);
             //     str += $"\n<color=#f2ff47ff><b>#> In Cache: {groupMarkerDecorator.DebugId}</b>{(isPending ? " (PENDING)" : "")} {(isFailed ? " (<b>FAILED</b>)" : "")}</color>";
             // }
-            //
+            // 
             // DebugLog.Info(str + "\n\n");
+        }
+
+        internal void AddDisposable(IDrawer drawer)
+        {
+#if UNITY_EDITOR
+            if (drawer is AllowExtendedAttributesDecorator || m_Drawers.Any())
+            {
+                m_Drawers.Add(drawer);
+            }
+#endif
+        }
+
+        public void Dispose()
+        {
+            DebugLog.Notice(nameof(MarkerDecoratorsCache) + ".Dispose()!");
+            var drawers = m_Drawers.ToArray();
+            for (var i = 0; i < drawers.Length; i++)
+            {
+                if (drawers[i] is IDisposable disposable and not AllowExtendedAttributesDecorator)
+                    disposable.Dispose();
+            }
+            ClearCache();
         }
     }
 }
