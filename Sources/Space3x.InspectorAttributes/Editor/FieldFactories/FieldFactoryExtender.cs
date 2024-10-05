@@ -4,8 +4,6 @@ using System.Linq;
 using Space3x.Attributes.Types;
 using Space3x.InspectorAttributes.Extensions;
 using Space3x.Properties.Types;
-using Space3x.UiToolkit.Types;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -106,11 +104,13 @@ namespace Space3x.InspectorAttributes.Editor
                 .ToList();
             var originFieldKey = originPair.Any()
                 ? originPair.FirstOrDefault().Key 
-                : ((PropertyField)PropertyFieldOrigin).bindingPath;
+                : ((IBindable)PropertyFieldOrigin).bindingPath;
+#if UNITY_EDITOR
             existingFields.Where(entry => entry.Value != PropertyFieldOrigin).ForEach(pair =>
             {
-                if (pair.Value is PropertyField other) other.ProperlyRemoveFromHierarchy();
+                if (pair.Value is UnityEditor.UIElements.PropertyField other) other.ProperlyRemoveFromHierarchy();
             });
+#endif
             m_PreviousField = PropertyFieldOrigin;
             
             foreach (var propertyNode in Controller.Properties.Values)

@@ -21,7 +21,6 @@ namespace Space3x.InspectorAttributes
         public static VisualElement GetTreeContainer(this VisualElement self) => 
             self?.GetTreeRenderer()?.contentContainer;
 
-
         [Experimental(Text = "TreeNode implementation is not being propagated already. The internal access modifier should be public when fully implemented.")]
         internal static ITreeRenderer GetParentTreeRenderer(this ITreeRenderer self) =>
             self?.TreeNode?.parent?.Value?.Target;

@@ -1,10 +1,20 @@
 ﻿namespace Space3x.InspectorAttributes
 {
+    public enum LocalizationMode
+    {
+        None = 0,
+        Auto = 1,
+    }
+    
     public class Context
     {
         // public bool AttachDecorators { get; set; } = false;
         // public bool ShowInInspector { get; set; } = false;
 
+        public LocalizationMode LocalizationMode { get; set; }
+        
+        public string LocalizationTable { get; set; } = null;
+        
         internal ITreeRenderer Target { get; set; }
     }
     
